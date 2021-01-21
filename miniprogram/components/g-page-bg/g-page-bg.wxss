@@ -1,0 +1,22 @@
+.bg{
+    right: 0;
+    bottom: 0;
+    content: '';
+    position: fixed;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.bg_dark{
+    top: -20%;
+    left: -25%;
+    right: 0;
+    bottom: 0;
+    content: '';
+    position: fixed;
+    overflow: hidden;
+    width: 150%;
+    height: 150%;
+    background-image: radial-gradient(circle closest-side at 50% 30%, #00165b, #000311);
+    z-index: -1;
+}

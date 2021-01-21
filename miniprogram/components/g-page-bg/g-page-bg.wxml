@@ -1,0 +1,1 @@
+<view class="{{ darkmode?'bg_dark':'bg' }}"></view>

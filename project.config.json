@@ -1,0 +1,87 @@
+{
+    "description": "项目配置文件",
+    "packOptions": {
+        "ignore": []
+    },
+    "miniprogramRoot": "miniprogram/",
+    "compileType": "miniprogram",
+    "libVersion": "2.14.3",
+    "projectname": "mp_gpass_ts",
+    "scripts": {
+        "beforeCompile": "npm run tsc",
+        "beforePreview": "npm run tsc",
+        "beforeUpload": "npm run tsc"
+    },
+    "setting": {
+        "urlCheck": true,
+        "es6": false,
+        "enhance": false,
+        "postcss": true,
+        "preloadBackgroundData": false,
+        "minified": true,
+        "newFeature": false,
+        "coverView": true,
+        "nodeModules": true,
+        "autoAudits": false,
+        "showShadowRootInWxmlPanel": true,
+        "scopeDataCheck": false,
+        "uglifyFileName": true,
+        "checkInvalidKey": true,
+        "checkSiteMap": true,
+        "uploadWithSourceMap": true,
+        "compileHotReLoad": false,
+        "useMultiFrameRuntime": true,
+        "useApiHook": true,
+        "useApiHostProcess": true,
+        "babelSetting": {
+            "ignore": [],
+            "disablePlugins": [],
+            "outputPath": ""
+        },
+        "enableEngineNative": false,
+        "bundle": true,
+        "useIsolateContext": true,
+        "useCompilerModule": true,
+        "userConfirmedUseCompilerModuleSwitch": false,
+        "userConfirmedBundleSwitch": true,
+        "packNpmManually": false,
+        "packNpmRelationList": [],
+        "minifyWXSS": true
+    },
+    "simulatorType": "wechat",
+    "simulatorPluginLibVersion": {},
+    "appid": "wx98e663f2bb3467bd",
+    "condition": {
+        "plugin": {
+            "list": []
+        },
+        "game": {
+            "list": []
+        },
+        "gamePlugin": {
+            "list": []
+        },
+        "miniprogram": {
+            "list": [
+                {
+                    "name": "pages/user/user",
+                    "pathName": "pages/user/user",
+                    "query": "",
+                    "scene": null
+                },
+                {
+                    "name": "pages/showdb/index/index",
+                    "pathName": "pages/showdb/index/index",
+                    "query": "",
+                    "scene": null
+                },
+                {
+                    "name": "pages/showdb/add/add",
+                    "pathName": "pages/showdb/add/add",
+                    "query": "type=add&infoType=bank",
+                    "scene": null
+                }
+            ]
+        }
+    }
+}

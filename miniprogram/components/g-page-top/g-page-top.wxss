@@ -1,0 +1,55 @@
+@import "./../../app.wxss";
+
+.seat {
+    position: relative;
+    width: 750rpx;
+}
+
+.top {
+    position: fixed;
+    width: 750rpx;
+    z-index: 2000;
+}
+
+.title {
+    position: absolute;
+    width: 750rpx;
+    bottom: 20rpx;
+    font-size: 32rpx;
+    line-height: 32rpx;
+    font-weight: bold;
+    text-align: center;
+    color: #000000;
+}
+
+.title_dark {
+    color: #FFFFFF;
+}
+
+.left{
+    position: absolute;
+    left: 20rpx;
+    bottom: 10rpx;
+    width: 300rpx;
+    height: 50rpx;
+    display: flex;
+}
+
+.left_icon {
+    width: 50rpx;
+    height: 50rpx;
+    border-radius: 50%;
+    background: #9ce72a;
+    text-align: center;
+    line-height: 50rpx;
+    font-size: 40rpx;
+    color: #000c33;
+}
+
+.left_text{
+    color: #FFFFFF;
+    height: 50rpx;
+    line-height: 50rpx;
+    font-size: 28rpx;
+    margin-left: 10rpx;
+}

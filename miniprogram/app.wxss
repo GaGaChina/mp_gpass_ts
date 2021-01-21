@@ -1,0 +1,47 @@
+@import "./fonts/awesome.wxss";
+
+button {
+    margin: 0;
+    padding: 0;
+    outline: none;
+    border: 0 none;
+    background: none;
+}
+
+button:focus {
+    margin: 0;
+    padding: 0;
+    outline: none;
+    border: 0 none;
+    background: none;
+    box-sizing: border-box;
+}
+
+/* 去掉按下样式 */
+button:hover {
+    background: none;
+}
+
+.hide_flex {
+    display: none;
+}
+
+.show_flex {
+    display: flex;
+}
+
+.hide_block {
+    display: none;
+}
+
+.show_block {
+    display: block;
+}
+
+.show {
+    visibility: visible;
+}
+
+.hide {
+    visibility: hidden;
+}

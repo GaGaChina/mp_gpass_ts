@@ -1,0 +1,39 @@
+{
+    "pages": [
+        "pages/index/index",
+        "pages/user/user"
+    ],
+    "subPackages": [
+        {
+            "root": "pages/showdb/",
+            "pages": [
+                "index/index",
+                "add/add"
+            ]
+        },
+        {
+            "root": "pages/introduce/",
+            "pages": [
+                "gpass/gpass",
+                "study/study"
+            ]
+        }
+    ],
+    "window": {
+        "backgroundColor": "#000311",
+        "backgroundTextStyle": "light",
+        "navigationBarBackgroundColor": "#000311",
+        "backgroundColorTop": "#000311",
+        "backgroundColorBottom": "#000311",
+        "navigationBarTitleText": "密码档案",
+        "navigationBarTextStyle": "white",
+        "navigationStyle": "custom"
+    },
+    "sitemapLocation": "sitemap.json",
+    "useExtendedLib": {
+        "weui": true
+    },
+    "resizable": true,
+    "darkmode": false,
+    "themeLocation": "theme.json"
+}

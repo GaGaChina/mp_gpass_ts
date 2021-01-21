@@ -1,0 +1,56 @@
+<g-page-bg></g-page-bg>
+<g-page-top canBack="{{false}}" title="{{dbEmpty?'欢迎添加条目':'密码档案'}}"></g-page-top>
+<view class="full_page" style="height:{{fullPageHeight}}rpx">
+    <!-- 没条目 -->
+    <view wx:if="{{dbEmpty}}" style="height:{{centerPageHeight}}rpx" class="first">
+        <view class="first_title">添加您的第一个条目</view>
+        <view class="first_node">密码、银行卡、文档和私密笔记始终触手可及</view>
+        <view class="first_item">
+            <button bindtap="btAddItem" data-type="normal">
+                <i class="fa fa-key"></i>常规记录
+            </button>
+            <button bindtap="btAddItem" data-type="bank">
+                <i class="fa fa-university"></i>银行账户
+            </button>
+            <button bindtap="btAddItem" data-type="web">
+                <i class="fa fa-globe"></i>网站账户
+            </button>
+            <button bindtap="btAddItem" data-type="certificate">
+                <i class="fa fa-id-card-o"></i>证件档案
+            </button>
+        </view>
+    </view>
+    <!-- 有条目 -->
+    <view wx:else>
+        <view>左侧导航</view>
+        <view>
+            <view>搜索</view>
+            <view>列表</view>
+        </view>
+    </view>
+
+    <view class="end_bar">
+        <view wx:if="{{!dbEmpty}}" class="end_bg"></view>
+        <view class="end_list">
+            <button class="end_small {{dbEmpty?'hide':'show'}}">
+                <view class="end_small_icon end_small_1"><i class="fa fa-database"></i></view>
+                <view class="end_small_text">档案</view>
+            </button>
+            <button class="end_small {{dbEmpty?'hide':'show'}}">
+                <view class="end_small_icon end_small_2"><i class="fa fa-line-chart"></i></view>
+                <view class="end_small_text">财报</view>
+            </button>
+            <button class="end_big">
+                <view class="end_big_icon"><i class="end_big_text fa fa-plus"></i></view>
+            </button>
+            <button class="end_small {{dbEmpty?'hide':'show'}}">
+                <view class="end_small_icon end_small_3"><i class="fa fa-calendar-check-o"></i></view>
+                <view class="end_small_text">日常</view>
+            </button>
+            <button class="end_small {{dbEmpty?'hide':'show'}}">
+                <view class="end_small_icon"><i class="fa fa-eye"></i></view>
+                <view class="end_small_text">日志</view>
+            </button>
+        </view>
+    </view>
+</view>

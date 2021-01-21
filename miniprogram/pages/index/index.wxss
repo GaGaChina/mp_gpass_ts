@@ -1,0 +1,164 @@
+/* 正常模式下应用的样式 */
+
+.top {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  flex-direction: column;
+  width: 750rpx;
+  height: 45vh;
+}
+
+.end {
+  width: 750rpx;
+  height: 55vh;
+  background: #040413;
+}
+
+.logo {
+  width: 750rpx;
+  height: 169rpx;
+}
+
+.logo>image {
+  display: block;
+  width: 180rpx;
+  height: 169rpx;
+  margin: 0 auto;
+}
+
+.title {
+  width: 750rpx;
+  font-size: 48rpx;
+  color: #FFFFFF;
+  text-align: center;
+  font-weight: bold;
+  line-height: 100rpx;
+}
+
+.info {
+  width: 750rpx;
+  color: #a7a7a7;
+  font-size: 26rpx;
+  text-align: center;
+  font-weight: bold;
+  line-height: 50rpx;
+}
+
+.tip {
+  display: flex;
+  width: 600rpx;
+  margin-top: 40rpx;
+  margin-left: 75rpx;
+  margin-right: 75rpx;
+}
+
+.tip>view{
+  width: 300rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: bold;
+  line-height: 60rpx;
+}
+
+.tip_select {
+  color: #f9cb16;
+}
+
+.tip_no_select {
+  color: #FFFFFF;
+}
+
+
+.sw {
+  width: 750rpx;
+  height: 55vh;
+}
+
+.sw-item {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items:center;
+}
+
+.input_v {
+  width: 580rpx;
+  height: 75rpx;
+  margin-top: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.input_v>input {
+  width: 580rpx;
+  height: 75rpx;
+  border-radius: 0;
+  border: 1px solid #9b9b9d;
+  line-height: 75rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  padding: 21rpx;
+  padding-left: 80rpx;
+  background: #202435;
+  color: #FFF;
+}
+
+.input_v>i {
+  position: relative;
+  left: 25rpx;
+  top: -60rpx;
+  color: #FFFFFF;
+  font-size: 48rpx;
+}
+
+.bt_big {
+  width: 580rpx;
+  height: 75rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ffffff;
+  border-radius: 0;
+  border: 1px solid #e9d592;
+  line-height: 75rpx;
+  margin-top: 20rpx;
+  margin-bottom: 20rpx;
+  background-image: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+}
+
+.tishi {
+  font-size: 24rpx;
+  color: #ac8634;
+  text-align: center;
+  line-height: 100rpx;
+}
+
+.old_user{
+  display: flex;
+  width: 750rpx;
+  height: 100vh;
+  justify-content: center;
+  flex-direction: column;
+  align-items:center;
+}
+
+.big_icon_font{
+  text-align: center;
+  color: #ac8634;
+  font-size: 180rpx;
+}
+
+.open_title {
+  width: 750rpx;
+  font-size: 36rpx;
+  color: #FFFFFF;
+  text-align: center;
+  font-weight: bold;
+  line-height: 100rpx;
+}
+
+.jingao {
+  font-size: 24rpx;
+  color: #FF0000;
+  text-align: center;
+  line-height: 40rpx;
+}

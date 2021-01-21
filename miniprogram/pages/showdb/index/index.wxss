@@ -1,0 +1,146 @@
+view {
+    color: #FFFFFF;
+}
+
+.full_page {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.first {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.first_title {
+    width: 750rpx;
+    color: #FFF;
+    font-size: 48rpx;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 40rpx;
+}
+
+.first_node {
+    width: 540rpx;
+    color: #FFF;
+    font-size: 32rpx;
+    font-weight: bold;
+}
+
+.first_item {
+    display: flex;
+    flex-wrap: wrap;
+    width: 540rpx;
+}
+
+.first_item>button {
+    display: flex;
+    margin: 10rpx;
+    width: 250rpx;
+    height: 250rpx;
+    border-radius: 50rpx;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: linear-gradient(180deg, #04133c, #010928);
+    color: #FFF;
+}
+
+.first_item>button>i {
+    margin-top: 80rpx;
+    height: 80rpx;
+    font-size: 60rpx;
+}
+
+
+.end_bar {
+    position: absolute;
+    width: 750rpx;
+    height: 210rpx;
+    bottom: 0;
+}
+
+.end_bg {
+    position: absolute;
+    width: 750rpx;
+    height: 160rpx;
+    bottom: 0;
+    border-radius: 30rpx 30rpx 0 0;
+    background-image: linear-gradient(180deg, #020d2d, #000412);
+}
+
+.end_list {
+    position: absolute;
+    display: flex;
+    width: 750rpx;
+    height: 210rpx;
+}
+
+.end_small {
+    margin-top: 50rpx;
+    width: 140rpx;
+    height: 140rpx;
+}
+
+.end_small_icon {
+    margin-top: 10rpx;
+    margin-left: 30rpx;
+    width: 80rpx;
+    height: 80rpx;
+    background: #007ff2;
+    border-radius: 50%;
+}
+
+.end_small_1 {
+    background: #9ce72a;
+}
+
+.end_small_2 {
+    background: #fdc60d;
+}
+
+.end_small_3 {
+    background: #6925f6;
+}
+
+.end_small_icon>i {
+    width: 80rpx;
+    line-height: 80rpx;
+    font-size: 40rpx;
+    text-align: center;
+    color: #001044;
+}
+
+.end_small_text {
+    width: 140rpx;
+    text-align: center;
+    font-size: 28rpx;
+    font-weight: bold;
+    line-height: 50rpx;
+}
+
+.end_big {
+    width: 190rpx;
+    height: 190rpx;
+}
+
+.end_big_icon {
+    margin-left: 20rpx;
+    width: 150rpx;
+    height: 150rpx;
+    background: #fd720d;
+    border-radius: 50%;
+}
+
+.end_big_text {
+    width: 150rpx;
+    font-size: 80rpx;
+    line-height: 150rpx;
+    text-align: center;
+    color: #001044;
+}

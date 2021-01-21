@@ -1,0 +1,11 @@
+{
+    "usingComponents": {
+        "g-page-bg": "./../../components/g-page-bg/g-page-bg",
+        "g-page-top": "./../../components/g-page-top/g-page-top",
+        "view-scene": "./../../components/view-scene/view-scene",
+        "view-sprite": "./../../components/view-sprite/view-sprite",
+        "mp-searchbar": "weui-miniprogram/searchbar/searchbar",
+        "mp-dialog": "weui-miniprogram/dialog/dialog"
+    },
+    "navigationBarTitleText": "密码档案"
+}

@@ -1,3 +1,5 @@
+import { GFileSize } from "../lib/g-byte-file/g.file.size";
+import { Times } from "../lib/kdbxweb/types";
 import { DataApp } from "./data/data.app";
 
 /**
@@ -61,7 +63,7 @@ export class $g {
      * @param {String} n 类的名称
      */
     public static isClass(o: any, n: string): boolean {
-        if($g.className(o) !== n){
+        if ($g.className(o) !== n) {
             $g.log('[G][isClass]' + $g.className(o) + ' ≠ ' + n)
         }
         return $g.className(o) === n;
@@ -244,8 +246,15 @@ export class $g {
         return false;
     }
 
+    /** 开始计时 */
+    private static logTime: number = 0;
 
-    /** 日志, 开发者工具 → Blackboxing → /speed.do\.ts$ */
+    //日志, 开发者工具 → Blackboxing → /speed.do\.ts$ */
+    /**
+     * 时间 :|000.000 后面是时间位数(秒.毫秒)
+     * 时间输出, g|time|start  开始时间检测   ┏━━┓
+     * 时间输出, g|time|end    结束时间检测  ┃┗━━┛
+     */
     public static log(...args: any[]): void {
         try {
             if ($g.g.app.DEBUG) {
@@ -259,7 +268,94 @@ export class $g {
                     console.log(...args);
                 }
                 */
-                console.log(...args);
+                let s: string = '',
+                    n: number = 0,
+                    b: boolean = false,
+                    endString: string = '',
+                    timeString: string = ''
+                if ($g.logTime) {
+                    n = new Date().getTime() - $g.logTime
+                    timeString = n.toString().substr(-6, 6)
+                    while (timeString.length < 6) {
+                        timeString = ' ' + timeString
+                    }
+                    timeString = '┃' + timeString.substr(-6, 3) + '.' + timeString.substr(-3, 3) + '┃'
+                }
+                if (args.length > 0 && $g.isString(args[0]) && args[0].substr(0, 2) === 'g|') {
+                    s = args[0]
+                    if (s.substr(2, 10) === 'time|start') {
+                        $g.logTime = new Date().getTime()
+                        if (timeString) console.log(timeString + 'TimeEnd');
+                        console.log('┏━━━━━━━┓TimeStart');
+                        s = s.substr(12)
+                        b = true
+                    } else if (s.substr(2, 8) === 'time|end') {
+                        endString = '┗━━━━━━━┛'
+                        $g.logTime = 0
+                        s = s.substr(10)
+                        b = true
+                    }
+                    // 执行清理
+                    if (b) {
+                        if (s === '') {
+                            if (args.length === 1) return
+                            args.shift()
+                        } else {
+                            args[0] = s
+                        }
+                    }
+                }
+                const a: Array<any> = new Array<any>()
+                if (timeString) a.push(timeString)
+                for (let i = 0; i < args.length; i++) {
+                    const item: any = args[i],
+                        type: string = $g.className(item)
+                    s = ''
+                    switch (type) {
+                        // [ArrayBuffer 16M 978923972..(8个)...... : 对象]
+                        case 'Int8Array':
+                        case 'Int16Array':
+                        case 'Int32Array':
+                        case 'Uint8Array':
+                        case 'Uint16Array':
+                        case 'Uint32Array':
+                        case 'DataView':
+                        case 'ArrayBuffer':
+                            let arraybuffer: ArrayBuffer
+                            if (type === 'ArrayBuffer') {
+                                arraybuffer = item
+                            } else {
+                                arraybuffer = item.buffer
+                            }
+                            const dv: DataView = new DataView(arraybuffer)
+                            const l: number = arraybuffer.byteLength
+                            s = '[ArrayBuffer ' + GFileSize.getSize(l, 3) + ' '
+                            let m: number = 0
+                            while (m < l) {
+                                if (m !== 0) s += ','
+                                if (l - m > 4) {
+                                    s += dv.getInt32(m, false).toString()
+                                    m += 4
+                                } else {
+                                    s += 'u8(' + dv.getUint8(m).toString() + ')'
+                                    m += 1
+                                }
+                                if (m >= 32) {
+                                    s += '......'
+                                    break
+                                }
+                            }
+                            s += ' : '
+                            a.push(s)
+                            a.push(item)
+                            a.push(']')
+                            break;
+                        default:
+                            a.push(item)
+                    }
+                }
+                if (a.length) console.log(...a);
+                if (endString) console.log(endString);
             }
         } catch (e) {
             console.error('console.log error', e);

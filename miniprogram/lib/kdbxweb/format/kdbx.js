@@ -12,7 +12,8 @@ var KdbxFormat = require('./kdbx-format'),
     KdbxUuid = require('./kdbx-uuid'),
     Consts = require('../defs/consts'),
     XmlNames = require('../defs/xml-names'),
-    XmlUtils = require('../utils/xml-utils');
+    XmlUtils = require('../utils/xml-utils'),
+    $g = require('../../../frame/speed.do').$g;
 
 /**
  * Kdbx file (KeePass database v2)
@@ -29,12 +30,15 @@ var Kdbx = function () {
     Object.preventExtensions(this);
 };
 
+Kdbx.prototype.__type__ = 'Kdbx'
+
 /**
  * 创建一个新的数据库 database
  * @return {Kdbx}
  */
 Kdbx.create = function (credentials, name) {
-    if (!(credentials instanceof KdbxCredentials)) {
+    $g.log('[kdbx]create')
+    if (!($g.isClass(credentials, 'KdbxCredentials'))) {
         throw new KdbxError(Consts.ErrorCodes.InvalidArg, 'credentials');
     }
     var kdbx = new Kdbx();
@@ -57,11 +61,12 @@ Kdbx.create = function (credentials, name) {
  * @return {Promise.<Kdbx>}
  */
 Kdbx.load = function (data, credentials) {
-    if (!(data instanceof ArrayBuffer)) {
-        return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, 'data非ArrayBuffer'));
+    $g.log('[Kdbx]load')
+    if (!($g.isTypeM(data, 'ArrayBuffer'))) {
+        return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, '数据类型不符'));
     }
-    if (!(credentials instanceof KdbxCredentials)) {
-        return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, 'credentials非KdbxCredentials'));
+    if (!($g.isClass(credentials, 'KdbxCredentials'))) {
+        return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, '证书类型不符'));
     }
     var kdbx = new Kdbx();
     kdbx.credentials = credentials;
@@ -77,10 +82,10 @@ Kdbx.load = function (data, credentials) {
  * @return {Promise.<Kdbx>}
  */
 Kdbx.loadXml = function (data, credentials) {
-    if (typeof data !== 'string') {
-        return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, 'data非String'));
+    if (!$g.isString(data)) {
+        return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, 'xml为字符串类型'));
     }
-    if (!(credentials instanceof KdbxCredentials)) {
+    if (!($g.isClass(credentials, 'KdbxCredentials'))) {
         return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, 'credentials'));
     }
     var kdbx = new Kdbx();
@@ -195,7 +200,7 @@ Kdbx.prototype.getGroup = function (uuid, parentGroup) {
  * @param {Number} [atIndex] - index in target group (by default, insert to the end of the group)
  */
 Kdbx.prototype.move = function (object, toGroup, atIndex) {
-    var containerProp = object instanceof KdbxGroup ? 'groups' : 'entries';
+    var containerProp = $g.isClass(object, 'KdbxGroup') ? 'groups' : 'entries';
     var fromContainer = object.parentGroup[containerProp];
     var ix = fromContainer.indexOf(object);
     if (ix < 0) {
@@ -210,7 +215,8 @@ Kdbx.prototype.move = function (object, toGroup, atIndex) {
         }
     } else {
         var now = new Date();
-        if (object instanceof KdbxGroup) {
+        
+        if ($g.isClass(object, 'KdbxGroup')) {
             object.forEach(function (group, entry) {
                 this.addDeletedObject((group || entry).uuid, now);
             }, this);
@@ -513,6 +519,7 @@ Kdbx.prototype._getObjectMap = function () {
 };
 
 Kdbx.prototype._loadFromXml = function (ctx) {
+    $g.log('[Kdbx]loadFromXml');
     var doc = this.xml.documentElement;
     if (doc.tagName !== XmlNames.Elem.DocNode) {
         throw new KdbxError(Consts.ErrorCodes.FileCorrupt, 'bad xml root');

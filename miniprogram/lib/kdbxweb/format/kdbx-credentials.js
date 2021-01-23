@@ -6,7 +6,8 @@ var ProtectedValue = require('../crypto/protected-value'),
     ByteUtils = require('../utils/byte-utils'),
     XmlUtils = require('../utils/xml-utils'),
     Random = require('../crypto/random'),
-    CryptoEngine = require('../crypto/crypto-engine');
+    CryptoEngine = require('../crypto/crypto-engine'),
+    $g = require('../../../frame/speed.do').$g;
 
 /**
  * Credentials
@@ -25,6 +26,7 @@ var KdbxCredentials = function (password, keyFile, challengeResponse) {
         return that;
     });
 };
+KdbxCredentials.prototype.__name__ = 'KdbxCredentials'
 
 /**
  * 设置密码
@@ -33,7 +35,7 @@ var KdbxCredentials = function (password, keyFile, challengeResponse) {
 KdbxCredentials.prototype.setPassword = function (password) {
     if (password === null) {
         this.passwordHash = null;
-    } else if (!(password instanceof ProtectedValue)) {
+    } else if (!($g.isClass(password, 'ProtectedValue'))) {
         return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, 'password'));
     } else {
         var that = this;
@@ -50,7 +52,7 @@ KdbxCredentials.prototype.setPassword = function (password) {
  * @param {ArrayBuffer|Uint8Array|null} [keyFile]
  */
 KdbxCredentials.prototype.setKeyFile = function (keyFile) {
-    if (keyFile && !(keyFile instanceof ArrayBuffer) && !(keyFile instanceof Uint8Array)) {
+    if (keyFile && !$g.isTypeMA(keyFile, ['ArrayBuffer', 'Uint8Array'])) {
         return Promise.reject(new KdbxError(Consts.ErrorCodes.InvalidArg, 'keyFile'));
     }
     if (keyFile) {

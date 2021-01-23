@@ -38,6 +38,8 @@ var KdbxEntry = function () {
     Object.preventExtensions(this);
 };
 
+KdbxEntry.prototype.__name__ = 'KdbxEntry'
+
 KdbxEntry.prototype._readNode = function (node, ctx) {
     switch (node.tagName) {
         case XmlNames.Elem.Uuid:
@@ -326,7 +328,7 @@ KdbxEntry.prototype.copyFrom = function (entry) {
     this.times = entry.times.clone();
     this.fields = {};
     Object.keys(entry.fields).forEach(function (name) {
-        if (entry.fields[name] instanceof ProtectedValue) {
+        if ($g.isClass(entry.fields[name], 'ProtectedValue')) {
             this.fields[name] = entry.fields[name].clone();
         } else {
             this.fields[name] = entry.fields[name];
@@ -334,7 +336,7 @@ KdbxEntry.prototype.copyFrom = function (entry) {
     }, this);
     this.binaries = {};
     Object.keys(entry.binaries).forEach(function (name) {
-        if (entry.binaries[name] instanceof ProtectedValue) {
+        if ($g.isClass(entry.binaries[name], 'ProtectedValue')) {
             this.binaries[name] = entry.binaries[name].clone();
         } else if (entry.binaries[name] && entry.binaries[name].ref) {
             this.binaries[name] = { ref: entry.binaries[name].ref };

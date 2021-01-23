@@ -1,7 +1,8 @@
 'use strict';
 
 var ByteUtils = require('../utils/byte-utils'),
-    Random = require('../crypto/random');
+    Random = require('../crypto/random'),
+    $g = require('../../../frame/speed.do').$g;
 
 var UuidLength = 16;
 
@@ -13,7 +14,7 @@ var UuidLength = 16;
 function KdbxUuid(ab) {
     if (ab === undefined) {
         ab = new ArrayBuffer(UuidLength);
-    } else if (typeof ab === 'string') {
+    } else if ($g.isString(ab)) {
         ab = ByteUtils.base64ToBytes(ab);
     }
     this.id = ab.byteLength === 16 ? ByteUtils.bytesToBase64(ab) : undefined;
@@ -28,6 +29,8 @@ function KdbxUuid(ab) {
         }
     }
 }
+
+KdbxUuid.prototype.__name__ = 'KdbxUuid'
 
 /**
  * Checks whether two uuids are equal

@@ -13,6 +13,8 @@ var KdbxContext = function (opts) {
     this.exportXml = opts.exportXml || false;
 };
 
+KdbxContext.prototype.__name__ = 'KdbxContext'
+
 /**
  * Sets XML date, respecting date saving settings
  * @param {Node} node

@@ -1,4 +1,5 @@
 import { $g } from "../../frame/speed.do";
+import { GFileSize } from "../g-byte-file/g.file.size";
 import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group, KdbxUuid } from "../kdbxweb/types/index";
 
 const KdbxWeb = require('./../kdbxweb/index.js')
@@ -35,9 +36,18 @@ export class KdbxApi {
      * @param byte 原始的二进制
      * @param pass 文本密码
      */
-    public static async open(byte: ArrayBuffer, pass: string): Promise<Kdbx> {
-        const credentials: Credentials = KdbxApi.getPassCredentials(pass)
-        return await (KdbxApi.kdbxweb.Kdbx as any).load(byte, credentials) as Kdbx
+    public static async open(byte: ArrayBuffer, pass: string): Promise<Kdbx | null> {
+        try {
+            $g.log('[KdbxApi][open]文件长度 : ' + GFileSize.getSize(byte.byteLength, 3) + ' 密码长度 : ' + pass.length)
+            const credentials: Credentials = KdbxApi.getPassCredentials(pass)
+            const a:ArrayBuffer = await credentials.getHash()
+            $g.log('[KdbxApi][open]credentials', a);
+            $g.log('[KdbxApi][open]证书创建成功', credentials)
+            return await (KdbxApi.kdbxweb.Kdbx as any).load(byte, credentials) as Kdbx
+        } catch (e) {
+            $g.log('[KdbxApi][open][error]', e)
+            return Promise.resolve(null);
+        }
     }
 
     /**

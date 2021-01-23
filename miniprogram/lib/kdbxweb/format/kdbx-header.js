@@ -95,6 +95,8 @@ KdbxHeader.prototype._readSignature = function (stm) {
     }
 };
 
+KdbxHeader.prototype.__name__ = 'KdbxHeader'
+
 KdbxHeader.prototype._writeSignature = function (stm) {
     stm.setUint32(Consts.Signatures.FileMagic, true);
     stm.setUint32(Consts.Signatures.Sig2Kdbx, true);
@@ -255,7 +257,7 @@ KdbxHeader.prototype._writeBinary = function (stm, ctx) {
         if (!binary) {
             throw new KdbxError(Consts.ErrorCodes.FileCorrupt, 'no binary ' + index);
         }
-        if (binary instanceof ProtectedValue) {
+        if ($g.isClass(binary, 'ProtectedValue')) {
             var binaryData = binary.getBinary();
             this._writeFieldSize(stm, binaryData.byteLength + 1);
             stm.setUint8(HeaderConst.FlagBinaryProtected);

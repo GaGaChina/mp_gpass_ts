@@ -31,6 +31,8 @@ var KdbxGroup = function () {
     Object.preventExtensions(this);
 };
 
+KdbxGroup.prototype.__name__ = 'KdbxGroup'
+
 KdbxGroup.prototype._readNode = function (node, ctx) {
     switch (node.tagName) {
         case XmlNames.Elem.Uuid:

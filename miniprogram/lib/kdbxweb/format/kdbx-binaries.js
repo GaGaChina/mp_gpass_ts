@@ -1,8 +1,8 @@
 'use strict';
 
-var ProtectedValue = require('./../crypto/protected-value'),
-    CryptoEngine = require('./../crypto/crypto-engine'),
-    ByteUtils = require('./../utils/byte-utils');
+var CryptoEngine = require('./../crypto/crypto-engine'),
+    ByteUtils = require('./../utils/byte-utils'),
+    $g = require('../../../frame/speed.do').$g;
 
 var KdbxBinaries = function () {
     Object.defineProperties(this, {
@@ -10,6 +10,8 @@ var KdbxBinaries = function () {
         hashOrder: { value: null, configurable: true }
     });
 };
+
+KdbxBinaries.prototype.__name__ = 'KdbxBinaries'
 
 KdbxBinaries.prototype.hash = function () {
     var promises = [];
@@ -29,9 +31,9 @@ KdbxBinaries.prototype.hash = function () {
 
 KdbxBinaries.prototype.getBinaryHash = function (binary) {
     var promise;
-    if (binary instanceof ProtectedValue) {
+    if ($g.isClass(binary, 'ProtectedValue')) {
         promise = binary.getHash();
-    } else if (binary instanceof ArrayBuffer || binary instanceof Uint8Array) {
+    } else if ($g.isTypeMA(binary, ['ArrayBuffer', 'Uint8Array'])) {
         binary = ByteUtils.arrayToBuffer(binary);
         promise = CryptoEngine.sha256(binary);
     }

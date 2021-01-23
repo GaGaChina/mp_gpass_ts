@@ -93,6 +93,8 @@ function createProperty(prop, propChanged) {
     });
 }
 
+KdbxMeta.prototype.__name__ = 'KdbxMeta';
+
 KdbxMeta.prototype._setPropModDate = function (prop) {
     if (!this._editState) {
         this._editState = {};

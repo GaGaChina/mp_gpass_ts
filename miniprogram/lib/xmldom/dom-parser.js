@@ -31,13 +31,13 @@ DOMParser.prototype.parseFromString = function(source,mimeType){
 }
 function buildErrorHandler(errorImpl,domBuilder,locator){
 	if(!errorImpl){
-		if(domBuilder instanceof DOMHandler){
+		if($g.isClass(domBuilder, 'DOMHandler')){
 			return domBuilder;
 		}
 		errorImpl = domBuilder ;
 	}
 	var errorHandler = {}
-	var isCallback = errorImpl instanceof Function;
+	var isCallback = $g.isFunction(errorImpl);
 	locator = locator||{}
 	function build(key){
 		var fn = errorImpl[key];
@@ -67,6 +67,7 @@ function buildErrorHandler(errorImpl,domBuilder,locator){
 function DOMHandler() {
     this.cdata = false;
 }
+DOMHandler.prototype.__name__ = 'DOMHandler'
 function position(locator,node){
 	node.lineNumber = locator.lineNumber;
 	node.columnNumber = locator.columnNumber;
@@ -243,6 +244,7 @@ function appendElement (hander,node) {
     }
 }//appendChild and setAttributeNS are preformance key
 
+const { $g } = require('../../frame/speed.do');
 //if(typeof require == 'function'){
 var htmlEntity = require('./entities');
 var XMLReader = require('./sax').XMLReader;

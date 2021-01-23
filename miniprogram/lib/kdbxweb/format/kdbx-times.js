@@ -18,6 +18,8 @@ var KdbxTimes = function () {
     Object.preventExtensions(this);
 };
 
+KdbxTimes.prototype.__name__ = 'KdbxTimes';
+
 KdbxTimes.prototype._readNode = function (node) {
     switch (node.tagName) {
         case XmlNames.Elem.CreationTime:

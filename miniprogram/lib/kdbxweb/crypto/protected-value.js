@@ -2,7 +2,8 @@
 
 var ByteUtils = require('../utils/byte-utils'),
     CryptoEngine = require('./crypto-engine'),
-    Random = require('./random');
+    Random = require('./random'),
+    $g = require('../../../frame/speed.do').$g;
 
 /**
  * Protected value, used for protected entry fields
@@ -14,6 +15,8 @@ var ProtectedValue = function (value, salt) {
     Object.defineProperty(this, '_value', { value: new Uint8Array(value) });
     Object.defineProperty(this, '_salt', { value: new Uint8Array(salt) });
 };
+
+ProtectedValue.prototype.__name__ = 'ProtectedValue'
 
 /**
  * Returns protected value as base64 string
@@ -82,6 +85,7 @@ ProtectedValue.prototype.includes = function (str) {
  * @return {Promise.<ArrayBuffer>}
  */
 ProtectedValue.prototype.getHash = function () {
+    $g.log('[ProtectedValue][getHash]')
     var binary = ByteUtils.arrayToBuffer(this.getBinary());
     return CryptoEngine.sha256(binary).then(function (hash) {
         ByteUtils.zeroBuffer(binary);

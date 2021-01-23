@@ -1,8 +1,8 @@
 'use strict';
 
 var ToolString = require('./../../../frame/tools/tool.string').ToolString
-
-const { EncodingIndexes } = require('../../text-encoding/EncodingIndexes');
+var $g = require('../../../frame/speed.do').$g;
+var EncodingIndexes = require('../../text-encoding/EncodingIndexes').EncodingIndexes;
 var textEncoding = require('./../../text-encoding/index');
 var TextEncoder = textEncoding.TextEncoder;
 var TextDecoder = textEncoding.TextDecoder;
@@ -36,7 +36,7 @@ function arrayBufferEquals(ab1, ab2) {
  * @return {string}
  */
 function bytesToString(arr) {
-    if (arr instanceof ArrayBuffer) {
+    if ($g.isClass(arr, 'ArrayBuffer')) {
         arr = new Uint8Array(arr);
     }
     return textDecoder.decode(arr);
@@ -76,7 +76,7 @@ function base64ToBytes(str) {
  * @return {string}
  */
 function bytesToBase64(arr) {
-    if (arr instanceof ArrayBuffer) {
+    if ($g.isClass(arr, 'ArrayBuffer')) {
         arr = new Uint8Array(arr);
     }
     if (typeof btoa === 'undefined' && typeof Buffer === 'function') {
@@ -110,7 +110,7 @@ function hexToBytes(hex) {
  * @return {string}
  */
 function bytesToHex(arr) {
-    if (arr instanceof ArrayBuffer) {
+    if ($g.isClass(arr, 'ArrayBuffer')) {
         arr = new Uint8Array(arr);
     }
     var str = '';
@@ -130,7 +130,7 @@ function bytesToHex(arr) {
  * @returns {ArrayBuffer}
  */
 function arrayToBuffer(arr) {
-    if (arr instanceof ArrayBuffer) {
+    if ($g.isTypeM(arr, 'ArrayBuffer')) {
         return arr;
     }
     var ab = arr.buffer;
@@ -145,7 +145,7 @@ function arrayToBuffer(arr) {
  * @param {Uint8Array|ArrayBuffer} buffer
  */
 function zeroBuffer(buffer) {
-    if (buffer instanceof ArrayBuffer) {
+    if ($g.isTypeM(buffer, 'ArrayBuffer')) {
         buffer = new Uint8Array(buffer);
     }
     buffer.fill(0);

@@ -28,7 +28,7 @@ export abstract class GDataBase implements IGData {
                         json[k] = res
                         const temp = base[k][0]
                         const isBase: boolean = temp instanceof GDataBase ? true : false
-                        if (isBase) json['_' + k + '_Class'] = $g.typeName(temp)
+                        if (isBase) json['_' + k + '_Class'] = $g.typeM(temp)
                         for (let j: number = 0, jl: number = base[k].length; j < jl; j++) {
                             if (isBase) {
                                 res.push(base[k][j].getInfo())
@@ -39,7 +39,7 @@ export abstract class GDataBase implements IGData {
                     }
                 } else if (base[k] instanceof GDataBase) {
                     json[k] = base[k].getInfo()
-                    json['_' + k + '_Class'] = $g.typeName(base[k])
+                    json['_' + k + '_Class'] = $g.typeM(base[k])
                 } else {
                     json[k] = base[k]
                 }
@@ -87,13 +87,13 @@ export abstract class GDataBase implements IGData {
 
     private getClassObject(className: string): { new(): GDataBase; } | null {
         if (GDataBase.className.length === 0) {
-            GDataBase.className.push($g.typeName(AccessLog))
+            GDataBase.className.push($g.typeM(AccessLog))
             GDataBase.classTarget.push(AccessLog)
-            GDataBase.className.push($g.typeName(GDataItem))
+            GDataBase.className.push($g.typeM(GDataItem))
             GDataBase.classTarget.push(GDataItem)
-            GDataBase.className.push($g.typeName(KdbxFile))
+            GDataBase.className.push($g.typeM(KdbxFile))
             GDataBase.classTarget.push(KdbxFile)
-            GDataBase.className.push($g.typeName(GDataFile))
+            GDataBase.className.push($g.typeM(GDataFile))
             GDataBase.classTarget.push(GDataFile)
         }
         if (className.length > 0) {

@@ -28,6 +28,8 @@ Object.defineProperty(Int64.prototype, 'value', {
     }
 });
 
+Int64.prototype.__name__ = 'Int64'
+
 /**
  * Gets number value
  * @returns {Number}

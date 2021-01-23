@@ -1,5 +1,7 @@
 'use strict';
 
+const { $g } = require("../../../frame/speed.do").$g;
+
 /**
  * Stream for accessing array buffer with auto-advanced position
  * @param {ArrayBuffer} [arrayBuffer]
@@ -80,7 +82,7 @@ BinaryStream.prototype.readBytesNoAdvance = function (startPos, endPos) {
 
 // 写入 bytes 并将定位移动到字节长度
 BinaryStream.prototype.writeBytes = function (bytes) {
-    if (bytes instanceof ArrayBuffer) {
+    if ($g.isTypeM(bytes, 'ArrayBuffer')) {
         bytes = new Uint8Array(bytes);
     }
     this._checkCapacity(bytes.length);

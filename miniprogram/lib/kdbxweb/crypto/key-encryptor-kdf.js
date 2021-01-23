@@ -6,17 +6,49 @@ var Consts = require('../defs/consts'),
     Int64 = require('../utils/int64'),
     CryptoEngine = require('../crypto/crypto-engine'),
     KdbxError = require('../errors/kdbx-error'),
-    KeyEncryptorAes = require('./key-encryptor-aes');
+    KeyEncryptorAes = require('./key-encryptor-aes'),
+    $g = require('../../../frame/speed.do').$g;
 
-var KdfFields = [
-    { name: 'salt', field: 'S', type: VarDictionary.ValueType.Bytes },
-    { name: 'parallelism', field: 'P', type: VarDictionary.ValueType.UInt32 },
-    { name: 'memory', field: 'M', type: VarDictionary.ValueType.UInt64 },
-    { name: 'iterations', field: 'I', type: VarDictionary.ValueType.UInt64 },
-    { name: 'version', field: 'V', type: VarDictionary.ValueType.UInt32 },
-    { name: 'secretKey', field: 'K', type: VarDictionary.ValueType.Bytes },
-    { name: 'assocData', field: 'A', type: VarDictionary.ValueType.Bytes },
-    { name: 'rounds', field: 'R', type: VarDictionary.ValueType.UInt64 }
+var KdfFields = [{
+        name: 'salt',
+        field: 'S',
+        type: VarDictionary.ValueType.Bytes
+    },
+    {
+        name: 'parallelism',
+        field: 'P',
+        type: VarDictionary.ValueType.UInt32
+    },
+    {
+        name: 'memory',
+        field: 'M',
+        type: VarDictionary.ValueType.UInt64
+    },
+    {
+        name: 'iterations',
+        field: 'I',
+        type: VarDictionary.ValueType.UInt64
+    },
+    {
+        name: 'version',
+        field: 'V',
+        type: VarDictionary.ValueType.UInt32
+    },
+    {
+        name: 'secretKey',
+        field: 'K',
+        type: VarDictionary.ValueType.Bytes
+    },
+    {
+        name: 'assocData',
+        field: 'A',
+        type: VarDictionary.ValueType.Bytes
+    },
+    {
+        name: 'rounds',
+        field: 'R',
+        type: VarDictionary.ValueType.UInt64
+    }
 ];
 
 /**
@@ -26,7 +58,7 @@ var KdfFields = [
  */
 function encrypt(key, kdfParams) {
     var uuid = kdfParams.get('$UUID');
-    if (!uuid || !(uuid instanceof ArrayBuffer)) {
+    if (!uuid || !($g.isTypeM(uuid, 'ArrayBuffer'))) {
         return Promise.reject(new KdbxError(Consts.ErrorCodes.FileCorrupt, 'no kdf uuid'));
     }
     var kdfUuid = ByteUtils.bytesToBase64(uuid);
@@ -47,7 +79,7 @@ function decodeParams(kdfParams) {
     KdfFields.forEach(function (fieldDef) {
         var value = kdfParams.get(fieldDef.field);
         if (value) {
-            if (value instanceof Int64) {
+            if ($g.isClass(value, 'Int64')) {
                 value = value.value;
             }
             params[fieldDef.name] = value;
@@ -58,7 +90,7 @@ function decodeParams(kdfParams) {
 
 function encryptArgon2(key, kdfParams, argon2type) {
     var params = decodeParams(kdfParams);
-    if (!(params.salt instanceof ArrayBuffer) || params.salt.byteLength !== 32) {
+    if (!($g.isTypeM(params.salt, 'ArrayBuffer')) || params.salt.byteLength !== 32) {
         return Promise.reject(new KdbxError(Consts.ErrorCodes.FileCorrupt, 'bad argon2 salt'));
     }
     if (typeof params.parallelism !== 'number' || params.parallelism < 1) {
@@ -97,7 +129,7 @@ function encryptArgon2(key, kdfParams, argon2type) {
 
 function encryptAes(key, kdfParams) {
     var params = decodeParams(kdfParams);
-    if (!(params.salt instanceof ArrayBuffer) || params.salt.byteLength !== 32) {
+    if (!($g.isTypeM(params.salt, 'ArrayBuffer')) || params.salt.byteLength !== 32) {
         return Promise.reject(new KdbxError(Consts.ErrorCodes.FileCorrupt, 'bad aes salt'));
     }
     if (typeof params.rounds !== 'number' || params.rounds < 1) {

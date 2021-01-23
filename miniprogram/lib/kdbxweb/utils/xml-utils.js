@@ -16,6 +16,7 @@ var dateRegex = /\.\d\d\d/;
 
 //var dom = global.DOMParser ? global : require('xmldom');
 var dom = require('./../../xmldom/dom');
+const { $g } = require('../../../frame/speed.do');
 var DOMParser = require('./../../xmldom/dom-parser').DOMParser;
 global.DOMParser = DOMParser
 dom.DOMParser = DOMParser
@@ -319,7 +320,7 @@ function getUuid(node) {
  * @param {KdbxUuid} uuid
  */
 function setUuid(node, uuid) {
-    var uuidBytes = uuid instanceof KdbxUuid ? uuid.toBytes() : uuid;
+    var uuidBytes = $g.isClass(uuid, 'KdbxUuid') ? uuid.toBytes() : uuid;
     setBytes(node, uuidBytes);
 }
 
@@ -338,7 +339,7 @@ function getProtectedText(node) {
  * @param {ProtectedValue|string} text
  */
 function setProtectedText(node, text) {
-    if (text instanceof ProtectedValue) {
+    if ($g.isClass(text, 'ProtectedValue')) {
         node.protectedValue = text;
         node.setAttribute(XmlNames.Attr.Protected, 'True');
     } else {
@@ -377,7 +378,7 @@ function getProtectedBinary(node) {
  * @param {ProtectedValue|ArrayBuffer|{ref: string}|string} binary
  */
 function setProtectedBinary(node, binary) {
-    if (binary instanceof ProtectedValue) {
+    if ($g.isClass(binary, 'ProtectedValue')) {
         node.protectedValue = binary;
         node.setAttribute(XmlNames.Attr.Protected, 'True');
     } else if (binary && binary.ref) {

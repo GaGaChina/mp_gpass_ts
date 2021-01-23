@@ -13,6 +13,8 @@ var KdbxDeletedObject = function () {
     Object.preventExtensions(this);
 };
 
+KdbxDeletedObject.prototype.__name__ = 'KdbxDeletedObject'
+
 KdbxDeletedObject.prototype._readNode = function (node) {
     switch (node.tagName) {
         case XmlNames.Elem.Uuid:

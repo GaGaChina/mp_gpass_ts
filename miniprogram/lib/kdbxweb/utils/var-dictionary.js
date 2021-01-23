@@ -4,6 +4,7 @@ var KdbxError = require('../errors/kdbx-error');
 var Consts = require('../defs/consts');
 var ByteUtils = require('../utils/byte-utils');
 var Int64 = require('../utils/int64');
+var $g = require('../../../frame/speed.do');
 
 var MaxSupportedVersion = 1;
 var DefaultVersion = 0x0100;
@@ -31,6 +32,8 @@ function VarDictionary() {
     this._dict = {};
     Object.preventExtensions(this);
 }
+
+VarDictionary.prototype.__name__ = 'VarDictionary'
 
 /**
  * Available value types enum
@@ -83,7 +86,7 @@ VarDictionary.prototype.set = function (key, type, value) {
             }
             break;
         case ValueType.UInt64:
-            if (!(value instanceof Int64)) {
+            if (!$g.isClass(value, 'Int64')) {
                 throw new KdbxError(Consts.ErrorCodes.InvalidArg);
             }
             break;
@@ -98,7 +101,7 @@ VarDictionary.prototype.set = function (key, type, value) {
             }
             break;
         case ValueType.Int64:
-            if (!(value instanceof Int64)) {
+            if (!$g.isClass(value, 'Int64')) {
                 throw new KdbxError(Consts.ErrorCodes.InvalidArg);
             }
             break;
@@ -108,17 +111,21 @@ VarDictionary.prototype.set = function (key, type, value) {
             }
             break;
         case ValueType.Bytes:
-            if (value instanceof Uint8Array) {
+            if ($g.isTypeM(value, 'Uint8Array')) {
                 value = ByteUtils.arrayToBuffer(value);
             }
-            if (!(value instanceof ArrayBuffer)) {
+            if (!($g.isTypeM(value, 'ArrayBuffer'))) {
                 throw new KdbxError(Consts.ErrorCodes.InvalidArg);
             }
             break;
         default:
             throw new KdbxError(Consts.ErrorCodes.InvalidArg);
     }
-    var item = { key: key, type: type, value: value };
+    var item = {
+        key: key,
+        type: type,
+        value: value
+    };
     if (this._dict[key]) {
         var ix = this._items.indexOf(this._dict[key]);
         this._items.splice(ix, 1, item);
@@ -226,7 +233,11 @@ VarDictionary.prototype._readItem = function (stm) {
         default:
             throw new KdbxError(Consts.ErrorCodes.FileCorrupt, 'bad value type: ' + type);
     }
-    return { key: key, type: type, value: value };
+    return {
+        key: key,
+        type: type,
+        value: value
+    };
 };
 
 /**

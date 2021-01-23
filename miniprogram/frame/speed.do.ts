@@ -7,61 +7,96 @@ import { DataApp } from "./data/data.app";
  * log 日志管理
  * performance 性能分析
  * 用户操作记录
+ * 
+ * instanceof
  */
 export class $g {
 
     /** app的引用 */
-    public static app: IAppOption;
-    public static globalData: IAppOption["globalData"];
+    public static a: IAppOption;
+    public static g: IAppOption["globalData"];
     /** 本地缓存引用 */
-    public static data: DataApp;
-    /** 诸葛统计 */
-    public static zhuge: any;
+    public static s: DataApp;
 
     /** 初始化 */
     public static init(app: IAppOption): void {
-        this.app = app;
-        this.globalData = app.globalData;
-        this.data = new DataApp(app);
+        this.a = app;
+        this.g = app.globalData;
+        this.s = new DataApp(app);
     }
 
-    /** 基础数据类型 */
-    private static readonly _baseType: Array<String> = ['[object String]', '[object Number]', '[object Boolean]'];
-    /** 判断是否是基础数据, string, number, boolean */
-    public static isBase(o: any): boolean {
-        if ($g._baseType.indexOf(Object.prototype.toString.call(o)) !== -1) return true;
-        return false;
-    }
-
-    /** 查看是否是字符串 */
-    public static isString(o: any): boolean { return this.isType(o, '[object String]'); }
-    /** 判断是否是函数类型 */
-    public static isFunction(o: any): boolean { return $g.isType(o, '[object Function]'); }
-    /** 判断是否是函数类型 */
-    public static isArray(o: any): boolean { return $g.isType(o, '[object Array]'); }
-    /** 判断是否是Object */
-    public static isObject(o: any): boolean { return o === Object(o) && !$g.isArray(o); }
-
-    /**
-     * 使用字符串格式检查是否是某一种格式
-     * @param o 检查对象
-     * @param s 原型名称
-     */
-    public static isType(o: any, s: string): boolean {
-        if (Object.prototype.toString.call(o) === s) return true;
-        return false;
-    }
-
-    /**
-     * 取出对象的名称
-     * @param o 检查对象
-     */
-    public static typeName(o: any): string {
-        var s = Object.prototype.toString.call(o)
+    /** 返回全长类型 [object String] */
+    public static type(o: any): string { return Object.prototype.toString.call(o) }
+    /** 取出对象的[object Function], Function */
+    public static typeM(o: any): string {
+        const s: string = $g.type(o)
         if (s.length && s.substr(0, 8) === '[object ' && s.substr(-1, 1) === ']') {
             return s.substring(8, s.length - 1)
         }
         return s
+    }
+    /** 检查对象是否是 类似 : [object String] */
+    public static isType(o: any, s: string): boolean { return $g.type(o) === s }
+    /** 检查对象是否是 类似 : String */
+    public static isTypeM(o: any, s: string): boolean { return $g.typeM(o) === s }
+    /** 检查对象是否是 类似 : [String, Number] */
+    public static isTypeMA(o: any, a: string[]): boolean { return a.indexOf($g.typeM(o)) !== -1 }
+    /** 判断是否是基础数据, string, number, boolean */
+    public static isBase(o: any): boolean { return $g.isTypeMA(o, ['String', 'Number', 'Boolean']) }
+    /** 查看是否是字符串 */
+    public static isString(o: any): boolean { return $g.typeM(o) === 'String'; }
+    /** 查看是否是字符串 */
+    public static isNumber(o: any): boolean { return $g.typeM(o) === 'Number'; }
+    /** 查看是否是字符串 */
+    public static isBoolean(o: any): boolean { return $g.typeM(o) === 'Boolean'; }
+    /** 判断是否是函数类型 */
+    public static isArray(o: any): boolean { return $g.typeM(o) === 'Array'; }
+    /** 判断是否是Object */
+    public static isObject(o: any): boolean { return $g.typeM(o) === 'Object' && !$g.isArray(o); }
+    /** 判断是否是函数类型 */
+    public static isFunction(o: any): boolean { return $g.typeM(o) === 'Function'; }
+    /**
+     * 校验 o 是不是 类 n
+     * @param {any} o 要校验的对象
+     * @param {String} n 类的名称
+     */
+    public static isClass(o: any, n: string): boolean {
+        if($g.className(o) !== n){
+            $g.log('[G][isClass]' + $g.className(o) + ' ≠ ' + n)
+        }
+        return $g.className(o) === n;
+    }
+
+    /**
+     * 优先返回 : __name__
+     * 值为Object : 有 prototype.name 返回, 无返回空
+     * 没有检查基类
+     * @param {*} o 
+     */
+    public static className(o: any): string {
+        if (o) {
+            if (o.__name__) return o.__name__;
+            var m = $g.typeM(o)
+            if (m === 'Object') {
+                // 构建函数的属性
+                if (o.prototype?.name) return o.prototype.name
+                // 对象的属性
+                if (o.__proto__?.__name__) return o.__proto__.__name__
+                return m
+            }
+            return m
+        }
+        return ''
+    }
+
+    /**
+     * 判断 o 是不是属于 c
+     * @param o 对象
+     * @param c 初始化类名
+     */
+    public static isType1111<T>(o: any, c: { new(): T; }): boolean {
+        if (Object.prototype.toString.call(o) === Object.prototype.toString.call(new c())) return true;
+        return false;
     }
 
     /**
@@ -209,10 +244,11 @@ export class $g {
         return false;
     }
 
-    /** 日志 */
+
+    /** 日志, 开发者工具 → Blackboxing → /speed.do\.ts$ */
     public static log(...args: any[]): void {
         try {
-            if ($g.app.globalData.app.DEBUG) {
+            if ($g.g.app.DEBUG) {
                 /*
                 const a: Array<any> = [].slice.call(args);
                 if (a.length === 1 && $g.isBase(a[0])) {

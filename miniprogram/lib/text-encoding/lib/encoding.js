@@ -1,6 +1,4 @@
-const {
-  $g
-} = require("../../../frame/speed.do");
+const $g = require("../../../frame/speed.do").$g;
 
 // This is free and unencumbered software released into the public domain.
 // See LICENSE.md for more information.
@@ -977,8 +975,8 @@ const {
    */
   function TextDecoder(label, options) {
     // Web IDL conventions
-    if (!(this instanceof TextDecoder))
-      throw TypeError('Called as a function. Did you forget \'new\'?');
+    // if (!(this instanceof TextDecoder))
+    //   throw TypeError('Called as a function. Did you forget \'new\'?');
     label = label !== undefined ? String(label) : DEFAULT_ENCODING;
     options = ToDictionary(options);
 
@@ -1077,7 +1075,9 @@ const {
     var bytes;
     if ($g.isTypeM(input, 'ArrayBuffer')) {
       bytes = new Uint8Array(input);
-    } else if ($g.isTypeM(input, 'ArrayBuffer')) {
+    } else if ($g.isTypeM(input, 'Uint8Array')) {
+        bytes = input;
+    } else if ($g.isObject(input) && 'buffer' in input && $g.isTypeM(input.buffer, 'ArrayBuffer')) {
       bytes = new Uint8Array(input.buffer,
         input.byteOffset,
         input.byteLength);
@@ -1205,8 +1205,8 @@ const {
    */
   function TextEncoder(label, options) {
     // Web IDL conventions
-    if (!(this instanceof TextEncoder))
-      throw TypeError('Called as a function. Did you forget \'new\'?');
+    // if (!(this instanceof TextEncoder))
+    //   throw TypeError('Called as a function. Did you forget \'new\'?');
     options = ToDictionary(options);
 
     // A TextEncoder object has an associated encoding and encoder.

@@ -7,20 +7,16 @@ var KdbxError = require('./../errors/kdbx-error'),
     ProtectedValue = require('./../crypto/protected-value'),
     ByteUtils = require('./byte-utils'),
     Int64 = require('./int64'),
-    pako = require('./../../pako/index');
-
-
-
+    pako = require('./../../pako/index'),
+    $g = require('../../../frame/speed.do').$g,
+    dom = require('./../../xmldom/dom'),
+    DOMParser = require('./../../xmldom/dom-parser').DOMParser;
 
 var dateRegex = /\.\d\d\d/;
 
 //var dom = global.DOMParser ? global : require('xmldom');
-var dom = require('./../../xmldom/dom');
-const { $g } = require('../../../frame/speed.do');
-var DOMParser = require('./../../xmldom/dom-parser').DOMParser;
 global.DOMParser = DOMParser
 dom.DOMParser = DOMParser
-
 
 var domParserArg = global.DOMParser
     ? undefined

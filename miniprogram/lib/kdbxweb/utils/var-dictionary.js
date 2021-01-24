@@ -4,7 +4,7 @@ var KdbxError = require('../errors/kdbx-error');
 var Consts = require('../defs/consts');
 var ByteUtils = require('../utils/byte-utils');
 var Int64 = require('../utils/int64');
-var $g = require('../../../frame/speed.do');
+var $g = require('../../../frame/speed.do').$g;
 
 var MaxSupportedVersion = 1;
 var DefaultVersion = 0x0100;

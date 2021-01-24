@@ -1,6 +1,5 @@
 function DOMParser(options){
 	this.options = options ||{locator:{}};
-	
 }
 
 DOMParser.prototype.parseFromString = function(source,mimeType){
@@ -15,7 +14,6 @@ DOMParser.prototype.parseFromString = function(source,mimeType){
 	if(locator){
 		domBuilder.setDocumentLocator(locator)
 	}
-	
 	sax.errorHandler = buildErrorHandler(errorHandler,domBuilder,locator);
 	sax.domBuilder = options.domBuilder || domBuilder;
 	if(isHTML){
@@ -65,7 +63,8 @@ function buildErrorHandler(errorImpl,domBuilder,locator){
  * @link http://www.saxproject.org/apidoc/org/xml/sax/helpers/DefaultHandler.html
  */
 function DOMHandler() {
-    this.cdata = false;
+	this.cdata = false;
+	this.__name__ = 'DOMHandler'
 }
 DOMHandler.prototype.__name__ = 'DOMHandler'
 function position(locator,node){

@@ -3233,8 +3233,8 @@ innerAudioContext.onError((res) => {
             | 'utf-8'
             | 'utf8'
             | 'latin1'
-        position?: string
-        length?: string
+        position?: number
+        length?: number
         /** 接口调用失败的回调函数 */
         fail?: ReadFileFailCallback
         /** 接口调用成功的回调函数 */
@@ -4894,6 +4894,7 @@ innerAudioContext.onError((res) => {
         fail?: WriteFileFailCallback
         /** 接口调用成功的回调函数 */
         success?: WriteFileSuccessCallback
+        position: any
     }
     interface WxGetFileInfoOption {
         /** 本地文件路径 */

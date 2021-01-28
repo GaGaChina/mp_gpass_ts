@@ -8,10 +8,8 @@ interface IAppOption {
     app: DataGlobalApp,
     user: DataGlobalUser,
     userWX?: WechatMiniprogram.UserInfo,
-    /** 资料库 */
-    glib: any,
-    /** Kdbx 信息 */
-    db:any,
+    /** 对象初始化的 DB 对象 */
+    dbLib:any,
   }
   userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
 }

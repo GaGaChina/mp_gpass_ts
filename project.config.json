@@ -5,7 +5,7 @@
     },
     "miniprogramRoot": "miniprogram/",
     "compileType": "miniprogram",
-    "libVersion": "2.14.3",
+    "libVersion": "2.14.4",
     "projectname": "mp_gpass_ts",
     "scripts": {
         "beforeCompile": "npm run tsc",
@@ -78,6 +78,12 @@
                 {
                     "name": "pages/showdb/add/add",
                     "pathName": "pages/showdb/add/add",
+                    "query": "type=add&infoType=bank",
+                    "scene": null
+                },
+                {
+                    "name": "pages/showdb/dblist/dblist",
+                    "pathName": "pages/showdb/dblist/dblist",
                     "query": "type=add&infoType=bank",
                     "scene": null
                 }

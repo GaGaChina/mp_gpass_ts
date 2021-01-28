@@ -6,7 +6,7 @@ Component({
     properties: {},
     // 组件的初始数据
     data: {
-        darkmode: $g.globalData.app.darkmode
+        darkmode: $g.g.app.darkmode
     },
     /** [推荐]外面声明生命周期会被这里覆盖 */
     lifetimes: {

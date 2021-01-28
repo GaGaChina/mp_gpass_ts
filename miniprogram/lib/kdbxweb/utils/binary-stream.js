@@ -1,6 +1,6 @@
 'use strict';
 
-const { $g } = require("../../../frame/speed.do").$g;
+const $g = require("../../../frame/speed.do").$g;
 
 /**
  * Stream for accessing array buffer with auto-advanced position

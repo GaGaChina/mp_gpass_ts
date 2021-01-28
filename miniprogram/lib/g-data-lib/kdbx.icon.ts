@@ -1,7 +1,7 @@
 export class KdbxIcon {
 
     /** Kdbx 图标对应的名称 */
-    public static readonly:Array<string> = [
+    public static readonly list:Array<string> = [
         'key',
         'globe',
         'exclamation-triangle',
@@ -72,6 +72,4 @@ export class KdbxIcon {
         'calendar',
         'mobile'
     ]
-
-
 }

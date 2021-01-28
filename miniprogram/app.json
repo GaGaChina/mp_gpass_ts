@@ -8,7 +8,8 @@
             "root": "pages/showdb/",
             "pages": [
                 "index/index",
-                "add/add"
+                "add/add",
+                "dblist/dblist"
             ]
         },
         {

@@ -3,8 +3,12 @@ import { WXFile } from "./../../frame/wx/wx.file";
 import { KdbxApi } from "../../lib/g-data-lib/kdbx.api";
 import { Kdbx } from "../../lib/kdbxweb/types/index";
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth";
-import { EncodingIndexes } from "../../lib/text-encoding/EncodingIndexes";
 import { WXSize } from "../../frame/wx/wx.resize";
+import { DBItem, DBLib } from "../../lib/g-data-lib/db.lib";
+import { GFileSize } from "../../lib/g-byte-file/g.file.size";
+
+/** 选中的档案信息 */
+let selectItem: DBItem | null = null
 
 //https://developers.weixin.qq.com/miniprogram/dev/extended/weui/tabbar.html
 /**
@@ -13,89 +17,156 @@ import { WXSize } from "../../frame/wx/wx.resize";
  * 进而判断是使用横屏还是竖屏布局。
  */
 /**
-
+ * GET参数:
+ * isCreat : 强制进 1 创建 或 2 打开
  */
 Page({
     data: {
         isCreatPage: true,
         creatSwiperIndex: 0,
-        passWord: '',// 创建, 导入, 打开的密码
-        selectFilePath: '',// 选择的文件
-
+        /** 创建, 导入, 打开的密码 */
+        passWord: '',
+        /** 选中档案的名称 */
+        selectName: '',
+        dbName: '查询出要进入的库',
+        /** 本地档案库的数量 */
+        dbLength: 0,
+        /** 步进器 是否打开 */
+        stepOpen: false,
+        /** 步进器 内容 {icon:string, title:string, note:string} */
+        stepList: []
     },
     onResize() {
         WXSize.getSize()
-        const y: number = $g.globalData.app.scene.winHeight - $g.globalData.app.scene.endBarHeight - $g.globalData.app.scene.topBarHeight
-        const h: number = $g.globalData.app.scene.endBarHeight
     },
-    onLoad() {
-        this.fileFindInDir()
+    onLoad(query: any) {
+        const dbLib: DBLib = $g.g.dbLib
+        const dbItem: DBItem | null = dbLib.selectDB
+        if (dbItem) {
+            this.setData({
+                dbName: dbItem.name,
+                dbLength: dbLib.lib.length,
+                isCreatPage: false
+            })
+        }
+        $g.log('onLoad GET : ', query);
+        if ($g.hasKey(query, 'isCreat')) {
+            this.setData({ isCreatPage: Number(query.isCreat) === 1 ? true : false })
+        }
+        // this.fileFindInDir()
+        // this.autoLoad()
+    },
+    async autoLoad() {
+        this.setData({ passWord: this.data.passWord })
+        await this.btOpenSelectFile(null)
     },
     /** 用户选择一个文件 */
     async btSelectFile(e: any) {
-        console.log(e);
-        const chooseList: WechatMiniprogram.ChooseFile[] = await WXFile.chooseFile();
+        $g.log('选择文件');
+        const dbLib: DBLib = $g.g.dbLib
+        const fileFree: number = dbLib.fileSizeMax - dbLib.fileSizeAll
+        const chooseList: WechatMiniprogram.ChooseFile[] = await WXFile.chooseFile(1);
         if (chooseList.length) {
-            for (let i: number = 0; i < chooseList.length; i++) {
-                const chooseFile: WechatMiniprogram.ChooseFile = chooseList[i];
-                console.log('处理文件 : ', chooseFile);
-                if (await WXFile.saveFile(chooseFile.path, chooseFile.name)) {
-                    this.fileFindInDir()
+            const chooseFile: WechatMiniprogram.ChooseFile = chooseList[0];
+            if ((chooseFile.size * 2) < dbLib.fileSizeMax - dbLib.fileSizeAll) {
+                const dbItem: DBItem = new DBItem()
+                dbItem.name = chooseFile.name
+                dbItem.localId = new Date().getTime()
+                dbItem.path = dbItem.localId.toString()
+                dbItem.timeChange = new Date()
+                dbItem.filename = chooseFile.name
+                dbItem.fileSizeAll = chooseFile.size
+                if (await WXFile.saveFile(chooseFile.path, `db/${dbItem.path}/db.kdbx`)) {
+                    selectItem = dbItem
+                    dbLib.lib.push(selectItem)
+                    dbLib.storageSaveThis()
+                    this.setData({ selectName: dbItem.name })
+                } else {
+                    const allFileSize: number = await WXFile.getFileSize('', true)
+                    $g.log('本地文件尺寸 : ' + GFileSize.getSize(allFileSize))
                 }
-            }
-        }
-    },
-    async fileFindInDir() {
-        const dirList: string[] = await WXFile.readdir();
-        console.log('目录下的文件 : ', dirList);
-        for (let i = 0; i < dirList.length; i++) {
-            const filePath = dirList[i];
-            if (filePath.indexOf('.kdbx') != -1) {
-                console.log('找到文件 : ', filePath);
-                this.setData({ selectFilePath: filePath })
-                return;
+            } else {
+                wx.showToast({ title: `本地空间不足, 剩余空间 ${GFileSize.getSize(fileFree)}, 文件大小 ${GFileSize.getSize(chooseFile.size)}, 文件周转空间 ${GFileSize.getSize(chooseFile.size)}`, icon: 'none', mask: true })
             }
         }
     },
     async btOpenSelectFile(e: any) {
-        console.log('打开文件 : ', this.data.selectFilePath);
-        if (this.data.selectFilePath) {
+        console.log('打开文件 : ', selectItem);
+        await this.openDbItem(selectItem)
+    },
+    async btOpenSelectDb(e: any) {
+        const dbLib: DBLib = $g.g.dbLib
+        const dbItem: DBItem | null = dbLib.selectDB
+        await this.openDbItem(dbItem)
+    },
+    async openDbItem(dbItem: DBItem | null) {
+        if (dbItem) {
             if (this.data.passWord) {
-                const readByte: string | ArrayBuffer | null = await WXFile.readFile(this.data.selectFilePath);
-                if (readByte) {
-                    const db: Kdbx = await KdbxApi.open(readByte as ArrayBuffer, this.data.passWord);
-                    console.log(db);
+                if (dbItem.db) {
+                    wx.reLaunch({ url: './../showdb/index/index' })
+                } else {
+                    // 关闭已经打开的库
+                    const dbLib: DBLib = $g.g.dbLib
+                    const findOpen: DBItem | null = dbLib.selectDB
+                    if (findOpen && findOpen.localId !== dbItem.localId) {
+                        findOpen.db = null
+                    }
+                    const readByte: string | ArrayBuffer | null = await WXFile.readFile(`db/${dbItem.path}/db.kdbx`);
+                    console.log('文件读入内存 : ', readByte);
+                    if (readByte && $g.isTypeM(readByte, 'ArrayBuffer')) {
+                        const db: Kdbx | null = await KdbxApi.open(readByte as any, this.data.passWord);
+                        if (db) {
+                            dbItem.db = db
+                            // ----- 查询 db 中有没有附件, 有就对db进行拆解, 在保存
+                            wx.reLaunch({ url: './../showdb/index/index' })
+                        } else {
+                            wx.showToast({ title: '打开文件失败, 请检查密码!', icon: 'none', mask: true })
+                        }
+                    }
                 }
             } else {
-                wx.showToast({
-                    title: '请输入文件密码!',
-                    icon: 'none',
-                    mask: true
-                })
+                wx.showToast({ title: '请输入文件密码!', icon: 'none', mask: true })
             }
         } else {
-            wx.showToast({
-                title: '未找到可用的本地文件!',
-                icon: 'none',
-                mask: true
-            })
+            wx.showToast({ title: '未找到选择的档案!', icon: 'none', mask: true })
         }
-
     },
     creatNewFile(e: any) {
         const that: any = this
         wx.showModal({
             title: '提示',
             content: '丢失密码, 档案数据将丢失, 请务必牢记, 当前密码 : ' + this.data.passWord,
-            success(e) {
+            async success(e) {
                 if (e.confirm) {
+                    $g.log('g|time|start')
                     const db: Kdbx = KdbxApi.create('我的密码档案', that.data.passWord)
                     that.setData({ passWord: '' })
-                    $g.globalData.db = db
+                    $g.log('获取 db 二进制')
+                    const fileByte: ArrayBuffer = await KdbxApi.save(db)
+                    $g.log('创建 db 信息')
+                    const dbItem: DBItem = new DBItem()
+                    dbItem.localId = new Date().getTime()
+                    dbItem.db = db
+                    dbItem.name = '我的密码档案'
+                    dbItem.filename = 'db'
+                    dbItem.path = dbItem.localId.toString()
+                    dbItem.timeCreat = new Date()
+                    dbItem.timeChange = dbItem.timeCreat
+                    dbItem.timeRead = dbItem.timeCreat
+                    $g.log('写入文件系统')
+                    await WXFile.writeFile(`db/${dbItem.path}/db.kdbx`, fileByte)
+                    $g.log('获取文件夹大小')
+                    await dbItem.fileSize()
+                    const dbLib: DBLib = $g.g.dbLib
+                    dbLib.fileSize()
+                    dbLib.lib.push(dbItem)
+                    $g.log('保存缓存')
+                    dbLib.storageSaveThis()
+                    $g.log('g|time|end')
+                    // 切换页面
                     wx.reLaunch({
                         url: './../showdb/index/index'
                     })
-                    // 切换页面
                 } else {
                     that.setData({ passWord: '' })
                 }
@@ -110,10 +181,6 @@ Page({
     /** 人脸识别 */
     rz_face() {
         WXSoterAuth.start(['facial'])
-    },
-
-    bt_JY() {
-        EncodingIndexes.init({})
     },
     /** 密码输入框内容 */
     passChange(e: any) {
@@ -134,5 +201,11 @@ Page({
     /** 切换 新建 和 档案选择 */
     btChangePage() {
         this.setData({ isCreatPage: !this.data.isCreatPage })
+    },
+    /** 打开本地数据库列表 */
+    btShowDBList() {
+        wx.navigateTo({
+            url: './../showdb/dblist/dblist'
+        })
     }
 })

@@ -2,8 +2,7 @@
 
 var ByteUtils = require('../utils/byte-utils'),
     CryptoEngine = require('./crypto-engine'),
-    Random = require('./random'),
-    $g = require('../../../frame/speed.do').$g;
+    Random = require('./random');
 
 /**
  * Protected value, used for protected entry fields
@@ -85,7 +84,6 @@ ProtectedValue.prototype.includes = function (str) {
  * @return {Promise.<ArrayBuffer>}
  */
 ProtectedValue.prototype.getHash = function () {
-    $g.log('[ProtectedValue][getHash]')
     var binary = ByteUtils.arrayToBuffer(this.getBinary());
     return CryptoEngine.sha256(binary).then(function (hash) {
         ByteUtils.zeroBuffer(binary);

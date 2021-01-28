@@ -197,15 +197,15 @@ export class GDataItem extends GDataBase {
     public fileStreamLib: Array<KdbxFile> = new Array<KdbxFile>();
 
     /** 本数据对象需要保存的内容 */
-    private static typeList: Array<string> = ['localId', 'filePath', 'pass', 'fileSource', 'fileStream', 'fileStreamLib']
+    private static outList: Array<string> = ['localId', 'filePath', 'pass', 'fileSource', 'fileStream', 'fileStreamLib']
 
     /** 获取保存对象 */
     public getInfo(): Object {
-        return this.getProperty(new Object(), GDataItem.typeList)
+        return this.getProperty(new Object(), GDataItem.outList)
     }
     /** 载入保存对象 */
     public setInfo(o: Object): void {
-        this.setProperty(o, GDataItem.typeList)
+        this.setProperty(o, GDataItem.outList)
     }
 }
 
@@ -247,14 +247,14 @@ export class GDataFile extends GDataBase {
     /** 上一次修改Unix时间戳 */
     public timeWrite: number = 0
     /** 本数据对象需要保存的内容 */
-    private static typeList: Array<string> = ['name', 'path', 'size', 'crc32', 'timeRead', 'timeWrite']
+    private static out: Array<string> = ['name', 'path', 'size', 'crc32', 'timeRead', 'timeWrite']
 
     /** 获取保存对象 */
     public getInfo(): Object {
-        return this.getProperty(new Object(), GDataFile.typeList)
+        return this.getProperty(new Object(), GDataFile.out)
     }
     /** 载入保存对象 */
     public setInfo(o: Object): void {
-        this.setProperty(o, GDataFile.typeList)
+        this.setProperty(o, GDataFile.out)
     }
 }

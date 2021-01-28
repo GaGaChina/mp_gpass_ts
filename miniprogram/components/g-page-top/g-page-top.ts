@@ -1,6 +1,11 @@
 import { $g } from "../../frame/speed.do"
 import { WXUser } from "../../frame/wx/wx.user"
 
+/**
+ * 台头的组件
+ * 
+ * 还需要提供一个参数, 能固定返回的路径
+ */
 Component({
     options: {},
     /** 组件的属性列表 properties和data指向的是同一个js对象 */
@@ -11,7 +16,7 @@ Component({
     },
     // 组件的初始数据
     data: {
-        darkmode: $g.globalData.app.darkmode,
+        darkmode: $g.g.app.darkmode,
         topHeight: 0,
         hasWXUser: false,// 是否有微信登录信息
         userHead: '',
@@ -23,12 +28,12 @@ Component({
         attached() {
             $g.log('[组件][g-page-top]创建');
             this.setData({
-                topHeight: $g.globalData.app.scene.topBarHeight + $g.globalData.app.scene.topBarTop,
+                topHeight: $g.g.app.scene.topBarHeight + $g.g.app.scene.topBarTop,
                 hasWXUser: WXUser.appHaveInfo(),
-                userHead: $g.globalData.userWX?.avatarUrl ?? '',
-                nickName: $g.globalData.userWX?.nickName ?? ''
+                userHead: $g.g.userWX?.avatarUrl ?? '',
+                nickName: $g.g.userWX?.nickName ?? ''
             })
-            if ($g.globalData.app.darkusable) wx.onThemeChange(this.themeChange.bind(this));
+            if ($g.g.app.darkusable) wx.onThemeChange(this.themeChange.bind(this));
         },
         /** 视图层布局完成后执行 */
         ready() { },
@@ -36,7 +41,7 @@ Component({
         moved() { },
         /** 实例被从页面节点树移除时执行 */
         detached() {
-            if ($g.globalData.app.darkusable) wx.offThemeChange(this.themeChange);
+            if ($g.g.app.darkusable) wx.offThemeChange(this.themeChange);
         },
         /** 组件方法抛出错误时执行 */
         error() { },
@@ -47,7 +52,7 @@ Component({
     methods: {
         themeChange(e) {
             $g.log(e)
-            if ($g.globalData.app.darkusable) {
+            if ($g.g.app.darkusable) {
                 if (e.theme === 'light') {
                     this.setData({ darkmode: false })
                 } else {
@@ -64,14 +69,14 @@ Component({
             if (WXUser.appHaveInfo()) {
                 this.setData({
                     hasWXUser: true,
-                    userHead: $g.globalData.userWX?.avatarUrl,
-                    nickName: $g.globalData.userWX?.nickName
+                    userHead: $g.g.userWX?.avatarUrl,
+                    nickName: $g.g.userWX?.nickName
                 })
             }
         },
         /** 后退页面 */
         btBack(e: any) {
-            const cps:any = getCurrentPages()
+            const cps: any = getCurrentPages()
             $g.log('组件点击返回', cps);
             let route: string = '';
             if (cps && cps.length) {
@@ -86,7 +91,11 @@ Component({
                     });
                     break;
                 default:
-                    wx.navigateBack();
+                    if (cps.length > 1) {
+                        wx.navigateBack();
+                    } else {
+                        $g.log('无法返回!')
+                    }
             }
         }
     },

@@ -3,6 +3,8 @@ import { WXSoterAuth } from "./frame/wx/wx.soter.auth";
 import { WXUser } from "./frame/wx/wx.user"
 import { WXSize } from "./frame/wx/wx.resize"
 import { GDataLib } from "./lib/g-data-lib/g.data.lib";
+import { DBLib } from "./lib/g-data-lib/db.lib";
+import { WXFile } from "./frame/wx/wx.file";
 
 App<IAppOption>({
     globalData: {
@@ -28,30 +30,40 @@ App<IAppOption>({
         user: {
             id: ''
         },
-        glib: new GDataLib(),
-        db: null,
+        dbLib: new DBLib(),
     },
     onLaunch() {
         $g.init(this)
         WXSize.init()
+        // 获取 Storage 的数据来设置
+        const dbLib:DBLib = this.globalData.dbLib
+        dbLib.storageSetThis()
+        dbLib.fileSizeRun()
         // 版本升级需要维护本地缓存数据
-        if ($g.data.getS('app.ver') !== this.globalData.app.ver) {
-            $g.log('版本升级 : ' + this.globalData.app.ver + ' → ' + $g.data.getS('app.ver'))
-            //获取需要保存的数据
-            $g.data.saveSG('user', '*,!id,!wx,!wxEncryptedData,!wxSignature,!wxIv,!wxCode,!promoter');
+        $g.log('版本检查 : ' + this.globalData.app.ver + ' → ' + $g.s.getS('app.ver'))
+        if ($g.s.getS('app.ver') !== this.globalData.app.ver) {
+            $g.log('数据版本升级!')
+            // 获取需要保存的数据
+            $g.s.copySG('user', '*,!id,!wx,!wxEncryptedData,!wxSignature,!wxIv,!wxCode,!promoter');
             //清理服务器数据
-            $g.data.storageClear();
+            $g.s.storageClear();
             //创建保存数据,进行保存
-            $g.data.saveGS('app', 'ver');
-            $g.data.saveGS('user', '*');
-            $g.data.saveGS('userWX', '*');
-            const glib = $g.data.storageGet('glib')
-            if (glib) this.globalData.glib.setInfo(glib)
+            this.globalData.dbLib.storageSaveThis()
+            $g.s.copyGS('app', 'ver');
+            $g.s.copyGS('user', '*');
+            $g.s.copyGS('userWX', '*');
+            $g.s.copyGS('dbInfo', '*');
         }
-        $g.data.saveGS('app', '*,!appVer');
-        $g.data.saveSG('user', '*');
-        $g.data.saveSG('userWX', '*');
-        $g.data.storageInfo();
+        // 读取 app 中 除了 appVer 的内容
+        $g.s.copyGS('app', '*,!appVer');
+        // 获取缓存的用户数据
+        $g.s.copySG('user', '*');
+        $g.s.copySG('userWX', '*');
+        // 检查数据
+        $g.log('[App.globalData]', this.globalData)
+        $g.log('[App.Storage]', $g.s.storageAll())
+        $g.s.storageInfo()
+        WXFile.checkFileList('', true)
         // 登录
         WXUser.wxCode();
         // 获取用户信息

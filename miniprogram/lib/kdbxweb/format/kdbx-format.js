@@ -22,7 +22,6 @@ var KdbxFormat = function (kdbx) {
 };
 KdbxFormat.prototype.__name__ = 'KdbxFormat'
 
-
 /**
  * Load kdbx file
  * If there was an error loading file, throws an exception
@@ -30,7 +29,6 @@ KdbxFormat.prototype.__name__ = 'KdbxFormat'
  * @returns {Promise.<Kdbx>}
  */
 KdbxFormat.prototype.load = function (data) {
-    $g.log('[KdbxFormat]load', data);
     var stm = new BinaryStream(data);
     var kdbx = this.kdbx;
     var that = this;
@@ -38,7 +36,9 @@ KdbxFormat.prototype.load = function (data) {
         kdbx: kdbx
     });
     return kdbx.credentials.ready.then(function () {
+        $g.log('[KdbxFormat]证书准备完毕')
         kdbx.header = KdbxHeader.read(stm, that.ctx);
+        $g.log('[KdbxFormat]头部读取完毕')
         if (kdbx.header.versionMajor === 3) {
             return that._loadV3(stm);
         } else if (kdbx.header.versionMajor === 4) {
@@ -55,11 +55,13 @@ KdbxFormat.prototype.load = function (data) {
 KdbxFormat.prototype._loadV3 = function (stm) {
     var kdbx = this.kdbx;
     var that = this;
-    $g.log('[KdbxFormat]loadV3');
+    // $g.log('[KdbxFormat]loadV3');
     return that._decryptXmlV3(kdbx, stm).then(function (xmlStr) {
+        // $g.log('[KdbxFormat]loadV3 解析XML:', xmlStr);
         kdbx.xml = XmlUtils.parse(xmlStr);
         return that._setProtectedValues().then(function () {
             return kdbx._loadFromXml(that.ctx).then(function () {
+                $g.log('[KdbxFormat]XML 载入完毕')
                 return that._checkHeaderHashV3(stm).then(function () {
                     return kdbx;
                 });
@@ -69,7 +71,7 @@ KdbxFormat.prototype._loadV3 = function (stm) {
 };
 
 KdbxFormat.prototype._loadV4 = function (stm) {
-    $g.log('[KdbxFormat]loadV4');
+    // $g.log('[KdbxFormat]loadV4');
     var that = this;
     return that._getHeaderHash(stm).then(function (headerSha) {
         var expectedHeaderSha = stm.readBytes(headerSha.byteLength);
@@ -87,16 +89,18 @@ KdbxFormat.prototype._loadV4 = function (stm) {
                         ByteUtils.zeroBuffer(keys.hmacKey);
                         return that._decryptData(data, keys.cipherKey).then(function (data) {
                             ByteUtils.zeroBuffer(keys.cipherKey);
-                            $g.log('[KdbxFormat]loadV4 decryptData');
+                            // $g.log('[KdbxFormat]loadV4 decryptData');
                             if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
-                                $g.log('[KdbxFormat]loadV4 ungzip');
+                                // $g.log('[KdbxFormat]loadV4 ungzip', data);
                                 data = pako.ungzip(data);
                             }
                             stm = new BinaryStream(ByteUtils.arrayToBuffer(data));
+                            // $g.log('[KdbxFormat]loadV4 readInnerHeader', stm);
                             that.kdbx.header.readInnerHeader(stm, that.ctx);
                             data = stm.readBytesToEnd();
+                            // $g.log('[KdbxFormat]loadV4 readBytesToEnd', data);
                             var xmlStr = ByteUtils.bytesToString(data);
-                            $g.log('[KdbxFormat]loadV4 XmlUtils.parse');
+                            // $g.log('[KdbxFormat]loadV4 XmlUtils.parse', xmlStr);
                             that.kdbx.xml = XmlUtils.parse(xmlStr);
                             return that._setProtectedValues().then(function () {
                                 return that.kdbx._loadFromXml(that.ctx);
@@ -232,20 +236,24 @@ KdbxFormat.prototype.saveXml = function (prettyPrint) {
 KdbxFormat.prototype._decryptXmlV3 = function (kdbx, stm) {
     var data = stm.readBytesToEnd();
     var that = this;
-    $g.log('[KdbxFormat]decryptXmlV3');
+    // $g.log('[KdbxFormat]decryptXmlV3');
     return that._getMasterKeyV3().then(function (masterKey) {
-        $g.log('[KdbxFormat]_decryptXmlV3 _decryptData');
+        // $g.log('[KdbxFormat]_decryptXmlV3 _decryptData');
         return that._decryptData(data, masterKey).then(function (data) {
-            $g.log('[KdbxFormat]decryptXmlV3 zeroBuffer');
+            // $g.log('[KdbxFormat]decryptXmlV3 zeroBuffer');
             ByteUtils.zeroBuffer(masterKey);
             data = that._trimStartBytesV3(data);
-            $g.log('[KdbxFormat]decryptXmlV3 decrypt');
+            // $g.log('[KdbxFormat]decryptXmlV3 decrypt');
             return HashedBlockTransform.decrypt(data).then(function (data) {
-                $g.log('[KdbxFormat]decryptXmlV3 decrypt ok');
+                // $g.log('[KdbxFormat]decryptXmlV3 decrypt ok');
                 if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
-                    $g.log('[KdbxFormat]decryptXmlV3 decrypt ungzip');
+                    // $g.log('[KdbxFormat]decryptXmlV3 ungzip 启动 : ', data);
+                    $g.log('[KdbxFormat]ungzip 启动')
                     data = pako.ungzip(data);
+                    $g.log('[KdbxFormat]ungzip 完毕')
+                    // $g.log('[KdbxFormat]decryptXmlV3 ungzip 结束 : ', data);
                 }
+                // $g.log('[KdbxFormat]decryptXmlV3 准备读XML', data);
                 return ByteUtils.bytesToString(data);
             });
         });
@@ -267,7 +275,7 @@ KdbxFormat.prototype._encryptXmlV3 = function () {
         newData.set(new Uint8Array(data), ssb.length);
         data = newData;
         return that._getMasterKeyV3().then(function (masterKey) {
-            $g.log('[KdbxFormat]encryptXmlV3:解密');
+            // $g.log('[KdbxFormat]encryptXmlV3:解密');
             return that
                 ._encryptData(ByteUtils.arrayToBuffer(data), masterKey)
                 .then(function (data) {
@@ -280,24 +288,23 @@ KdbxFormat.prototype._encryptXmlV3 = function () {
 
 KdbxFormat.prototype._getMasterKeyV3 = function () {
     var kdbx = this.kdbx;
-    $g.log('[KdbxFormat]getMasterKeyV3');
+    // $g.log('[KdbxFormat]getMasterKeyV3');
     return kdbx.credentials.getHash().then(function (credHash) {
         var transformSeed = kdbx.header.transformSeed;
         var transformRounds = kdbx.header.keyEncryptionRounds;
         var masterSeed = kdbx.header.masterSeed;
 
         return kdbx.credentials.getChallengeResponse(masterSeed).then(function (chalResp) {
-            $g.log('[KdbxFormat]getMasterKeyV3:AES');
+            // $g.log('[KdbxFormat]getMasterKeyV3:AES');
             return KeyEncryptorAes.encrypt(
                 new Uint8Array(credHash),
                 transformSeed,
                 transformRounds
             ).then(function (encKey) {
-                $g.log('[KdbxFormat]getMasterKeyV3:encKey');
+                // $g.log('[KdbxFormat]getMasterKeyV3:encKey');
                 ByteUtils.zeroBuffer(credHash);
                 return CryptoEngine.sha256(encKey).then(function (keyHash) {
                     ByteUtils.zeroBuffer(encKey);
-
                     var chalRespLength = chalResp ? chalResp.byteLength : 0;
                     var all = new Uint8Array(
                         masterSeed.byteLength + keyHash.byteLength + chalRespLength
@@ -307,17 +314,16 @@ KdbxFormat.prototype._getMasterKeyV3 = function () {
                         all.set(new Uint8Array(chalResp), masterSeed.byteLength);
                     }
                     all.set(new Uint8Array(keyHash), masterSeed.byteLength + chalRespLength);
-
                     ByteUtils.zeroBuffer(keyHash);
                     ByteUtils.zeroBuffer(masterSeed);
                     if (chalResp) {
                         ByteUtils.zeroBuffer(chalResp);
                     }
-                    $g.log('[KdbxFormat]getMasterKeyV3:sha256 Key');
+                    // $g.log('[KdbxFormat]getMasterKeyV3:sha256 Key');
                     return CryptoEngine.sha256(all.buffer).then(function (masterKey) {
-                        $g.log('[KdbxFormat]getMasterKeyV3:sha256 Key OK all.buffer:', all.buffer.byteLength);
+                        // $g.log('[KdbxFormat]getMasterKeyV3:sha256 Key OK all.buffer:', all.buffer.byteLength);
                         ByteUtils.zeroBuffer(all.buffer);
-                        $g.log('[KdbxFormat]getMasterKeyV3:zeroBuffer OK');
+                        // $g.log('[KdbxFormat]getMasterKeyV3:zeroBuffer OK');
                         return masterKey;
                     });
                 });
@@ -327,7 +333,7 @@ KdbxFormat.prototype._getMasterKeyV3 = function () {
 };
 
 KdbxFormat.prototype._trimStartBytesV3 = function (data) {
-    $g.log('[KdbxFormat]trimStartBytesV3');
+    // $g.log('[KdbxFormat]trimStartBytesV3');
     var ssb = this.kdbx.header.streamStartBytes;
     if (data.byteLength < ssb.byteLength) {
         throw new KdbxError(Consts.ErrorCodes.FileCorrupt, 'short start bytes');
@@ -335,7 +341,7 @@ KdbxFormat.prototype._trimStartBytesV3 = function (data) {
     if (!ByteUtils.arrayBufferEquals(data.slice(0, this.kdbx.header.streamStartBytes.byteLength), ssb)) {
         throw new KdbxError(Consts.ErrorCodes.InvalidKey);
     }
-    $g.log('[KdbxFormat]trimStartBytesV3 ok');
+    // $g.log('[KdbxFormat]trimStartBytesV3 ok');
     return data.slice(ssb.byteLength);
 };
 
@@ -420,10 +426,10 @@ KdbxFormat.prototype._decryptData = function (data, cipherKey) {
     var cipherId = this.kdbx.header.dataCipherUuid;
     switch (cipherId.toString()) {
         case Consts.CipherId.Aes:
-            $g.log('[KdbxFormat]decryptData AES');
+            // $g.log('[KdbxFormat]decryptData AES');
             return this._transformDataV4Aes(data, cipherKey, false);
         case Consts.CipherId.ChaCha20:
-            $g.log('[KdbxFormat]decryptData transformDataV4ChaCha20');
+            // $g.log('[KdbxFormat]decryptData transformDataV4ChaCha20');
             return this._transformDataV4ChaCha20(data, cipherKey);
         default:
             return Promise.reject(
@@ -449,9 +455,9 @@ KdbxFormat.prototype._encryptData = function (data, cipherKey) {
 KdbxFormat.prototype._transformDataV4Aes = function (data, cipherKey, encrypt) {
     var that = this;
     var aesCbc = CryptoEngine.createAesCbc();
-    $g.log('[KdbxFormat]transformDataV4Aes');
+    // $g.log('[KdbxFormat]transformDataV4Aes');
     return aesCbc.importKey(cipherKey).then(function () {
-        $g.log('[KdbxFormat]transformDataV4Aes encrypt');
+        // $g.log('[KdbxFormat]transformDataV4Aes encrypt');
         return encrypt ?
             aesCbc.encrypt(data, that.kdbx.header.encryptionIV) :
             aesCbc.decrypt(data, that.kdbx.header.encryptionIV);

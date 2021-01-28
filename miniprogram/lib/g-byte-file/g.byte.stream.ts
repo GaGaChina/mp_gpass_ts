@@ -4,6 +4,9 @@ EncodingIndexes.init(textEncoding.EncodingIndexes)
 const textEncoder = new textEncoding.TextEncoder();
 const textDecoder = new textEncoding.TextDecoder();
 
+/**
+ * 二进制文件模块
+ */
 export class GByteStream {
 
     /** 当未传值创建新的时候的长度 */

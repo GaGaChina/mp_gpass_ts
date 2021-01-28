@@ -1,6 +1,6 @@
 import { GFileSize } from "../lib/g-byte-file/g.file.size";
 import { Times } from "../lib/kdbxweb/types";
-import { DataApp } from "./data/data.app";
+import { AppData } from "./data/app.data";
 
 /**
  * 一个简单的入口
@@ -18,13 +18,13 @@ export class $g {
     public static a: IAppOption;
     public static g: IAppOption["globalData"];
     /** 本地缓存引用 */
-    public static s: DataApp;
+    public static s: AppData;
 
     /** 初始化 */
     public static init(app: IAppOption): void {
         this.a = app;
         this.g = app.globalData;
-        this.s = new DataApp(app);
+        this.s = new AppData(app);
     }
 
     /** 返回全长类型 [object String] */
@@ -51,21 +51,31 @@ export class $g {
     public static isNumber(o: any): boolean { return $g.typeM(o) === 'Number'; }
     /** 查看是否是字符串 */
     public static isBoolean(o: any): boolean { return $g.typeM(o) === 'Boolean'; }
-    /** 判断是否是函数类型 */
+    /** 判断是否是 Array 类型 */
     public static isArray(o: any): boolean { return $g.typeM(o) === 'Array'; }
-    /** 判断是否是Object */
+    /** 判断是否是 Object */
     public static isObject(o: any): boolean { return $g.typeM(o) === 'Object' && !$g.isArray(o); }
-    /** 判断是否是函数类型 */
+    /** 判断是否是 函数类型 */
     public static isFunction(o: any): boolean { return $g.typeM(o) === 'Function'; }
+    /** 判断是否是 undefined */
+    public static isUndefined(o: any): boolean { return o === undefined }
+    // public static isUndefined(o: any): boolean { return typeof (o) === "undefined" }
+    /** 判断是否是 null */
+    public static isNull(o: any): boolean { return o === null }
+    //public static isNull(o: any): boolean { return !o && o !== 0 && !$g.isUndefined(o) }
+    /** 判断是否是 NaN 注:"/"等带特殊符号的也为true, NaN 是 [Object object] */
+    public static isNaN(o: any): boolean { return isNaN(o) }
+
+
     /**
      * 校验 o 是不是 类 n
      * @param {any} o 要校验的对象
      * @param {String} n 类的名称
      */
     public static isClass(o: any, n: string): boolean {
-        if ($g.className(o) !== n) {
-            $g.log('[G][isClass]' + $g.className(o) + ' ≠ ' + n)
-        }
+        // if ($g.className(o) !== n) {
+        //     $g.log('[G][isClass]' + $g.className(o) + ' ≠ ' + n)
+        // }
         return $g.className(o) === n;
     }
 
@@ -102,7 +112,7 @@ export class $g {
     }
 
     /**
-     * 将对象 a -> b 复制到b的内容里, 返回获得的b
+     * 将对象 a → b 内容对象路径为 keys 部分内容复制到b的内容里, 返回获得的b
      * 1. a不存在、keys为空跳出, b不存在创建{}
      * 2. 进入 a及b 的keys目标, 中途 b 没有创建{}
      * 3. a 不存在 不会删除 b 属性
@@ -111,35 +121,48 @@ export class $g {
      * 
      * @param a 获取数据的对象
      * @param b 改变值的对象
-     * @param keys user.jyj类似这样的路径
+     * @param keys user.jyj类似这样的路径, 空, 将遍历 a key 到 b
      * @param mode 模式*整个对象复制, ,号分割, ! 不拷贝的key
      */
-    public static copyAB(a: any, b: any, keys: string, mode: string = '*'): any {
-        let at: any, bt: any, atU: any, btU: any, k!: string;
-        if (!keys || !a) return;
-        if (!b) b = {};
+    public static copyAB(a: any, b: any, keys: string = '', mode: string = '*'): any {
+        let at: any,
+            bt: any,
+            atU: any, // 最终 keys 定位的对象
+            btU: any, // 最终 keys 定位的对象
+            k!: string;
+        if (!a) return null
+        if (!b) b = {}
         at = a;
         bt = b;
+        // 是否在a的路径上找到 keys
         let finsh: boolean = true;
-        let t_a: Array<string> = keys.split('.');
-        for (k of t_a) {
-            if ($g.hasKey(at, k)) {
-                atU = at;
-                btU = bt;
-                at = at[k];
-                if (!$g.hasKey(bt, k)) bt[k] = {};
-                bt = bt[k];
-            } else {
-                finsh = false;
+        let t_a: Array<string>;
+        if (keys === '') {
+            atU = a
+            btU = b
+            k = 'ok'
+        } else {
+            t_a = keys.split('.');
+            for (k of t_a) {
+                if ($g.hasKey(at, k)) {
+                    atU = at;
+                    btU = bt;
+                    at = at[k];
+                    if (!$g.hasKey(bt, k)) bt[k] = {};
+                    bt = bt[k];
+                } else {
+                    finsh = false;
+                }
             }
         }
+        // 是否找到 keys 路径 ,  k 有表示已经进入过循环了
         if (finsh && !!k) {
             if (mode === '*') {
                 btU[k] = atU[k];
             } else {
                 t_a = mode.split(',');
                 if (t_a.indexOf('*') !== -1) {
-                    //循环内部变量
+                    // 内部全拷, 找 非拷贝 项进行过滤
                     const list: Array<string> = Object.keys(at);
                     for (k of list) {
                         if (t_a.indexOf('!' + k) === -1) {
@@ -165,10 +188,9 @@ export class $g {
      * @param o 检查对象
      * @param key 对象是否含 key 的属性
      */
-    public static getKey(o: any, key?: string): any {
-        if (o && !!key && !$g.isBase(o) && (o as Object).hasOwnProperty(key)) {
-            return o[key];
-        }
+    public static getKey(o: any, key: string = ''): any {
+        if (key === '') return o
+        if (o && !$g.isBase(o) && (o as Object).hasOwnProperty(key)) return o[key];
         return void 0;
     }
 
@@ -177,8 +199,11 @@ export class $g {
      * @param o 检查对象
      * @param keys 对象是否含 key.key.key 的属性
      */
-    public static getKeys(o: any, keys?: string): any {
-        if (o && !!keys && !$g.isBase(o)) {
+    public static getKeys(o: any, keys: string = ''): any {
+        if (keys.indexOf('.') === -1) {
+            return $g.getKey(o, keys)
+        }
+        if (o && !$g.isBase(o)) {
             const a: Array<string> = keys.split('.');
             let l: string = '';
             for (const key of a) {
@@ -186,8 +211,7 @@ export class $g {
                 if ($g.hasKey(o, key)) {
                     o = o[key];
                 } else {
-                    //$g.log('checkObjKeys 属性中断于 : ' + l);
-                    console.log('getObjKeys 属性中断于 : ' + l);
+                    $g.log('getKeys 中断 : ' + l);
                     return void 0;
                 }
             }
@@ -206,12 +230,12 @@ export class $g {
         if (o && !!key && !$g.isBase(o) && (o as Object).hasOwnProperty(key)) {
             if (checkValue) {
                 const v: any = o[key];
-                switch (Object.prototype.toString.call(v)) {
-                    case '[object String]':
+                switch ($g.typeM(v)) {
+                    case 'String':
                         return !!v;
                     /*
                     上面的 checkValue false比较好, 否则不知道会产生什么后果
-                    case '[object Number]':
+                    case 'Number':
                         return v !== 0;
                     */
                 }
@@ -236,8 +260,7 @@ export class $g {
                 if ($g.hasKey(o, key, checkValue)) {
                     o = o[key];
                 } else {
-                    //$g.log('checkObjKeys 属性中断于 : ' + l);
-                    console.log('checkObjKeys 属性中断于 : ' + l);
+                    $g.log('hasKeys 中断 : ' + l);
                     return false;
                 }
             }
@@ -246,119 +269,158 @@ export class $g {
         return false;
     }
 
-    /** 开始计时 */
-    private static logTime: number = 0;
+    /** 日志里用的数组 */
+    private static logArray: Array<any> = new Array<any>();
+    /** 如果有值在日志后接着在打印一条 */
+    private static logAdd: string = ''
 
     //日志, 开发者工具 → Blackboxing → /speed.do\.ts$ */
     /**
-     * 时间 :|000.000 后面是时间位数(秒.毫秒)
-     * 时间输出, g|time|start  开始时间检测   ┏━━┓
-     * 时间输出, g|time|end    结束时间检测  ┃┗━━┛
+     * 
+     * 步骤记录
+     * 添加回调, g|step|name|method, 函数(stepIndex:number, stepInfo:string, allTime:number开始到现在的毫秒, nextTime:number和上一步的毫秒)
+     * 开启步骤, g|step|name|start 开始记录步骤
+     * 记录步骤, g|step|name|record 添加记录步骤
+     * 结束步骤, g|step|name|end 开始记录步骤
      */
     public static log(...args: any[]): void {
         try {
             if ($g.g.app.DEBUG) {
-                /*
-                const a: Array<any> = [].slice.call(args);
-                if (a.length === 1 && $g.isBase(a[0])) {
-                    //background:#000000;color:#FFFFFF
-                    let o: string = '[' + ToolTime.getTimesString(new Date()) + ']';
-                    console.log(o + a[0].toString());
-                } else {
-                    console.log(...args);
-                }
-                */
-                let s: string = '',
-                    n: number = 0,
-                    b: boolean = false,
-                    endString: string = '',
-                    timeString: string = ''
-                if ($g.logTime) {
-                    n = new Date().getTime() - $g.logTime
-                    timeString = n.toString().substr(-6, 6)
-                    while (timeString.length < 6) {
-                        timeString = ' ' + timeString
-                    }
-                    timeString = '┃' + timeString.substr(-6, 3) + '.' + timeString.substr(-3, 3) + '┃'
-                }
-                if (args.length > 0 && $g.isString(args[0]) && args[0].substr(0, 2) === 'g|') {
-                    s = args[0]
-                    if (s.substr(2, 10) === 'time|start') {
-                        $g.logTime = new Date().getTime()
-                        if (timeString) console.log(timeString + 'TimeEnd');
-                        console.log('┏━━━━━━━┓TimeStart');
-                        s = s.substr(12)
-                        b = true
-                    } else if (s.substr(2, 8) === 'time|end') {
-                        endString = '┗━━━━━━━┛'
-                        $g.logTime = 0
-                        s = s.substr(10)
-                        b = true
-                    }
-                    // 执行清理
-                    if (b) {
-                        if (s === '') {
-                            if (args.length === 1) return
-                            args.shift()
-                        } else {
-                            args[0] = s
-                        }
-                    }
-                }
-                const a: Array<any> = new Array<any>()
-                if (timeString) a.push(timeString)
-                for (let i = 0; i < args.length; i++) {
-                    const item: any = args[i],
-                        type: string = $g.className(item)
-                    s = ''
-                    switch (type) {
-                        // [ArrayBuffer 16M 978923972..(8个)...... : 对象]
-                        case 'Int8Array':
-                        case 'Int16Array':
-                        case 'Int32Array':
-                        case 'Uint8Array':
-                        case 'Uint16Array':
-                        case 'Uint32Array':
-                        case 'DataView':
-                        case 'ArrayBuffer':
-                            let arraybuffer: ArrayBuffer
-                            if (type === 'ArrayBuffer') {
-                                arraybuffer = item
-                            } else {
-                                arraybuffer = item.buffer
-                            }
-                            const dv: DataView = new DataView(arraybuffer)
-                            const l: number = arraybuffer.byteLength
-                            s = '[ArrayBuffer ' + GFileSize.getSize(l, 3) + ' '
-                            let m: number = 0
-                            while (m < l) {
-                                if (m !== 0) s += ','
-                                if (l - m > 4) {
-                                    s += dv.getInt32(m, false).toString()
-                                    m += 4
-                                } else {
-                                    s += 'u8(' + dv.getUint8(m).toString() + ')'
-                                    m += 1
-                                }
-                                if (m >= 32) {
-                                    s += '......'
-                                    break
-                                }
-                            }
-                            s += ' : '
-                            a.push(s)
-                            a.push(item)
-                            a.push(']')
-                            break;
-                        default:
-                            a.push(item)
-                    }
-                }
-                if (a.length) console.log(...a);
-                if (endString) console.log(endString);
+                $g.logArray.length = 0
+                $g.logSuper(args)
+                $g.logDisplay(args)
+                if ($g.logAdd) console.log($g.logAdd)
             }
         } catch (e) {
             console.error('console.log error', e);
         }
+    }
+
+    /** 开始计时 */
+    private static logTime: number = 0;
+    /** 给下一条日志用的时间间隔 */
+    private static logTimeNext: number = 0;
+
+    /**
+     * 日志加强处理
+     * @param args 日志参数
+     */
+    private static logSuper(args: any[]): void {
+        $g.logSuperTime(args)
+    }
+
+    /**
+     * 时间 :|000.000 后面是时间位数(秒.毫秒)
+     * 时间输出, g|time|start  开始时间检测   ┏━━┳━━┓
+     * 时间输出, g|time|end    结束时间检测  ┃┗━━┻━━┛
+     */
+    private static logSuperTime(args: any[]): void {
+        let s: string = '',
+            n1: number = 0,
+            n2: number = 0,
+            n3: number = 0,
+            t1: string = '',// 总共经过的时间
+            t2: string = '' // 和上一条日志之间的间隔
+        if ($g.logTime) {
+            n2 = $g.logTimeNext
+            $g.logTimeNext = new Date().getTime()
+            n1 = $g.logTimeNext - $g.logTime
+            n3 = $g.logTimeNext - n2
+            t1 = n1.toString().substr(-6, 6)
+            t2 = n3.toString().substr(-6, 6)
+            while (t1.length < 6) {
+                t1 = '0' + t1
+            }
+            while (t2.length < 6) {
+                t2 = '0' + t2
+            }
+            t1 = '[' + t1.substr(-6, 3) + '.' + t1.substr(-3, 3) + '|'
+            t1 += t2.substr(-6, 3) + '.' + t2.substr(-3, 3) + ']'
+        }
+        if (args.length > 0 && $g.isString(args[0])) {
+            s = args[0]
+            switch (s) {
+                case 'g|time|start':
+                    $g.logTime = new Date().getTime()
+                    $g.logTimeNext = $g.logTime
+                    if (t1) console.log(t1 + 'TimeEnd');
+                    args[0] = '[000.000|000.000][TimeStart]'
+                    break;
+                case 'g|time|end':
+                    t1 += '[TimeEnd]'
+                    $g.logTime = 0
+                    args.shift()
+                    break;
+            }
+        }
+        if (t1) $g.logArray.push(t1)
+    }
+
+
+    /**
+     * 递归日志内容, 优化处理结果
+     * @param args 日志是参数
+     */
+    private static logDisplay(args: any[]): void {
+        for (let i = 0; i < args.length; i++) {
+            const item: any = args[i]
+            const type: string = $g.className(item)
+            switch (type) {
+                // 二进制处理
+                case 'Int8Array':
+                case 'Int16Array':
+                case 'Int32Array':
+                case 'Uint8Array':
+                case 'Uint16Array':
+                case 'Uint32Array':
+                case 'DataView':
+                case 'ArrayBuffer':
+                    $g.logDisplayByte(type, item)
+                    break;
+                // 其他类型
+                default:
+                    $g.logArray.push(item)
+            }
+        }
+        if ($g.logArray.length) console.log(...$g.logArray);
+    }
+
+    /**
+     * 日志的二进制处理机制
+     * [ArrayBuffer 16M 978923972..(8个)...... : 对象]
+     * @param args 
+     */
+    private static logDisplayByte(type: string, item: any): void {
+        let arraybuffer: ArrayBuffer,
+            s: string = ''
+        if (type === 'ArrayBuffer') {
+            arraybuffer = item
+        } else {
+            arraybuffer = item.buffer
+        }
+        const dv: DataView = new DataView(arraybuffer)
+        const l: number = arraybuffer.byteLength
+        s = '[ArrayBuffer ' + GFileSize.getSize(l, 3) + ' '
+        let m: number = 0
+        while (m < l) {
+            if (m !== 0) s += ','
+            if (l - m > 3) {
+                s += dv.getInt32(m, false).toString()
+                m += 4
+            } else {
+                s += 'U8(' + dv.getUint8(m).toString() + ')'
+                m += 1
+            }
+            if (m === l) {
+                s += ' End'
+            } else if (m > 32) {
+                s += '......'
+                break
+            }
+        }
+        s += ' : '
+        $g.logArray.push(s)
+        $g.logArray.push(item)
+        $g.logArray.push(']')
     }
 }

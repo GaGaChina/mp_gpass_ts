@@ -4,10 +4,8 @@ export class GFileConfig {
 
     /** 文件头ID : GFileHead */
     public static readonly TYPE_000_HEAD: number = 0
-
     /** 文件头ID : GFileLog */
     public static readonly TYPE_001_LOG: number = 1
-
     /** 文件头ID : GFileBase */
     public static readonly TYPE_254_BASE: number = 254
 

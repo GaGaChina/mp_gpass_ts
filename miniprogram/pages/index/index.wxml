@@ -1,4 +1,5 @@
 <g-page-bg></g-page-bg>
+<g-sub-step open="{{stepOpen}}" list="{{stepList}}"></g-sub-step>
 <!-- 新用户 -->
 <view wx:if="{{isCreatPage}}">
     <view class="top">
@@ -6,7 +7,7 @@
             <image src="./../../img/logo.png"></image>
         </view>
         <view class="title">欢迎使用《密码档案》</view>
-        <view class="info">您录入全部信息将离线加密保存在本手机</view>
+        <view class="info">您录入档案信息将离线加密保存在本手机</view>
         <view class="tip">
             <view bindtap="btSwiperChange" data-id='0' class="{{creatSwiperIndex==0?'tip_select':'tip_no_select'}}"><i
                     class="input_icon fa fa-plus"></i>
@@ -20,28 +21,38 @@
             <swiper-item class="sw">
                 <view class="sw sw-item">
                     <view class="input_v">
-                        <input password type="text" value="{{passWord}}" bindinput="passChange" adjust-position placeholder="请输入档案解锁密码" />
+                        <input password type="text" value="{{passWord}}" bindinput="passChange" adjust-position
+                            placeholder="请输入档案解锁密码" />
                         <i class="input_icon fa fa-lock"></i>
                     </view>
                     <button class="bt_big" bindtap="creatNewFile"><i class="input_icon fa fa-plus"></i> 创 建</button>
-                    <button class="bt_big" bindtap="btChangePage"><i class="input_icon fa fa-envelope-open-o"></i>
-                        本地档案</button>
                     <view class="tishi">档案信息不以任何形式在服务器存储及网络形式传送</view>
+                    <block wx:if="{{dbLength > 0}}">
+                        <view class="has_db_info">发现 {{dbLength}} 个本地档案, 需要选择打开它们吗?</view>
+                        <button class="bt_big" bindtap="btShowDBList"><i class="input_icon fa fa-envelope-open-o"></i>
+                            选择本地档案</button>
+                    </block>
                 </view>
             </swiper-item>
             <swiper-item>
                 <view class="sw sw-item">
                     <view class="input_v">
-                        <input type="text" value="{{selectFilePath}}" placeholder="请选择文件" disabled bindtap="btSelectFile" />
-                        <i class="input_icon fa fa-file-archive-o"></i>
+                        <input type="text" value="{{selectName}}" placeholder="请选择文件" disabled
+                            bindtap="btSelectFile" />
+                        <i class="input_icon fa fa-file-archive-o" bindtap="btSelectFile"></i>
                     </view>
                     <view class="input_v">
-                        <input password type="text" value="{{passWord}}" bindinput="passChange" adjust-position placeholder="档案解锁密码" />
+                        <input password type="text" value="{{passWord}}" bindinput="passChange" adjust-position
+                            placeholder="档案解锁密码" />
                         <i class="input_icon fa fa-lock"></i>
                     </view>
-                    <button class="bt_big fa" bindtap="btOpenSelectFile"><i class="input_icon fa fa-file-archive-o"></i> 导 入</button>
-                    <button class="bt_big" bindtap="btChangePage"><i class="input_icon fa fa-envelope-open-o"></i>
-                        本地档案</button>
+                    <button class="bt_big fa" bindtap="btOpenSelectFile"><i class="input_icon fa fa-file-archive-o"></i>
+                        导 入</button>
+                    <block wx:if="{{dbLength > 0}}">
+                        <view class="has_db_info">发现 {{dbLength}} 个本地档案, 需要选择打开它们吗?</view>
+                        <button class="bt_big" bindtap="btShowDBList"><i class="input_icon fa fa-envelope-open-o"></i>
+                            选择本地档案</button>
+                    </block>
                 </view>
             </swiper-item>
         </swiper>
@@ -50,16 +61,17 @@
 <!-- 老用户 -->
 <view wx:else class="old_user">
     <i class="big_icon_font fa fa-envelope-open-o"></i>
-    <view class="open_title">打开 : 234342342档案</view>
-    <view class="input_v">
-        <input type="text" placeholder="切换库" disabled bindtap="btSelectFile" />
-        <i class="input_icon fa fa-file-archive-o"></i>
-    </view>
+    <view class="open_title">打开 : {{dbName}}</view>
     <view class="input_v">
         <input password type="text" value="{{passWord}}" bindinput="passChange" adjust-position placeholder="档案解锁密码" />
         <i class="input_icon fa fa-lock"></i>
     </view>
-    <button class="bt_big fa"><i class="input_icon fa fa-file-archive-o"></i> 解 锁</button>
+    <button class="bt_big fa" bindtap="btOpenSelectDb"><i class="input_icon fa fa-file-archive-o"></i> 解 锁</button>
+    <block wx:if="{{dbLength > 1}}">
+        <view class="has_db_info">发现 {{dbLength}} 个本地档案, 需要选择打开它们吗?</view>
+        <button class="bt_big" bindtap="btShowDBList"><i class="input_icon fa fa-envelope-open-o"></i>
+            选择本地其他档案</button>
+    </block>
     <view class="jingao">忘记密码?</view>
     <button class="bt_big fa" bindtap="btChangePage"><i class="input_icon fa fa-plus"></i> 新建档案 or <i
             class="input_icon fa fa-file-archive-o"></i> 导入档案</button>

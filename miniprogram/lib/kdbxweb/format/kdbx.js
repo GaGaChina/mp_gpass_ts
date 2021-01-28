@@ -519,7 +519,6 @@ Kdbx.prototype._getObjectMap = function () {
 };
 
 Kdbx.prototype._loadFromXml = function (ctx) {
-    $g.log('[Kdbx]loadFromXml');
     var doc = this.xml.documentElement;
     if (doc.tagName !== XmlNames.Elem.DocNode) {
         throw new KdbxError(Consts.ErrorCodes.FileCorrupt, 'bad xml root');

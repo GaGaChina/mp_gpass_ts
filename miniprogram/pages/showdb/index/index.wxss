@@ -71,7 +71,7 @@ view {
     height: 160rpx;
     bottom: 0;
     border-radius: 30rpx 30rpx 0 0;
-    background-image: linear-gradient(180deg, #020d2d, #000412);
+    background: linear-gradient(180deg, #020d2d, #000412);
 }
 
 .end_list {

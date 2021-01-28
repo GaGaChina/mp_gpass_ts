@@ -2,6 +2,8 @@ import { $g } from "../../frame/speed.do";
 import { GFileSize } from "../g-byte-file/g.file.size";
 import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group, KdbxUuid } from "../kdbxweb/types/index";
 
+
+const Consts = require('./../kdbxweb/defs/consts')
 const KdbxWeb = require('./../kdbxweb/index.js')
 
 export class KdbxApi {
@@ -18,7 +20,7 @@ export class KdbxApi {
         const credentials: Credentials = new CredentialsClass(passPV)
         return credentials
     }
-
+    
     /**
      * 创建一个新的数据库
      * @param name 密码库名称
@@ -28,6 +30,8 @@ export class KdbxApi {
         const credentials: Credentials = KdbxApi.getPassCredentials(pass)
         const db: Kdbx = (KdbxApi.kdbxweb.Kdbx as any).create(credentials, name)
         //db.set({ active: true, created: true, name });
+        const dbHeader:any = db.header
+        dbHeader.setKdf(Consts.KdfId.Aes)
         return db
     }
 
@@ -38,14 +42,18 @@ export class KdbxApi {
      */
     public static async open(byte: ArrayBuffer, pass: string): Promise<Kdbx | null> {
         try {
-            $g.log('[KdbxApi][open]文件长度 : ' + GFileSize.getSize(byte.byteLength, 3) + ' 密码长度 : ' + pass.length)
+            $g.log('g|time|start')
+            $g.log('[KdbxApi][open]文件长度 : ' + GFileSize.getSize(byte.byteLength, 3))
             const credentials: Credentials = KdbxApi.getPassCredentials(pass)
             const a:ArrayBuffer = await credentials.getHash()
-            $g.log('[KdbxApi][open]credentials', a);
-            $g.log('[KdbxApi][open]证书创建成功', credentials)
-            return await (KdbxApi.kdbxweb.Kdbx as any).load(byte, credentials) as Kdbx
+            // $g.log('[KdbxApi][open]credentials', a);
+            // $g.log('[KdbxApi][open]证书创建成功', credentials)
+            const db:Kdbx | null = await (KdbxApi.kdbxweb.Kdbx as any).load(byte, credentials) as Kdbx
+            $g.log('g|time|end')
+            return db
         } catch (e) {
             $g.log('[KdbxApi][open][error]', e)
+            $g.log('g|time|end')
             return Promise.resolve(null);
         }
     }
@@ -55,7 +63,6 @@ export class KdbxApi {
      * @param db Kdbx对象
      */
     public static async save(db: Kdbx): Promise<ArrayBuffer> {
-        db.groups[0].entries[0].times.creationTime
         return db.save()
     }
 
@@ -74,6 +81,10 @@ export class KdbxApi {
         return true
     }
 
+    /**
+     * 递归查询group和以下内容是否都是空
+     * @param group 
+     */
     public static isGroupEmpty(group: Group): boolean {
         if (group) {
             if (group.groups.length > 1) return false

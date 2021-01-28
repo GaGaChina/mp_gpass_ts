@@ -35,10 +35,10 @@ function sha256(data) {
         return Promise.resolve(ByteUtils.arrayToBuffer(ByteUtils.hexToBytes(EmptySha256)));
     }
     return new Promise(function (resolve) {
-        $g.log('[SHA256]in:', data);
+        // $g.log('[SHA256]in:', data);
         const word = CryptoJS.SHA256(CryptoJS.lib.WordArray.create(data))
         const typedArray = ToolBytes.CryptJsWordArrayToUint8Array(word)
-        $g.log('[SHA256]out:', typedArray.buffer);
+        // $g.log('[SHA256]out:', typedArray.buffer);
         resolve(typedArray.buffer)
     })
 }
@@ -93,17 +93,17 @@ AesCbcCryptoJS.prototype.encrypt = function (data, iv) {
    
     var that = this;
     return Promise.resolve().then(function () {
-        $g.log('[CryptoJS][AesCbc]加密');
+        // $g.log('[CryptoJS][AesCbc]加密');
         const wordIn = CryptoJS.lib.WordArray.create(ByteUtils.arrayToBuffer(data))
-        $g.log('[CryptoJS][AesCbc]加密 wordIn:', wordIn);
+        // $g.log('[CryptoJS][AesCbc]加密 wordIn:', wordIn);
         const wordIV = CryptoJS.lib.WordArray.create(iv)
-        $g.log('[CryptoJS][AesCbc]加密 wordIV:', wordIn);
+        // $g.log('[CryptoJS][AesCbc]加密 wordIV:', wordIn);
         const wordOut = CryptoJS.AES.encrypt(wordIn, that.key, {
             iv: wordIV,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
         })
-        $g.log('[CryptoJS][AesCbc]完成:', wordOut);
+        // $g.log('[CryptoJS][AesCbc]完成:', wordOut);
         const typedArray = ToolBytes.CryptJsWordArrayToUint8Array(wordOut.ciphertext)
         return typedArray.buffer;
     })
@@ -119,19 +119,19 @@ AesCbcCryptoJS.prototype.decrypt = function (data, iv) {
     return Promise.resolve().then(function () {
         // const BaseIn = CryptoJS.enc.Base64.stringify(CryptoJS.lib.WordArray.create(data))
         // const BaseIn = ToolBytes.ArrayBufferToBase64(data)
-        $g.log('[CryptoJS][AesCbc]解密 data:', data.byteLength);
+        // $g.log('[CryptoJS][AesCbc]解密 data:', data.byteLength);
         const wordData = CryptoJS.lib.WordArray.create(data)
         const ciphertext = CryptoJS.lib.CipherParams.create({ ciphertext: wordData})
         const wordIV = CryptoJS.lib.WordArray.create(iv)
-        $g.log('[CryptoJS][AesCbc]解密 wordData:',wordData);
-        $g.log('[CryptoJS][AesCbc]解密 ciphertext:', ciphertext);
-        $g.log('[CryptoJS][AesCbc]解密 wordIV:', wordIV);
+        // $g.log('[CryptoJS][AesCbc]解密 wordData:',wordData);
+        // $g.log('[CryptoJS][AesCbc]解密 ciphertext:', ciphertext);
+        // $g.log('[CryptoJS][AesCbc]解密 wordIV:', wordIV);
         const wordOut = CryptoJS.AES.decrypt(ciphertext, that.key, {
             iv: wordIV,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
         })
-        $g.log('[CryptoJS][AesCbc]完成 : ', wordOut);
+        // $g.log('[CryptoJS][AesCbc]完成 : ', wordOut);
         const typeArray = ToolBytes.CryptJsWordArrayToUint8Array(wordOut)
         return typeArray.buffer
     }).catch(function (error) {

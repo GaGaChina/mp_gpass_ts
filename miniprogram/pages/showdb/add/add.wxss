@@ -1,0 +1,56 @@
+.i_cell {
+    width: 750rpx;
+    min-height: 100rpx;
+    padding-left: 20rpx;
+    padding-top: 10rpx;
+    padding-bottom: 10rpx;
+    border-bottom: 1px solid #000;
+}
+
+.it_title {
+    display: flex;
+}
+
+.it_title_input {
+    width: 580rpx;
+    height: 75rpx;
+    border-radius: 0;
+    border: 1px solid #9b9b9d;
+    line-height: 75rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    box-sizing: border-box;
+    padding: 21rpx;
+    background: #202435;
+    color: #FFF;
+}
+
+.it_title button:nth-of-type(1) {
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 25%;
+    background: #9ce72a;
+}
+
+.it_title button:nth-of-type(1)>i {
+    color: #001044;
+    font-size: 50rpx;
+    line-height: 100rpx;
+}
+
+.it_title_view {
+    padding-left: 30rpx;
+}
+
+.it_title_view>view {
+    color: cornsilk;
+    font-size: 24rpx;
+}
+
+.view {
+    color: #fff;
+}
+
+button>i {
+    color: #fff;
+}

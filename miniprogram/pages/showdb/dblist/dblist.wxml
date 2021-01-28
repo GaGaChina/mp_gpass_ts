@@ -1,0 +1,38 @@
+<g-page-bg></g-page-bg>
+<g-page-top canBack="{{true}}" title="本地档案列表"></g-page-top>
+<view style="height:{{fullPageHeight}}rpx;">
+    <scroll-view scroll-y enable-flex class="list" scroll-into-view="index{{selectIndex}}"
+        style="height:{{centerPageHeight}}rpx;">
+        <block wx:for="{{dbList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+            <view id="index{{index}}" class="item">
+                <view class="top_bar">
+                    <view class="title_icon "><i class="fa fa-{{item.icon}}"></i></view>
+                    <view class="title">{{item.name}}</view>
+                    <view wx:if="{{item.isSelect}}" class="select"><i class="fa fa-check"></i> 选中</view>
+                </view>
+                <view class="center">
+                    <view class="center_left">
+                        <view>创建时间 : {{item.timeCreat}}</view>
+                        <view>访问时间 : {{item.timeRead}}</view>
+                        <view>修改时间 : {{item.timeChange}}</view>
+                        <view>使用空间 : {{item.fileSize}}</view>
+                    </view>
+                    <view class="center_right">
+                        <button data-id="{{ item.id }}" bindtap="btOpen"><i class="fa fa-envelope-open-o"></i> 打
+                            开</button>
+                        <button data-id="{{ item.id }}" bindtap="btEdit"><i class="fa fa-pencil-square-o"></i> 操
+                            作</button>
+                    </view>
+                </view>
+            </view>
+        </block>
+    </scroll-view>
+    <view class="end">
+        <view class="info">本地最大容量 {{fileSizeMax}} , 已用 {{fileSizeAll}} , 预留 {{fileSizeMore}} 周转, 剩余可用空间
+            {{fileSizeUsable}}</view>
+        <view class="end_bt">
+            <button class="bt_big" bindtap="btCreat"><i class="input_icon fa fa-plus"></i> 创建新档案</button>
+        </view>
+    </view>
+
+</view>

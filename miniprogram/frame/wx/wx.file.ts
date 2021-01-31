@@ -96,7 +96,7 @@ export class WXFile {
         return new Promise(async function (resolve) {
             if (!WXCompatible.canRun('1.9.9', '无法使用微信文件模块。')) return resolve(false)
             // 检查并创建文件夹
-            if (await WXFile.checkDirectory(tempFilePath)) {
+            if (await WXFile.checkDirectory(filePath)) {
                 // 开始保存文件
                 WXFile.manager.saveFile({
                     tempFilePath: tempFilePath,
@@ -129,14 +129,16 @@ export class WXFile {
             }
             let path: string = ''
             for (let i = 0; i < fileList.length; i++) {
-                path += '/' + fileList[i]
+                if (i !== 0) path += '/'
+                path += fileList[i]
                 let info = await WXFile.getFileStat(path)
-                if (info && info.isDirectory() === false) {
+                if (info === false || info.isDirectory() === false) {
                     if (await WXFile.mkdir(path) === false) {
                         resolve(false)
                     }
                 }
             }
+            resolve(true)
         })
     }
 
@@ -149,11 +151,11 @@ export class WXFile {
             WXFile.manager.mkdir({
                 dirPath: `${wx.env.USER_DATA_PATH}/${filePath}`,
                 success: (res: WechatMiniprogram.GeneralCallbackResult) => {
-                    $g.log('[wx.file][FileSize][success]', res);
+                    $g.log('[wx.file][mkdir][success]', res);
                     resolve(true)
                 },
                 fail: (e: WechatMiniprogram.MkdirFailCallbackResult) => {
-                    $g.log('[wx.file][FileSize][fail]', e);
+                    $g.log('[wx.file][mkdir][fail]', e);
                     resolve(false)
                 }
             })
@@ -170,11 +172,11 @@ export class WXFile {
                 path: `${wx.env.USER_DATA_PATH}/${filePath}`,
                 recursive: false,
                 success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
-                    $g.log('[wx.file][FileSize][success]', res);
+                    $g.log('[wx.file][FileStat][success]', res);
                     resolve(res.stats)
                 },
                 fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
-                    $g.log('[wx.file][FileSize][fail]', e);
+                    $g.log('[wx.file][FileStat][fail]', e);
                     resolve(false)
                 }
             })
@@ -351,6 +353,28 @@ export class WXFile {
                 },
                 fail: (e: any) => {
                     $g.log('[wx.file][writeFile][fail]', e);
+                    wx.showToast({ title: `文件写入失败, ${e.errMsg}`, icon: 'none', mask: false })
+                    resolve(false)
+                }
+            })
+        })
+    }
+
+    /**
+     * 将用户本地文件保存到用户端
+     * @param filePath 
+     */
+    public static openDocument(filePath: string): Promise<boolean> {
+        return new Promise(resolve => {
+            wx.openDocument({
+                filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                showMenu: true,
+                success: function (res) {
+                    $g.log('[wx.file][openDocument][success]', res);
+                    resolve(true)
+                },
+                fail: function (e: any) {
+                    $g.log('[wx.file][openDocument][fail]', e);
                     resolve(false)
                 }
             })

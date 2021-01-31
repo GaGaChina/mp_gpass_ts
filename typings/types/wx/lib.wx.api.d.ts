@@ -3020,6 +3020,8 @@ innerAudioContext.onError((res) => {
         fileType?: 'doc' | 'docx' | 'xls' | 'xlsx' | 'ppt' | 'pptx' | 'pdf'
         /** 接口调用成功的回调函数 */
         success?: OpenDocumentSuccessCallback
+        /** 是否显示右上角菜单 */
+        showMenu?: boolean
     }
     interface OpenLocationOption {
         /** 纬度，范围为-90~90，负数表示南纬。使用 gcj02 国测局坐标系 */

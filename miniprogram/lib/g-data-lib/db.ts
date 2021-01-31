@@ -1,6 +1,8 @@
+import { AES } from "./../../frame/crypto/AES"
 import { $g } from "../../frame/speed.do"
 import { WXFile } from "../../frame/wx/wx.file"
 import { Kdbx } from "../kdbxweb/types"
+import { KdbxApi } from "./kdbx.api"
 
 interface IDB {
     getInfo(): Object;
@@ -385,12 +387,11 @@ export class DBItem extends DBBase {
                     const fileName: string = fileList[j]
                     const fileInfo: any = binaries[fileName]
                     const ref: string = fileInfo.ref
-                    // let pass: string = (KdbxApi.kdbxweb.KdbxUuid as any).random().toString()
-                    let pass: string = ''
+                    let pass: string = (KdbxApi.kdbxweb.KdbxUuid as any).random().toString()
                     let byte: ArrayBuffer = fileInfo.value
                     // Aes
-                    // await AES.importKeyStr(pass)
-                    // byte = await AES.encrypt(byte, null)
+                    await AES.importKeyStr(pass)
+                    byte = await AES.encrypt(byte, null)
                     // 创建本地文件 AES 加密
                     const newPath: string = uuid + ref
                     await WXFile.writeFile(`db/${this.path}/${newPath}`, byte)

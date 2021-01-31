@@ -1,8 +1,7 @@
-import { $g } from "../../frame/speed.do";
-import { WXFile } from "../../frame/wx/wx.file";
-import { Kdbx, Times } from "../kdbxweb/types";
-import { DBBase } from "./db.lib.base";
-
+import { $g } from "../../frame/speed.do"
+import { DBBase } from "./db.base"
+import { DBItem } from "./db.item"
+import { DbLog } from "./db.log"
 
 /**
  * 本地的数据
@@ -10,7 +9,7 @@ import { DBBase } from "./db.lib.base";
 export class DBLib extends DBBase {
 
     /** 用户的访问日志 */
-    public accessLog: Array<AccessLog> = new Array<AccessLog>()
+    public log: Array<DbLog> = new Array<DbLog>()
     /** 本地全部的库 */
     public lib: Array<DBItem> = new Array<DBItem>()
     /** 本地最大可以存放文件尺寸 */
@@ -56,9 +55,9 @@ export class DBLib extends DBBase {
 
     /** 打开用户最后使用的密码管理器 */
     public openListFile(): DBItem | null {
-        if (this.accessLog.length) {
-            const item: AccessLog = this.accessLog[0]
-            item.localId
+        if (this.log.length) {
+            const item: DbLog = this.log[0]
+
         }
         return null
     }
@@ -97,71 +96,23 @@ export class DBLib extends DBBase {
         return Promise.resolve(this.fileSizeAll)
     }
 
-    __name__ = 'DBLib'
-    /** 本数据对象需要保存的内容 */
-    private static outList: Array<string> = ['accessLog', 'lib', 'selectId', 'fileSizeAll']
-    public getInfo(): Object { return this.getProperty(new Object(), DBLib.outList) }
-    public setInfo(o: Object): void { this.setProperty(o, DBLib.outList) }
-}
-
-export class DBItem extends DBBase {
-
-    /** 本地数字编码 new Date().getTime() */
-    public localId: number = 0;
-    /** 库图标 */
-    public icon: string = 'database'
-    /** 档案的名称 */
-    public name: string = '档案名称'
-    /** 用户导入的时候文件名 `db/${dbItem.path}/db.kdbx` */
-    public filename: string = ''
-    /** 文件存放在 db 文件夹下的 使用 localId */
-    public path: string = ''
-    /** 文件创建的时间 */
-    public timeCreat: Date = new Date()
-    /** 文件读取的时间 */
-    public timeRead: Date = new Date()
-    /** 文件读取的时间 */
-    public timeChange: Date = new Date()
-    /** 文件夹下的文件总大小 */
-    public fileSizeAll: number = 0
-    /** AES加密内容 Base64 缓存的密码, 提供给指纹和人脸识别使用 */
-    public pass: string = '';
-    /** 解密打开的 kdbx 文件 */
-    public db: Kdbx | null = null;
-
-    /** 获取这个目录下文件的尺寸 */
-    public async fileSize(): Promise<number> {
-        if (this.path) {
-            this.fileSizeAll = await WXFile.getFileSize(`db/${this.path}`)
+    checkFile() {
+        $g.log(`开始检查空白档案`);
+        let l: number = this.lib.length;
+        if (l) {
+            while (--l > -1) {
+                let item = this.lib[l];
+                if (item.checkFile() === false) {
+                    $g.log(`删除空白档案 : ${item.name}`);
+                    this.lib.splice(l, 1);
+                }
+            }
         }
-        return Promise.resolve(this.fileSizeAll)
     }
 
-    __name__ = 'DBItem'
+    __name__ = 'DBLib'
     /** 本数据对象需要保存的内容 */
-    private static outList: Array<string> = ['localId', 'icon', 'name', 'filename', 'path', 'timeCreat', 'timeRead', 'timeChange', 'fileSizeAll', 'pass']
-    public getInfo(): Object { return this.getProperty(new Object(), DBItem.outList) }
-    public setInfo(o: Object): void { this.setProperty(o, DBItem.outList) }
-}
-
-/**
- * 用户的访问记录, 第一条是用户最近访问的数据
- */
-export class AccessLog extends DBBase {
-
-    /** 本地记录ID */
-    public localId: number = 0;
-    /** 文件打开的次数 */
-    public timesOpen: number = 0;
-    /** 文件第一次访问的时间 */
-    public timeFirst: number = 0;
-    /** 持续访问时间(秒) */
-    public timeLength: number = 0;
-
-
-    __name__ = 'AccessLog'
-    /** 本数据对象需要保存的内容 */
-    private static typeList: Array<string> = ['localId', 'timesOpen', 'timeFirst', 'timeLength']
-    public getInfo(): Object { return this.getProperty(new Object(), AccessLog.typeList) }
-    public setInfo(o: Object): void { this.setProperty(o, AccessLog.typeList) }
+    private static outList: Array<string> = ['log', 'lib', 'selectId', 'fileSizeAll']
+    public getInfo(): Object { return this.getProperty(new Object(), DBLib.outList) }
+    public setInfo(o: Object): void { this.setProperty(o, DBLib.outList) }
 }

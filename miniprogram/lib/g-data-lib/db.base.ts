@@ -1,5 +1,7 @@
 import { $g } from "../../frame/speed.do";
-import { DBItem, DBLib, AccessLog } from "./db.lib";
+import { DbLog } from "./db.log";
+import { DBItem } from "./db.item";
+import { DBLib } from "./db.lib";
 
 interface IDB {
     getInfo(): Object;
@@ -153,9 +155,10 @@ export abstract class DBBase implements IDB {
         return false
     }
 
+    /** 初始化类和名称的对应表 */
     private static classInit(): void {
         if (DBBase.className.length === 0) {
-            DBBase.classTarget.push(DBLib, DBItem, AccessLog)
+            DBBase.classTarget.push(DBLib, DBItem, DbLog)
             for (let i = 0, l: number = DBBase.classTarget.length; i < l; i++) {
                 const element = DBBase.classTarget[i];
                 DBBase.className.push($g.className(new element()))

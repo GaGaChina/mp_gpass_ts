@@ -1,4 +1,4 @@
-import { GBlock, GFileBase } from "./g.file.base";
+import { GBlock, GBase } from "./g.file.base";
 
 /**
  * 文件管理系统
@@ -20,11 +20,9 @@ export class GFileManage {
     public model:number = 1
 
     /** 文件列表中的列表 */
-    public fileList:Array<GFileBase> = new Array<GFileBase>()
+    public fileList:Array<GBase> = new Array<GBase>()
 
     /** 文件列表中的空白区域 */
     public listBlock: Array<GBlock> = new Array<GBlock>()
-
-
 
 }

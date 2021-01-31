@@ -1,5 +1,5 @@
 import { GByteStream } from "./g.byte.stream";
-import { GFileBase, IGFileBase } from "./g.file.base";
+import { GBase, IGFileBase } from "./g.file.base";
 
 /**
  * 文件列表区

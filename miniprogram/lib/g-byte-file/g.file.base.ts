@@ -20,7 +20,7 @@ export interface IGFileBase {
 }
 
 /** 文件的基类, 不能初始化使用 */
-export abstract class GFileBase implements IGFileBase {
+export abstract class GBase implements IGFileBase {
 
     /** 文件的类型 */
     public type: number = GFileConfig.TYPE_254_BASE
@@ -196,7 +196,7 @@ export abstract class GFile {
 /**
  * 表示存储的一块区域
  */
-export class GBlock extends GFileBase {
+export class GBlock extends GBase {
 
     /** 二进制头的ID号 */
     public static readonly HEAD_ID: number = 2

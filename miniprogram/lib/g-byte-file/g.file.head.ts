@@ -6,7 +6,7 @@ import { GFileConfig, IGFileBase } from "./g.file.base";
  * 
  * 双备份, 操作1后,操作2,在操作就用1, 保证以外的回退, API中可以进行清理
  */
-export class GFileHead implements IGFileBase {
+export class GHead implements IGFileBase {
 
 
     public type:number = GFileConfig.TYPE_000_HEAD

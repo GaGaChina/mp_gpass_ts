@@ -1,6 +1,7 @@
-import { $g } from "../../../frame/speed.do";
-import { DBItem, DBLib } from "../../../lib/g-data-lib/db.lib";
-import { GFileSize } from "../../../lib/g-byte-file/g.file.size";
+import { $g } from "../../../frame/speed.do"
+import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
+import { DBItem } from "../../../lib/g-data-lib/db.item"
+import { DBLib } from "../../../lib/g-data-lib/db.lib"
 
 Page({
     data: {

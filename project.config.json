@@ -13,7 +13,7 @@
         "beforeUpload": "npm run tsc"
     },
     "setting": {
-        "urlCheck": true,
+        "urlCheck": false,
         "es6": false,
         "enhance": false,
         "postcss": true,
@@ -29,7 +29,7 @@
         "checkInvalidKey": true,
         "checkSiteMap": true,
         "uploadWithSourceMap": true,
-        "compileHotReLoad": false,
+        "compileHotReLoad": true,
         "useMultiFrameRuntime": true,
         "useApiHook": true,
         "useApiHostProcess": true,
@@ -62,32 +62,7 @@
             "list": []
         },
         "miniprogram": {
-            "list": [
-                {
-                    "name": "pages/user/user",
-                    "pathName": "pages/user/user",
-                    "query": "",
-                    "scene": null
-                },
-                {
-                    "name": "pages/showdb/index/index",
-                    "pathName": "pages/showdb/index/index",
-                    "query": "",
-                    "scene": null
-                },
-                {
-                    "name": "pages/showdb/add/add",
-                    "pathName": "pages/showdb/add/add",
-                    "query": "type=add&infoType=bank",
-                    "scene": null
-                },
-                {
-                    "name": "pages/showdb/dblist/dblist",
-                    "pathName": "pages/showdb/dblist/dblist",
-                    "query": "type=add&infoType=bank",
-                    "scene": null
-                }
-            ]
+            "list": []
         }
     }
 }

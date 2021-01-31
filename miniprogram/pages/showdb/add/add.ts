@@ -1,11 +1,6 @@
-import { $g } from "../../../frame/speed.do";
-import { WXFile } from "./../../../frame/wx/wx.file";
-import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api";
-import { Entry, Kdbx, StringProtected } from "../../../lib/kdbxweb/types/index";
-import { WXSoterAuth } from "../../../frame/wx/wx.soter.auth";
-import { EncodingIndexes } from "../../../lib/text-encoding/EncodingIndexes";
-import { WXSize } from "../../../frame/wx/wx.resize";
-import { DBItem, DBLib } from "../../../lib/g-data-lib/db.lib";
+import { $g } from "../../../frame/speed.do"
+import { DBLib } from "../../../lib/g-data-lib/db.lib"
+import { DBItem } from "../../../lib/g-data-lib/db.item"
 
 /**
  * 列表

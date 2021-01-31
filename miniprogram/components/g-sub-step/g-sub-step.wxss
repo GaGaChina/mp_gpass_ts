@@ -1,0 +1,28 @@
+@import "./../../fonts/awesome.wxss";
+
+.root {
+    position: fixed;
+    width: 750rpx;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+
+
+
+
+.icon_play {
+    width: 50rpx;
+}
+
+.icon_ok {
+    width: 50rpx;
+}
+
+.icon_stop {
+    width: 50rpx;
+}

@@ -1,0 +1,10 @@
+<view wx:if="{{open}}" class="root" style="height:{{sceneHeight}}rpx;" bindtap="btClose">
+    <block wx:for="{{showlist}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+        <view style="top:{{item.top}}rpx">
+            <view><i class="fa fa-{{item.icon}} {{item.icon_class}}"></i></view>
+            <view>{{item.title}}</view>
+            <view wx:if="{{item.note !== ''}}">{{item.note}}</view>
+            <view>{{err}}</view>
+        </view>
+    </block>
+</view>

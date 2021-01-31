@@ -1,11 +1,13 @@
-import { $g } from "../../frame/speed.do";
-import { WXFile } from "./../../frame/wx/wx.file";
-import { KdbxApi } from "../../lib/g-data-lib/kdbx.api";
-import { Kdbx } from "../../lib/kdbxweb/types/index";
-import { WXSoterAuth } from "../../frame/wx/wx.soter.auth";
-import { WXSize } from "../../frame/wx/wx.resize";
-import { DBItem, DBLib } from "../../lib/g-data-lib/db.lib";
-import { GFileSize } from "../../lib/g-byte-file/g.file.size";
+import { $g } from "../../frame/speed.do"
+import { WXFile } from "./../../frame/wx/wx.file"
+import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
+import { Kdbx } from "../../lib/kdbxweb/types/index"
+import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
+import { WXSize } from "../../frame/wx/wx.resize"
+import { GFileSize } from "../../lib/g-byte-file/g.file.size"
+import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
+import { DBLib } from "../../lib/g-data-lib/db.lib"
+import { DBItem } from "../../lib/g-data-lib/db.item"
 
 /** 选中的档案信息 */
 let selectItem: DBItem | null = null
@@ -55,6 +57,14 @@ Page({
         }
         // this.fileFindInDir()
         // this.autoLoad()
+        this.autoDown()
+    },
+    async autoDown() {
+        const dbLib: DBLib = $g.g.dbLib
+        const dbItem: DBItem | null = dbLib.selectDB
+        if (dbItem) {
+            await WXFile.openDocument(`db/${dbItem.path}/db.kdbx`)
+        }
     },
     async autoLoad() {
         this.setData({ passWord: this.data.passWord })
@@ -106,6 +116,7 @@ Page({
                     wx.reLaunch({ url: './../showdb/index/index' })
                 } else {
                     // 关闭已经打开的库
+                    await WXKeepScreen.on()
                     const dbLib: DBLib = $g.g.dbLib
                     const findOpen: DBItem | null = dbLib.selectDB
                     if (findOpen && findOpen.localId !== dbItem.localId) {
@@ -118,11 +129,15 @@ Page({
                         if (db) {
                             dbItem.db = db
                             // ----- 查询 db 中有没有附件, 有就对db进行拆解, 在保存
+                            await dbItem.getFileToDisk()
+                            await WXKeepScreen.off()
                             wx.reLaunch({ url: './../showdb/index/index' })
+                            return
                         } else {
                             wx.showToast({ title: '打开文件失败, 请检查密码!', icon: 'none', mask: true })
                         }
                     }
+                    await WXKeepScreen.off()
                 }
             } else {
                 wx.showToast({ title: '请输入文件密码!', icon: 'none', mask: true })
@@ -139,6 +154,7 @@ Page({
             async success(e) {
                 if (e.confirm) {
                     $g.log('g|time|start')
+                    await WXKeepScreen.on()
                     const db: Kdbx = KdbxApi.create('我的密码档案', that.data.passWord)
                     that.setData({ passWord: '' })
                     $g.log('获取 db 二进制')
@@ -154,23 +170,26 @@ Page({
                     dbItem.timeChange = dbItem.timeCreat
                     dbItem.timeRead = dbItem.timeCreat
                     $g.log('写入文件系统')
-                    await WXFile.writeFile(`db/${dbItem.path}/db.kdbx`, fileByte)
-                    $g.log('获取文件夹大小')
-                    await dbItem.fileSize()
-                    const dbLib: DBLib = $g.g.dbLib
-                    dbLib.fileSize()
-                    dbLib.lib.push(dbItem)
-                    $g.log('保存缓存')
-                    dbLib.storageSaveThis()
-                    $g.log('g|time|end')
-                    // 切换页面
-                    wx.reLaunch({
-                        url: './../showdb/index/index'
-                    })
+                    if (await WXFile.writeFile(`db/${dbItem.path}/db.kdbx`, fileByte)) {
+                        $g.log('获取文件夹大小')
+                        await dbItem.fileSize()
+                        const dbLib: DBLib = $g.g.dbLib
+                        dbLib.fileSize()
+                        dbLib.lib.push(dbItem)
+                        $g.log('保存缓存')
+                        dbLib.storageSaveThis()
+                        $g.log('g|time|end')
+                        await WXKeepScreen.off()
+                        // 切换页面
+                        wx.reLaunch({
+                            url: './../showdb/index/index'
+                        })
+                        return
+                    }
+                    await WXKeepScreen.off()
                 } else {
                     that.setData({ passWord: '' })
                 }
-
             }
         })
     },

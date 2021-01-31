@@ -21,11 +21,33 @@
         </view>
     </view>
     <!-- 有条目 -->
-    <view wx:else>
+    <view wx:else style="height:{{centerPageHeight}}rpx">
         <view>左侧导航</view>
+        <scroll-view scroll-y enable-flex class="list" scroll-into-view="index{{groupIndex}}"
+            style="height:{{centerPageHeight}}rpx;">
+
+            <block wx:for="{{groupList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+                <view id="index{{index}}" data-uuid="{{item.uuid}}" class="item">
+                    <view>{{item.icon}}</view>
+                    <view>{{item.name}}</view>
+                </view>
+            </block>
+
+        </scroll-view>
         <view>
             <view>搜索</view>
-            <view>列表</view>
+            <scroll-view scroll-y enable-flex class="list" scroll-into-view="index{{itemIndex}}"
+                style="height:{{centerPageHeight}}rpx;">
+                <block wx:for="{{itemList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+                    <view id="index{{index}}" data-uuid="{{item.uuid}}" class="item">
+                        <view>{{item.isGroup}}</view>
+                        <view>{{item.icon}}</view>
+                        <view>{{item.title}}</view>
+                        <view>{{item.username}}</view>
+                        <view>{{item.password}}</view>
+                    </view>
+                </block>
+            </scroll-view>
         </view>
     </view>
 

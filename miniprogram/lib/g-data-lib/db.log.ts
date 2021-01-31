@@ -1,4 +1,4 @@
-import { DBBase } from "./db.base";
+import { DBBase } from "./db.base"
 
 /**
  * 用户的访问记录, 第一条是用户最近访问的数据

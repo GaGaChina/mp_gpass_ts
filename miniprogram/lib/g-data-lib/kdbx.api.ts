@@ -1,10 +1,9 @@
 import { $g } from "../../frame/speed.do";
 import { GFileSize } from "../g-byte-file/g.file.size";
-import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group, KdbxUuid } from "../kdbxweb/types/index";
+import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group } from "../kdbxweb/types/index";
 
-
+const KdbxWeb = require('./../kdbxweb/index')
 const Consts = require('./../kdbxweb/defs/consts')
-const KdbxWeb = require('./../kdbxweb/index.js')
 
 export class KdbxApi {
 
@@ -15,22 +14,22 @@ export class KdbxApi {
      * @param pass 文本密码
      */
     public static getPassCredentials(pass: String): Credentials {
-        const passPV: ProtectedValue = (KdbxApi.kdbxweb.ProtectedValue as any).fromString(pass);
-        const CredentialsClass: any = KdbxApi.kdbxweb.Credentials
-        const credentials: Credentials = new CredentialsClass(passPV)
-        return credentials
+        const pv: ProtectedValue = (KdbxApi.kdbxweb.ProtectedValue as any).fromString(pass);
+        const n: any = KdbxApi.kdbxweb.Credentials
+        const o: Credentials = new n(pv)
+        return o
     }
-    
+
     /**
      * 创建一个新的数据库
      * @param name 密码库名称
      * @param pass 密码
      */
     public static create(name: string, pass: string): Kdbx {
-        const credentials: Credentials = KdbxApi.getPassCredentials(pass)
-        const db: Kdbx = (KdbxApi.kdbxweb.Kdbx as any).create(credentials, name)
+        const c: Credentials = KdbxApi.getPassCredentials(pass)
+        const db: Kdbx = (KdbxApi.kdbxweb.Kdbx as any).create(c, name)
         //db.set({ active: true, created: true, name });
-        const dbHeader:any = db.header
+        const dbHeader: any = db.header
         dbHeader.setKdf(Consts.KdfId.Aes)
         return db
     }
@@ -44,11 +43,11 @@ export class KdbxApi {
         try {
             $g.log('g|time|start')
             $g.log('[KdbxApi][open]文件长度 : ' + GFileSize.getSize(byte.byteLength, 3))
-            const credentials: Credentials = KdbxApi.getPassCredentials(pass)
-            const a:ArrayBuffer = await credentials.getHash()
+            const c: Credentials = KdbxApi.getPassCredentials(pass)
+            const a: ArrayBuffer = await c.getHash()
             // $g.log('[KdbxApi][open]credentials', a);
             // $g.log('[KdbxApi][open]证书创建成功', credentials)
-            const db:Kdbx | null = await (KdbxApi.kdbxweb.Kdbx as any).load(byte, credentials) as Kdbx
+            const db: Kdbx | null = await (KdbxApi.kdbxweb.Kdbx as any).load(byte, c)
             $g.log('g|time|end')
             return db
         } catch (e) {
@@ -95,6 +94,4 @@ export class KdbxApi {
         }
         return true
     }
-
-
 }

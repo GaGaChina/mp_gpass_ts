@@ -1,11 +1,10 @@
-// import { AES } from "../../frame/crypto/AES";
-import { $g } from "../../frame/speed.do";
-import { WXFile } from "../../frame/wx/wx.file";
-import { Entry, Group, Kdbx, KdbxUuid } from "../kdbxweb/types";
-import { DBBase } from "./db.base";
+import { $g } from "../../frame/speed.do"
+import { WXFile } from "../../frame/wx/wx.file"
+import { DBBase } from "./db.base"
+// import { KdbxApi } from "./kdbx.api"
 
 export class DBItem extends DBBase {
-    
+
 
     /** 本地数字编码 new Date().getTime() */
     public localId: number = 0;
@@ -28,7 +27,8 @@ export class DBItem extends DBBase {
     /** AES加密内容 Base64 缓存的密码, 提供给指纹和人脸识别使用 */
     public pass: string = ''
     /** 解密打开的 kdbx 文件 */
-    public db: Kdbx | null = null
+    // public db: Kdbx | null = null
+    public db: any | null = null
 
     /** 获取这个目录下文件的尺寸 */
     public async fileSize(): Promise<number> {
@@ -53,7 +53,8 @@ export class DBItem extends DBBase {
 
     /** 将里面的附件抽出, 并转换为文件存在本地 */
     public async getFileToDisk() {
-        const db: Kdbx | null = this.db
+        // const db: Kdbx | null = this.db
+        const db: any | null = this.db
         if (db) {
             await this.getGroupToDisk(db.groups)
             const byte: ArrayBuffer = await db.save()
@@ -64,22 +65,26 @@ export class DBItem extends DBBase {
     }
 
     /** 遍历组内的文件 */
-    private async getGroupToDisk(groups: Group[]) {
+    // private async getGroupToDisk(groups: Group[]) {
+    private async getGroupToDisk(groups: any[]) {
         let l: number = groups.length
         if (l > 0) {
             for (let i = 0; i < groups.length; i++) {
-                const group: Group = groups[i];
+                //const group: Group = groups[i];
+                const group: any = groups[i]
                 await this.getGroupToDisk(group.groups)
                 await this.getEntrieToDisk(group.entries)
             }
         }
     }
 
-    private async getEntrieToDisk(entries: Entry[]) {
+    // private async getEntrieToDisk(entries: Entry[]) {
+    private async getEntrieToDisk(entries: any[]) {
         let l: number = entries.length
         if (l > 0) {
             for (let i = 0; i < entries.length; i++) {
-                const entrie: Entry = entries[i]
+                // const entrie: Entry = entries[i]
+                const entrie: any = entries[i]
                 const uuid: string = entrie.uuid.toString()
                 const binaries: any = entrie.binaries
                 const fileList: Array<string> = Object.keys(binaries)
@@ -96,7 +101,8 @@ export class DBItem extends DBBase {
                     const fileName: string = fileList[j]
                     const fileInfo: any = binaries[fileName]
                     const ref: string = fileInfo.ref
-                    let pass: string = KdbxUuid.random().toString()
+                    // let pass: string = (KdbxApi.kdbxweb.KdbxUuid as any).random().toString()
+                    let pass: string = ''
                     let byte: ArrayBuffer = fileInfo.value
                     // Aes
                     // await AES.importKeyStr(pass)

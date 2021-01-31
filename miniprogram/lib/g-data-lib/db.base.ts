@@ -1,7 +1,7 @@
-import { $g } from "../../frame/speed.do";
-import { DbLog } from "./db.log";
-import { DBItem } from "./db.item";
-import { DBLib } from "./db.lib";
+import { $g } from "../../frame/speed.do"
+import { DBLib } from "./db.lib"
+import { DBItem } from "./db.item"
+import { DbLog } from "./db.log"
 
 interface IDB {
     getInfo(): Object;

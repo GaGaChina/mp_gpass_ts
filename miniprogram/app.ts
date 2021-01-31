@@ -3,7 +3,8 @@ import { WXSoterAuth } from "./frame/wx/wx.soter.auth"
 import { WXUser } from "./frame/wx/wx.user"
 import { WXFile } from "./frame/wx/wx.file"
 import { WXSize } from "./frame/wx/wx.resize"
-import { DBLib } from "./lib/g-data-lib/db.lib"
+import { DBLib } from "./lib/g-data-lib/db"
+// import { DBLib } from "./lib/g-data-lib/db.lib"
 
 App<IAppOption>({
     globalData: {

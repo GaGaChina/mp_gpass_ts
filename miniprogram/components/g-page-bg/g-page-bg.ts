@@ -38,6 +38,5 @@ Component({
                 this.setData({darkmode: true})
             }
         }
-
     },
 })

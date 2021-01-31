@@ -1,6 +1,5 @@
 import { $g } from "../../../frame/speed.do"
-import { DBLib } from "../../../lib/g-data-lib/db.lib"
-import { DBItem } from "../../../lib/g-data-lib/db.item"
+import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 
 /**
  * 列表

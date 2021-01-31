@@ -1,8 +1,7 @@
 import { $g } from "../../../frame/speed.do"
+import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
-import { Entry, Group, Kdbx } from "../../../lib/kdbxweb/types/index"
-import { DBLib } from "../../../lib/g-data-lib/db.lib"
-import { DBItem } from "../../../lib/g-data-lib/db.item"
+import { Kdbx } from "../../../lib/kdbxweb/types"
 
 Page({
     data: {
@@ -10,7 +9,7 @@ Page({
         centerPageHeight: 0,
         dbEmpty: true,
         /** 现在选中的 Group */
-        selectGroup: Group,
+        selectGroup: null,
         /** 组显示内容 {uuid, icon, name, notes, } */
         groupList: new Array<any>(),
         /** 组默认的索引 index */
@@ -38,14 +37,14 @@ Page({
         }
     },
     /** 获取默认的db内容 */
-    getDB(): Kdbx | null {
+    getDB(): any | null {
         const dbLib: DBLib = $g.g.dbLib
         const dbItem: DBItem | null = dbLib.selectDB
         if (dbItem?.db) return dbItem.db
         return null
     },
     setKdbx() {
-        const db: Kdbx | null = this.getDB()
+        const db: any | null = this.getDB()
         this.data.groupList.length = 0
         this.data.itemList.length = 0
         if (db) {
@@ -56,10 +55,10 @@ Page({
             itemList: this.data.itemList,
         })
     },
-    setGroup(groups: Group[], addGroupList: boolean = false) {
+    setGroup(groups: any[], addGroupList: boolean = false) {
         const l: number = groups.length
         for (let i = 0; i < groups.length; i++) {
-            const group: Group = groups[i]
+            const group: any = groups[i]
             const groupInfo: any = {
                 icon: group.icon,
                 name: group.name,
@@ -83,7 +82,7 @@ Page({
             }
             if (group.entries.length) {
                 for (let j = 0; j < group.entries.length; j++) {
-                    const entry: Entry = group.entries[j];
+                    const entry: any = group.entries[j];
                     const entryInfo: any = {
                         isGroup: false,
                         uuid: entry.uuid,

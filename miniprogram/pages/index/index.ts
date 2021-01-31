@@ -6,8 +6,9 @@ import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
 import { WXSize } from "../../frame/wx/wx.resize"
 import { GFileSize } from "../../lib/g-byte-file/g.file.size"
 import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
-import { DBLib } from "../../lib/g-data-lib/db.lib"
-import { DBItem } from "../../lib/g-data-lib/db.item"
+import { DBItem, DBLib } from "../../lib/g-data-lib/db"
+// import { DBLib } from "../../lib/g-data-lib/db.lib"
+// import { DBItem } from "../../lib/g-data-lib/db.item"
 
 /** 选中的档案信息 */
 let selectItem: DBItem | null = null

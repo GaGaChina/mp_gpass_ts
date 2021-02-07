@@ -1,5 +1,5 @@
 <g-page-bg></g-page-bg>
-<g-page-top canBack="{{false}}" title="{{dbEmpty?'欢迎添加条目':'密码档案'}}"></g-page-top>
+<g-page-top canBack="{{false}}" title="{{dbEmpty?'欢迎添加条目':dbName}}"></g-page-top>
 <view class="full_page" style="height:{{fullPageHeight}}rpx">
     <!-- 没条目 -->
     <view wx:if="{{dbEmpty}}" style="height:{{centerPageHeight}}rpx" class="first">
@@ -20,31 +20,37 @@
             </button>
         </view>
     </view>
-    <!-- 有条目 -->
-    <view wx:else style="height:{{centerPageHeight}}rpx">
-        <view>左侧导航</view>
-        <scroll-view scroll-y enable-flex class="list" scroll-into-view="index{{groupIndex}}"
-            style="height:{{centerPageHeight}}rpx;">
+    <!-------------------------------------- 有条目 -------------------------------------->
+    <view wx:else style="height:{{centerPageHeight}}rpx" class="info">
+        <view class="info_left" style="height:{{centerPageHeight}}rpx">
 
-            <block wx:for="{{groupList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-                <view id="index{{index}}" data-uuid="{{item.uuid}}" class="item">
-                    <view>{{item.icon}}</view>
-                    <view>{{item.name}}</view>
-                </view>
-            </block>
-
-        </scroll-view>
-        <view>
-            <view>搜索</view>
-            <scroll-view scroll-y enable-flex class="list" scroll-into-view="index{{itemIndex}}"
+            <scroll-view scroll-y enable-flex class="info_left_list" scroll-into-view="index{{groupIndex}}"
                 style="height:{{centerPageHeight}}rpx;">
+                <block wx:for="{{groupList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+                    <button id="index{{index}}" data-uuid="{{item.uuid}}" class="info_group" bindtap="btChangeUUID">
+                        <view class="info_group_icon"><i class="fa fa-{{item.icon}}"></i></view>
+                        <view class="info_group_title">{{item.name}}</view>
+                    </button>
+                </block>
+            </scroll-view>
+
+        </view>
+
+        <view class="info_right" style="height:{{centerPageHeight}}rpx">
+            <view style="height:{{findPageHeight}}rpx;">搜索</view>
+            <scroll-view scroll-y enable-flex class="info_right_list" scroll-into-view="index{{itemIndex}}"
+                style="height:{{centerPageHeight - findPageHeight}}rpx;">
                 <block wx:for="{{itemList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-                    <view id="index{{index}}" data-uuid="{{item.uuid}}" class="item">
-                        <view>{{item.isGroup}}</view>
-                        <view>{{item.icon}}</view>
-                        <view>{{item.title}}</view>
-                        <view>{{item.username}}</view>
-                        <view>{{item.password}}</view>
+                    <view id="index{{index}}" class="info_item {{item.isGroup?'info_item_isgroup':''}}">
+                        <view class="info_item_icon"><i class="fa fa-{{item.icon}}"></i></view>
+                        <button data-uuid="{{item.uuid}}" class="info_item_center bt_clear" bindtap="btChangeUUID">
+                            <view class="info_item_title">{{item.title}}</view>
+                            <view wx:if="{{item.password}}" class="info_item_other">用户名 : {{item.username}}</view>
+                            <view wx:if="{{item.password}}" class="info_item_other">密　码 : {{item.password}}</view>
+                        </button>
+                        <view wx:if="{{item.password}}" class="info_item_right">
+                            <button class="bt_clear" data-uuid="{{item.uuid}}" bindtap="btShowPass"><i class="fa fa-{{item.showpass?'eye':'eye-slash'}}"></i></button>
+                        </view>
                     </view>
                 </block>
             </scroll-view>

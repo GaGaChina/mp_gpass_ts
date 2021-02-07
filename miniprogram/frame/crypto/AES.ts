@@ -1,49 +1,156 @@
-var CryptoEngine = require('./../../lib/kdbxweb/crypto/crypto-engine')
-var ByteUtils = require('./../../lib/kdbxweb/utils/byte-utils')
+import { EncodingText } from "../../lib/text-encoding/EncodingText";
+import { $g } from "../speed.do";
+import { ToolBytes } from "../tools/tool.bytes";
+import { SHA256 } from "./SHA256";
 
+var CryptoJS = require('./../../lib/crypto-js/crypto-js')
+
+/**
+ * 长度16/24/32字节,不够末尾追加特定字符或重复密码字符串,直到最小长度
+ */
 export class AES {
 
-    /** 获取加密对象 */
-    private static aes: any = null
+    /** 设置加密key */
+    private static key: any = null
 
     /**
-     * 设置证书
+     * 使用 key 的 SHA256 进行设置 key 32字节 → AES256
+     * ArrayBuffer : 直接设置
+     * Uint8Array : 取出 ArrayBuffer 进行设置
+     * string : EncodingText.encode 转二进制设置
      * @param key 
      */
-    public static async importKey(key: ArrayBuffer): Promise<any> {
-        if (AES.aes === null) AES.aes = CryptoEngine.createAesCbc();
-        return await AES.aes.importKey(key)
-    }
-
-    /**
-     * 使用字符串设置key
-     * @param str 
-     */
-    public static async importKeyStr(str: String): Promise<any> {
-        const byte: Uint8Array = ByteUtils.stringToBytes(str)
-        const buffer: ArrayBuffer = byte.buffer
-        return await AES.importKey(buffer)
+    public static async setKey(key: ArrayBuffer | Uint8Array | string): Promise<void> {
+        const k: any = key
+        let byte: ArrayBuffer;
+        if ($g.isString(key)) {
+            const u8: Uint8Array = EncodingText.encode(k)
+            byte = u8.buffer
+        } else if ($g.isTypeM(key, 'ArrayBuffer')) {
+            byte = k
+        } else {
+            // Uint8Array
+            byte = k.buffer
+        }
+        byte = await SHA256.sha256(byte)
+        AES.key = CryptoJS.lib.WordArray.create(byte)
+        return Promise.resolve();
     }
 
     /**
      * 加密
-     * @param data 
-     * @param iv 
+     * 向量加密解密过程中不变
+     * @param data 二进制正常走, 如果是字符串(将 EncodingText → Byte)
+     * @param iv 16位向量, 字符串(将 EncodingText → Byte → SHA256 → 16位)
      */
-    public static async encrypt(data: Uint8Array | ArrayBuffer, iv: ArrayBuffer | null = null): Promise<ArrayBuffer> {
-        if (AES.aes === null) AES.aes = CryptoEngine.createAesCbc();
-        if (iv === null) iv = new ArrayBuffer(16)
-        return await AES.aes.encrypt(data, iv)
+    public static async encryptCBC(data: ArrayBuffer | Uint8Array | string, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
+        if (iv === null || iv === undefined) iv = new ArrayBuffer(16)
+        const d: any = data
+        let byte: ArrayBuffer;
+        if ($g.isString(data)) {
+            const u8: Uint8Array = EncodingText.encode(d)
+            byte = u8.buffer
+        } else if ($g.isTypeM(data, 'ArrayBuffer')) {
+            byte = d
+        } else {
+            // Uint8Array
+            byte = d.buffer
+        }
+        // 处理 iv 为字符串
+        const v: any = iv
+        if ($g.isString(iv)) {
+            const vU8: Uint8Array = EncodingText.encode(v)
+            const vSHA: ArrayBuffer = await SHA256.sha256(vU8.buffer)
+            iv = vSHA.slice(0, 16)
+        }
+        const wordIn = CryptoJS.lib.WordArray.create(byte)
+        const wordIV = CryptoJS.lib.WordArray.create(iv)
+        // $g.log('[CryptoJS][Aes]加密 wordIn:', wordIn);
+        // $g.log('[CryptoJS][Aes]加密 wordIV:', wordIV);
+        const wordOut = CryptoJS.AES.encrypt(wordIn, AES.key, {
+            iv: wordIV,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        })
+        // $g.log('[CryptoJS][Aes]加密 wordOut:', wordOut);
+        if (wordOut && wordOut.ciphertext) {
+            const outWord = ToolBytes.CryptJsWordArrayToUint8Array(wordOut.ciphertext)
+            if (outWord) {
+                return outWord.buffer
+            }
+        }
+        return null
     }
 
     /**
-     * 解密
+     * 解密, 对加密过的 ArrayBuffer | Uint8Array 进行解密
+     * 向量加密解密过程中不变
      * @param data 
-     * @param iv 
+     * @param iv 16位向量, 字符串(将 EncodingText → Byte → SHA256 → 16位), 空 → 全0的16位
      */
-    public static async decrypt(data: Uint8Array | ArrayBuffer, iv: ArrayBuffer | null = null): Promise<ArrayBuffer> {
-        if (AES.aes === null) AES.aes = CryptoEngine.createAesCbc();
-        if (iv === null) iv = new ArrayBuffer(16)
-        return await AES.aes.decrypt(data, iv)
+    public static async decryptCBC(data: ArrayBuffer | Uint8Array, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
+        if (iv === null || iv === undefined) iv = new ArrayBuffer(16)
+        const d: any = data
+        let byte: ArrayBuffer;
+        if ($g.isTypeM(data, 'ArrayBuffer')) {
+            byte = d
+        } else {
+            byte = d.buffer// Uint8Array
+        }
+        // 处理 iv 为字符串
+        const v: any = iv
+        if ($g.isString(iv)) {
+            const vU8: Uint8Array = EncodingText.encode(v)
+            const vSHA: ArrayBuffer = await SHA256.sha256(vU8.buffer)
+            iv = vSHA.slice(0, 16)
+        }
+        const wordData = CryptoJS.lib.WordArray.create(byte)
+        const ciphertext = CryptoJS.lib.CipherParams.create({ ciphertext: wordData })
+        const wordIV = CryptoJS.lib.WordArray.create(iv)
+        // $g.log('[CryptoJS][Aes]解密 wordData:',wordData);
+        // $g.log('[CryptoJS][Aes]解密 ciphertext:', ciphertext);
+        // $g.log('[CryptoJS][Aes]解密 wordIV:', wordIV);
+        const wordOut: any = CryptoJS.AES.decrypt(ciphertext, AES.key, {
+            iv: wordIV,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        })
+        // $g.log('[CryptoJS][Aes]解密 wordOut:', wordOut)
+        const outWord: Uint8Array | null = ToolBytes.CryptJsWordArrayToUint8Array(wordOut)
+        if (outWord) {
+            return outWord.buffer
+        }
+        return null
     }
+
+    /** 测试代码 */
+    // public static async test(): Promise<void> {
+    //     $g.log('[AES][测试模块]----------------------------------')
+    //     // 设置key
+    //     await AES.setKey('Iam is key')
+    //     // 加密内容
+    //     let aseStr: string = '1234567890abcdefg'
+    //     let aesEnc: any = await AES.encryptCBC(aseStr, '我是IV')
+    //     let aesDec: any = await AES.decryptCBC(aesEnc, '我是IV')
+    //     let aesOut: string = EncodingText.decode(aesDec)
+    //     $g.log('[AES][加密字符]', aseStr)
+    //     $g.log('[AES][解密结果]', aesOut)
+    //     $g.log('[AES][加密后]', aesEnc)
+    //     $g.log('[AES][解密后]', aesDec)
+    //     $g.log('[AES][测试模块]二进制封装')
+    //     aseStr = '大家好, 这个是测试字符串的'
+    //     let aesByteIn:GByteStream = new GByteStream()
+    //     aesByteIn.wString(aseStr)
+    //     aesByteIn.cutToPos()
+    //     aesEnc = await AES.encryptCBC(aesByteIn.buffer, '111')
+    //     aesDec = await AES.decryptCBC(aesEnc, '111')
+    //     let aesByteOut:GByteStream = new GByteStream(aesDec)
+    //     aesOut = aesByteOut.rString()
+    //     $g.log('[AES][加密字符]', aseStr)
+    //     $g.log('[AES][解密结果]', aesOut)
+    //     $g.log('[AES][加密后]', aesEnc)
+    //     $g.log('[AES][解密后]', aesDec)
+    //     $g.log('[AES][加密Byte]', aesByteIn.buffer)
+    //     $g.log('[AES][解密Byte]', aesDec)
+    // }
 }

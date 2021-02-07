@@ -1,14 +1,8 @@
 'use strict';
 
 var ToolString = require('./../../../frame/tools/tool.string').ToolString
+var EncodingText = require('../../text-encoding/EncodingText').EncodingText;
 var $g = require('../../../frame/speed.do').$g;
-var EncodingIndexes = require('../../text-encoding/EncodingIndexes').EncodingIndexes;
-var textEncoding = require('./../../text-encoding/index');
-var TextEncoder = textEncoding.TextEncoder;
-var TextDecoder = textEncoding.TextDecoder;
-EncodingIndexes.init(textEncoding.EncodingIndexes)
-var textEncoder = new TextEncoder();
-var textDecoder = new TextDecoder();
 
 /**
  * 检测2个 ArrayBuffers 是否相等
@@ -39,7 +33,7 @@ function bytesToString(arr) {
     if ($g.isClass(arr, 'ArrayBuffer')) {
         arr = new Uint8Array(arr);
     }
-    return textDecoder.decode(arr);
+    return EncodingText.decode(arr);
 }
 
 /**
@@ -48,7 +42,7 @@ function bytesToString(arr) {
  * @return {Uint8Array}
  */
 function stringToBytes(str) {
-    return textEncoder.encode(str);
+    return EncodingText.encode(str);
 }
 
 /**

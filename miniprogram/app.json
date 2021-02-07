@@ -1,17 +1,14 @@
 {
     "pages": [
         "pages/index/index",
-        "pages/user/user"
+        "pages/user/user",
+        "pages/showdb/index/index",
+        "pages/showdb/add/add",
+        "pages/showdb/dblist/dblist",
+        "pages/showdb/dbedit/dbedit",
+        "pages/showdb/show/show"
     ],
     "subPackages": [
-        {
-            "root": "pages/showdb/",
-            "pages": [
-                "index/index",
-                "add/add",
-                "dblist/dblist"
-            ]
-        },
         {
             "root": "pages/introduce/",
             "pages": [

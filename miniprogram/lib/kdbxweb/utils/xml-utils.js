@@ -42,6 +42,8 @@ var EpochSeconds = 62135596800;
 function parse(xml) {
     var parser = domParserArg ? new dom.DOMParser(domParserArg) : new dom.DOMParser();
     var doc;
+    // eslint-disable-next-line no-control-regex
+    xml = xml.replace(/[\x00-\x09\x0B-\x0C\x0E-\x1F]/g, '');
     try {
         doc = parser.parseFromString(xml, 'application/xml');
     } catch (e) {

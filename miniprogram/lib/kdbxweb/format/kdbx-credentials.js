@@ -13,7 +13,7 @@ var ProtectedValue = require('../crypto/protected-value'),
  * Credentials
  * @param {ProtectedValue|null} password
  * @param {String|ArrayBuffer|Uint8Array|null} [keyFile]
- * @param {Function|null} [challengeResponse]
+ * @param challengeResponse {Function}
  * @constructor
  */
 var KdbxCredentials = function (password, keyFile, challengeResponse) {
@@ -29,7 +29,7 @@ var KdbxCredentials = function (password, keyFile, challengeResponse) {
 KdbxCredentials.prototype.__name__ = 'KdbxCredentials'
 
 /**
- * 设置密码
+ * 设置密码, 设置完毕后直接为sha256, 而且未保存原始密码
  * @param {ProtectedValue|null} password
  */
 KdbxCredentials.prototype.setPassword = function (password) {
@@ -73,7 +73,7 @@ KdbxCredentials.prototype.setKeyFile = function (keyFile) {
             var xml = XmlUtils.parse(keyFileStr.trim());
             var metaEl = XmlUtils.getChildNode(xml.documentElement, 'Meta');
             var versionEl = XmlUtils.getChildNode(metaEl, 'Version');
-            keyFileVersion = +versionEl.textContent.split('.')[0];
+            keyFileVersion = versionEl.textContent;
             var keyEl = XmlUtils.getChildNode(xml.documentElement, 'Key');
             dataEl = XmlUtils.getChildNode(keyEl, 'Data');
         } catch (e) {
@@ -83,12 +83,14 @@ KdbxCredentials.prototype.setKeyFile = function (keyFile) {
         }
 
         switch (keyFileVersion) {
-            case 1:
+            case '1.00':
+            case 1: {
                 this.keyFileHash = ProtectedValue.fromBinary(
                     ByteUtils.base64ToBytes(dataEl.textContent)
                 );
                 break;
-            case 2: {
+            }
+            case '2.0': {
                 var keyFileData = ByteUtils.hexToBytes(dataEl.textContent.replace(/\s+/g, ''));
                 var keyFileDataHash = dataEl.getAttribute('Hash');
                 return CryptoEngine.sha256(keyFileData).then(function (computedHash) {
@@ -178,10 +180,9 @@ KdbxCredentials.prototype.getChallengeResponse = function (challenge) {
 
 /**
  * Creates random keyfile
- * @param {Number} [version=1] keyfile version, 1 by default
- * @returns Promise<Uint8Array>
+ * @returns {Uint8Array}
  */
-KdbxCredentials.createRandomKeyFile = function (version) {
+KdbxCredentials.createRandomKeyFile = function () {
     var keyLength = 32;
     var keyBytes = Random.getBytes(keyLength),
         salt = Random.getBytes(keyLength);
@@ -189,60 +190,74 @@ KdbxCredentials.createRandomKeyFile = function (version) {
         keyBytes[i] ^= salt[i];
         keyBytes[i] ^= (Math.random() * 1000) % 255;
     }
-    return KdbxCredentials.createKeyFileWithHash(keyBytes, version);
+    var key = ByteUtils.bytesToBase64(keyBytes);
+    return KdbxCredentials.createKeyFileWithHash(key);
 };
 
 /**
  * Creates keyfile by given hash
- * @param {Uint8Array} keyBytes key data
- * @param {Number} [version=1] keyfile version, 1 by default
- * @returns Promise<Uint8Array>
+ * @param {string} hash base64-encoded hash
+ * @returns {Uint8Array}
  */
-KdbxCredentials.createKeyFileWithHash = function (keyBytes, version) {
-    var xmlVersion = '1.00';
-    if (version === 2) {
-        xmlVersion = '2.0';
-    }
-    var dataPadding = '        ';
-    let makeDataElPromise;
-    if (version === 2) {
-        var keyDataPadding = dataPadding + '    ';
-        makeDataElPromise = CryptoEngine.sha256(keyBytes).then(function (computedHash) {
-            var keyHash = ByteUtils.bytesToHex(
-                new Uint8Array(computedHash).subarray(0, 4)
-            ).toUpperCase();
-            var keyStr = ByteUtils.bytesToHex(keyBytes).toUpperCase();
-            var dataElXml = dataPadding + '<Data Hash="' + keyHash + '">\n';
-            for (var num = 0; num < 2; num++) {
-                var parts = [0, 1, 2, 3].map(function (ix) {
-                    return keyStr.substr(num * 32 + ix * 8, 8);
-                });
-                dataElXml += keyDataPadding;
-                dataElXml += parts.join(' ');
-                dataElXml += '\n';
-            }
-            dataElXml += dataPadding + '</Data>\n';
-            return dataElXml;
-        });
-    } else {
-        var dataElXml = dataPadding + '<Data>' + ByteUtils.bytesToBase64(keyBytes) + '</Data>\n';
-        makeDataElPromise = Promise.resolve(dataElXml);
-    }
-    return makeDataElPromise.then((dataElXml) => {
-        var xml =
-            '<?xml version="1.0" encoding="utf-8"?>\n' +
-            '<KeyFile>\n' +
-            '    <Meta>\n' +
-            '        <Version>' +
-            xmlVersion +
-            '</Version>\n' +
-            '    </Meta>\n' +
-            '    <Key>\n' +
-            dataElXml +
-            '    </Key>\n' +
-            '</KeyFile>';
-        return ByteUtils.stringToBytes(xml);
-    });
+KdbxCredentials.createKeyFileWithHash = function (hash) {
+    var xml =
+        '<?xml version="1.0" encoding="utf-8"?>\n' +
+        '<KeyFile>\n' +
+        '    <Meta>\n' +
+        '        <Version>1.00</Version>\n' +
+        '    </Meta>\n' +
+        '    <Key>\n' +
+        '       <Data>' +
+        hash +
+        '</Data>\n' +
+        '   </Key>\n' +
+        '</KeyFile>';
+    return ByteUtils.stringToBytes(xml);
+    // 升级变化
+    // var xmlVersion = '1.00';
+    // if (version === 2) {
+    //     xmlVersion = '2.0';
+    // }
+    // var dataPadding = '        ';
+    // let makeDataElPromise;
+    // if (version === 2) {
+    //     var keyDataPadding = dataPadding + '    ';
+    //     makeDataElPromise = CryptoEngine.sha256(keyBytes).then(function (computedHash) {
+    //         var keyHash = ByteUtils.bytesToHex(
+    //             new Uint8Array(computedHash).subarray(0, 4)
+    //         ).toUpperCase();
+    //         var keyStr = ByteUtils.bytesToHex(keyBytes).toUpperCase();
+    //         var dataElXml = dataPadding + '<Data Hash="' + keyHash + '">\n';
+    //         for (var num = 0; num < 2; num++) {
+    //             var parts = [0, 1, 2, 3].map(function (ix) {
+    //                 return keyStr.substr(num * 32 + ix * 8, 8);
+    //             });
+    //             dataElXml += keyDataPadding;
+    //             dataElXml += parts.join(' ');
+    //             dataElXml += '\n';
+    //         }
+    //         dataElXml += dataPadding + '</Data>\n';
+    //         return dataElXml;
+    //     });
+    // } else {
+    //     var dataElXml = dataPadding + '<Data>' + ByteUtils.bytesToBase64(keyBytes) + '</Data>\n';
+    //     makeDataElPromise = Promise.resolve(dataElXml);
+    // }
+    // return makeDataElPromise.then((dataElXml) => {
+    //     var xml =
+    //         '<?xml version="1.0" encoding="utf-8"?>\n' +
+    //         '<KeyFile>\n' +
+    //         '    <Meta>\n' +
+    //         '        <Version>' +
+    //         xmlVersion +
+    //         '</Version>\n' +
+    //         '    </Meta>\n' +
+    //         '    <Key>\n' +
+    //         dataElXml +
+    //         '    </Key>\n' +
+    //         '</KeyFile>';
+    //     return ByteUtils.stringToBytes(xml);
+    // });
 };
 
 module.exports = KdbxCredentials;

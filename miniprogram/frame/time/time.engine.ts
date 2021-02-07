@@ -78,6 +78,7 @@ export class TimeEngine {
      * @param	t	-1 取系统的 new Date().getTime()
      */
     public run(t: number = -1): void {
+        
         if (this._type != TimeEngineType.run) {
             this._type = TimeEngineType.run;
             if (this.isSet == false) {
@@ -96,6 +97,19 @@ export class TimeEngine {
                 }
             }
         }
+    }
+    // 延后执行
+    // setTimeout 一次、setInterval n次。 区别：setTimeout 回调后才会去调用下一次定时器，setInterval不管回调函数执行情况，当到达规定时间就会在事件队列中插入一个执行回调的事件
+    // var timeoutId = window.setTimeout(setTime, 延迟时间默认0)
+    // 间隔重复调用
+    // var intervalId = window.setInterval(setTime, 间隔周期)
+    // 浏览器结束操作后立即执行(仅IE10和Node 0.10+中有实现)，类似setTimeout(func, 0), Node中 setTimeout 更快
+    // var immediateId = setImmediate(setTime)
+    // 根据刷新率调用
+    // var requestId = window.requestAnimationFrame(setTime)
+
+    private setTime():void{
+        var thisTime = new Date().getTime()
     }
 
     /** 暂停 **/

@@ -1,17 +1,16 @@
 import { $g } from "../../frame/speed.do"
 import { WXFile } from "./../../frame/wx/wx.file"
-import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
-import { Kdbx } from "../../lib/kdbxweb/types/index"
-import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
 import { WXSize } from "../../frame/wx/wx.resize"
-import { GFileSize } from "../../lib/g-byte-file/g.file.size"
+import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
 import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
+import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
+import { Kdbx, ProtectedValue } from "../../lib/kdbxweb/types/index"
+import { GFileSize } from "../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../lib/g-data-lib/db"
-// import { DBLib } from "../../lib/g-data-lib/db.lib"
-// import { DBItem } from "../../lib/g-data-lib/db.item"
+import { EncodingText } from "../../lib/text-encoding/EncodingText"
+import { AES } from "../../frame/crypto/AES"
 
-/** 选中的档案信息 */
-let selectItem: DBItem | null = null
+var passPV: ProtectedValue;
 
 //https://developers.weixin.qq.com/miniprogram/dev/extended/weui/tabbar.html
 /**
@@ -22,11 +21,21 @@ let selectItem: DBItem | null = null
 /**
  * GET参数:
  * isCreat : 强制进 1 创建 或 2 打开
+ * 
+ * 普通密码 abc
  */
 Page({
     data: {
         isCreatPage: true,
         creatSwiperIndex: 0,
+        /** 是否支持指纹识别 */
+        fingerPrint: WXSoterAuth.fingerPrint,
+        /** 是否支持人脸识别 */
+        facial: WXSoterAuth.facial,
+        /** 是否开启指纹识别 */
+        isFingerPrint: false,
+        /** 是否开启人脸识别 */
+        isFacial: false,
         /** 创建, 导入, 打开的密码 */
         passWord: '',
         /** 选中档案的名称 */
@@ -44,12 +53,16 @@ Page({
     },
     onLoad(query: any) {
         const dbLib: DBLib = $g.g.dbLib
-        const dbItem: DBItem | null = dbLib.selectDB
+        const dbItem: DBItem | null = dbLib.selectItem
         if (dbItem) {
             this.setData({
                 dbName: dbItem.name,
                 dbLength: dbLib.lib.length,
-                isCreatPage: false
+                isCreatPage: false,
+                fingerPrint: WXSoterAuth.fingerPrint,
+                facial: WXSoterAuth.facial,
+                isFingerPrint: dbItem.pass.fingerPrint.length > 0,
+                isFacial: dbItem.pass.facial.length > 0,
             })
         }
         $g.log('onLoad GET : ', query);
@@ -57,39 +70,28 @@ Page({
             this.setData({ isCreatPage: Number(query.isCreat) === 1 ? true : false })
         }
         // this.fileFindInDir()
-        // this.autoLoad()
-        this.autoDown()
-    },
-    async autoDown() {
-        const dbLib: DBLib = $g.g.dbLib
-        const dbItem: DBItem | null = dbLib.selectDB
-        if (dbItem) {
-            await WXFile.openDocument(`db/${dbItem.path}/db.kdbx`)
-        }
-    },
-    async autoLoad() {
-        this.setData({ passWord: this.data.passWord })
-        await this.btOpenSelectFile(null)
     },
     /** 用户选择一个文件 */
-    async btSelectFile(e: any) {
+    async btUploadFile(e: any) {
         $g.log('选择文件');
         const dbLib: DBLib = $g.g.dbLib
         const fileFree: number = dbLib.fileSizeMax - dbLib.fileSizeAll
         const chooseList: WechatMiniprogram.ChooseFile[] = await WXFile.chooseFile(1);
         if (chooseList.length) {
-            const chooseFile: WechatMiniprogram.ChooseFile = chooseList[0];
+            const chooseFile: WechatMiniprogram.ChooseFile = chooseList[0]
             if ((chooseFile.size * 2) < dbLib.fileSizeMax - dbLib.fileSizeAll) {
+                let name: string = this.clearFileName(chooseFile.name)
                 const dbItem: DBItem = new DBItem()
-                dbItem.name = chooseFile.name
+                dbItem.name = name
                 dbItem.localId = new Date().getTime()
                 dbItem.path = dbItem.localId.toString()
                 dbItem.timeChange = new Date()
                 dbItem.filename = chooseFile.name
                 dbItem.fileSizeAll = chooseFile.size
                 if (await WXFile.saveFile(chooseFile.path, `db/${dbItem.path}/db.kdbx`)) {
-                    selectItem = dbItem
-                    dbLib.lib.push(selectItem)
+                    await WXFile.clearTempFile(chooseFile.path)
+                    dbLib.lib.push(dbItem)
+                    dbLib.selectId = dbItem.localId
                     dbLib.storageSaveThis()
                     this.setData({ selectName: dbItem.name })
                 } else {
@@ -99,38 +101,108 @@ Page({
             } else {
                 wx.showToast({ title: `本地空间不足, 剩余空间 ${GFileSize.getSize(fileFree)}, 文件大小 ${GFileSize.getSize(chooseFile.size)}, 文件周转空间 ${GFileSize.getSize(chooseFile.size)}`, icon: 'none', mask: true })
             }
+        } else {
+            wx.showToast({ title: '请先选择一个本地文件', icon: 'none', mask: false })
         }
     },
-    async btOpenSelectFile(e: any) {
-        console.log('打开文件 : ', selectItem);
-        await this.openDbItem(selectItem)
+    /** 去掉文件后面的扩展名 */
+    clearFileName(name: string): string {
+        const clear: Array<string> = ['.kdbx', '.doc', '.xml', '.txt', '.csv', '.xls']
+        let change: boolean = false
+        for (let i = 0; i < clear.length; i++) {
+            const clearName = clear[i]
+            if (name.length > clearName.length) {
+                if (name.substr(name.length - clearName.length, clearName.length) === clearName) {
+                    name = name.substring(0, name.length - clearName.length)
+                    change = true
+                }
+            }
+        }
+        if (change) {
+            name = this.clearFileName(name)
+        }
+        return name
     },
+    /** 使用 data 的 passWord 打开默认选中的档案 */
     async btOpenSelectDb(e: any) {
-        const dbLib: DBLib = $g.g.dbLib
-        const dbItem: DBItem | null = dbLib.selectDB
-        await this.openDbItem(dbItem)
+        if (this.checkPassWord() === false) return;
+        await this.openDbItem($g.g.dbLib.selectItem)
+    },
+    /** 使用 FaceID 解锁密码库 */
+    async btOpenSelectDbFace(e: any) {
+        const dbItem: DBItem | null = $g.g.dbLib.selectItem
+        if (dbItem && dbItem.pass.facial) {
+            let o: string | null = await WXSoterAuth.start(['facial'])
+            if (o && o.length) {
+                let key: string = o + '|dbid:' + dbItem.localId.toString()
+                await AES.setKey(key)
+                let passBase64: string = dbItem.pass.facial
+                let passU8: Uint8Array = KdbxApi.kdbxweb.ByteUtils.base64ToBytes(passBase64)
+                let passJM: ArrayBuffer | null = await AES.decryptCBC(passU8, o)
+                if (passJM) {
+                    let pass: string = EncodingText.decode(new Uint8Array(passJM))
+                    passPV = KdbxApi.getPassPV(pass)
+                    pass = ''
+                    await this.openDbItem(dbItem)
+                } else {
+                    wx.showToast({ title: '解密失败!', icon: 'none', mask: true })
+                }
+            }
+            o = ''
+            await AES.setKey('')
+        }
     },
     async openDbItem(dbItem: DBItem | null) {
         if (dbItem) {
-            if (this.data.passWord) {
+            if (passPV && passPV.getText().length > 0) {
                 if (dbItem.db) {
                     wx.reLaunch({ url: './../showdb/index/index' })
                 } else {
                     // 关闭已经打开的库
                     await WXKeepScreen.on()
                     const dbLib: DBLib = $g.g.dbLib
-                    const findOpen: DBItem | null = dbLib.selectDB
+                    const findOpen: DBItem | null = dbLib.selectItem
                     if (findOpen && findOpen.localId !== dbItem.localId) {
                         findOpen.db = null
                     }
-                    const readByte: string | ArrayBuffer | null = await WXFile.readFile(`db/${dbItem.path}/db.kdbx`);
-                    console.log('文件读入内存 : ', readByte);
+                    let readByte: string | ArrayBuffer | null = null
+                    let filePath: string = `db/${dbItem.path}/`
+                    if (dbItem.pathMinIndex === 0) {
+                        filePath += 'db.kdbx'
+                    } else if (dbItem.pathMinIndex === 1) {
+                        filePath += 'db.min.1.kdbx'
+                    } else {
+                        filePath += 'db.min.2.kdbx'
+                    }
+                    readByte = await WXFile.readFile(filePath)
+                    // $g.log('文件', filePath, '内容', readByte);
+                    // if ($g.isTypeM(readByte, 'ArrayBuffer')) {
+                    //     const a: any = readByte
+                    //     const demo: GByteStream = new GByteStream(a, true)
+                    //     const n1: number = demo.rUint32()
+                    //     const n2: number = demo.rUint32()
+                    //     $g.log(`读取的脑袋头 n1 : ${n1} n2 : ${n2}`)
+                    // }
+
                     if (readByte && $g.isTypeM(readByte, 'ArrayBuffer')) {
-                        const db: Kdbx | null = await KdbxApi.open(readByte as any, this.data.passWord);
+                        const db: Kdbx | null = await KdbxApi.open(readByte as any, passPV.getText());
                         if (db) {
+                            let savePass: boolean = false
+                            if (WXSoterAuth.facial && dbItem.pass.facial === '') {
+                                savePass = true
+                            }
+                            if (WXSoterAuth.fingerPrint && dbItem.pass.fingerPrint === '') {
+                                savePass = true
+                            }
+                            if (savePass) {
+                                dbItem.pass.pv = KdbxApi.getPassPV(passPV.getText())
+                            }
                             dbItem.db = db
+                            this.setData({ passWord: '' })
                             // ----- 查询 db 中有没有附件, 有就对db进行拆解, 在保存
-                            await dbItem.getFileToDisk()
+                            // if (dbItem.pathMinIndex === 0) {
+                            //     await dbItem.getFileToDisk()
+                            // }
                             await WXKeepScreen.off()
                             wx.reLaunch({ url: './../showdb/index/index' })
                             return
@@ -147,17 +219,20 @@ Page({
             wx.showToast({ title: '未找到选择的档案!', icon: 'none', mask: true })
         }
     },
+    /** 创建一个新库 */
     creatNewFile(e: any) {
+        $g.log('创建新仓库')
+        if (this.checkPassWord() === false) return;
         const that: any = this
         wx.showModal({
             title: '提示',
-            content: '丢失密码, 档案数据将丢失, 请务必牢记, 当前密码 : ' + this.data.passWord,
+            content: '丢失密码, 档案数据将丢失, 请务必牢记, 当前密码 : ' + passPV.getText(),
             async success(e) {
                 if (e.confirm) {
                     $g.log('g|time|start')
                     await WXKeepScreen.on()
-                    const db: Kdbx = KdbxApi.create('我的密码档案', that.data.passWord)
-                    that.setData({ passWord: '' })
+                    const db: Kdbx = KdbxApi.create('我的密码档案', passPV.getText())
+                    const pv: ProtectedValue = KdbxApi.getPassPV(passPV.getText())
                     $g.log('获取 db 二进制')
                     const fileByte: ArrayBuffer = await KdbxApi.save(db)
                     $g.log('创建 db 信息')
@@ -170,13 +245,28 @@ Page({
                     dbItem.timeCreat = new Date()
                     dbItem.timeChange = dbItem.timeCreat
                     dbItem.timeRead = dbItem.timeCreat
+                    dbItem.pass.pv = pv
                     $g.log('写入文件系统')
-                    if (await WXFile.writeFile(`db/${dbItem.path}/db.kdbx`, fileByte)) {
+                    // const demo: GByteStream = new GByteStream(fileByte, true)
+                    // const n1: number = demo.rUint32()
+                    // const n2: number = demo.rUint32()
+                    // $g.log(`写入的脑袋头 n1 : ${n1} n2 : ${n2} 长度: ${fileByte.byteLength}`)
+                    if (await WXFile.writeFile(`db/${dbItem.path}/db.kdbx`, fileByte, 0, 'binary')) {
+
+                        // $g.log('检查文件')
+                        // const info = await WXFile.getFileStat(`db/${dbItem.path}/db.kdbx`)
+                        // const a: any = await WXFile.readFile(`db/${dbItem.path}/db.kdbx`)
+                        // const demo2: GByteStream = new GByteStream(a, true)
+                        // const n3: number = demo2.rUint32()
+                        // const n4: number = demo2.rUint32()
+                        // $g.log(`读出的脑袋头 n1 : ${n1} n2 : ${n2} 长度${a.byteLength} 文件信息`, info)
+
                         $g.log('获取文件夹大小')
                         await dbItem.fileSize()
                         const dbLib: DBLib = $g.g.dbLib
                         dbLib.fileSize()
                         dbLib.lib.push(dbItem)
+                        dbLib.selectId = dbItem.localId
                         $g.log('保存缓存')
                         dbLib.storageSaveThis()
                         $g.log('g|time|end')
@@ -186,6 +276,8 @@ Page({
                             url: './../showdb/index/index'
                         })
                         return
+                    } else {
+                        wx.showToast({ title: '写入文件失败!', icon: 'none', mask: false })
                     }
                     await WXKeepScreen.off()
                 } else {
@@ -193,6 +285,19 @@ Page({
                 }
             }
         })
+    },
+    /** 检查密码是否合法, true 通过, false 未通过 */
+    checkPassWord(): boolean {
+        // 去除字符串的头尾空格
+        let pass: string = this.data.passWord.trim()
+        if (pass.length > 0) {
+            passPV = KdbxApi.getPassPV(pass)
+            this.setData({ passWord: '' })
+            pass = ''
+            return true
+        }
+        wx.showToast({ title: '请先设置密码!', icon: 'none', mask: false })
+        return false
     },
     /** 指纹识别 */
     rz_zw() {

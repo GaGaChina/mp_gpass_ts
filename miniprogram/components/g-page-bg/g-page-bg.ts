@@ -33,10 +33,16 @@ Component({
         themeChange(e) {
             $g.log(e)
             if (e.theme === 'light') {
-                this.setData({darkmode: false})
-            }else{
-                this.setData({darkmode: true})
+                this.setData({ darkmode: false })
+            } else {
+                this.setData({ darkmode: true })
             }
-        }
+        },
+        // 不行, 会失败
+        //  bindtap="btMouse" bindtouchstart="btMouse"
+        // btMouse(e){
+        //     $g.log('背景组件', e)
+        //     $g.g.app.timeMouse = Date.now()
+        // }
     },
 })

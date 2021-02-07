@@ -1,18 +1,49 @@
-import { ToolBytes } from "../../frame/tools/tool.bytes";
+import { ToolBytes } from "../../frame/tools/tool.bytes"
 
+const encoding = require('./../text-encoding/lib/encoding.js')
 const pako = require('./../pako/index')
 const BinaryStream = require('./../kdbxweb/utils/binary-stream.js')
 const base64 = require('./encoding-base64.js')
 //const base64Old = require('./../text-encoding/lib/encoding-indexes.js')["encoding-indexes"]
 
-export class EncodingIndexes {
+/**
+ * 二进制和字符串之间的转换
+ */
+export class EncodingText {
 
     private static isInit: boolean = false;
 
-    public static init(o: Object) {
+    private static textEncoder = new encoding.TextEncoder()
+    private static textDecoder = new encoding.TextDecoder()
+
+    /**
+     * 二进制 → 字符串
+     * @param u8 
+     */
+    public static decode(u8: Uint8Array): string {
+        if (EncodingText.isInit === false) EncodingText.init()
+        return EncodingText.textDecoder.decode(u8)
+    }
+
+    /**
+     * 字符串 → 二进制
+     * @param s 
+     */
+    public static encode(s: string): Uint8Array {
+        if (EncodingText.isInit === false) EncodingText.init()
+        return EncodingText.textEncoder.encode(s)
+    }
+
+    /**
+     * 初始化
+     * @param o 
+     */
+    public static init() {
         if (this.isInit) return;
         console.log('TextEncodingIndexes 解压');
-        const handleArrayList: [][] = EncodingIndexes.setArray(o)
+        // 对 EncodingIndexes 进行操作
+        const o: Object = encoding.EncodingIndexes
+        const handleArrayList: [][] = EncodingText.setArray(o)
         let handleArray: any = handleArrayList[0]
         let handleIndex: number = 0
         const gzip = ToolBytes.Base64ToArrayBuffer(base64)
@@ -102,8 +133,8 @@ export class EncodingIndexes {
                 return;
             }
         }
-        EncodingIndexes.changeGB18030(o)
-        EncodingIndexes.isInit = true
+        EncodingText.changeGB18030(o)
+        EncodingText.isInit = true
         //this.check(o, base64Old)
     }
 

@@ -26,7 +26,7 @@
     color: #FFFFFF;
 }
 
-.left{
+.left {
     position: absolute;
     left: 20rpx;
     bottom: 10rpx;
@@ -42,11 +42,11 @@
     background: #9ce72a;
     text-align: center;
     line-height: 50rpx;
-    font-size: 40rpx;
+    font-size: 35rpx;
     color: #000c33;
 }
 
-.left_text{
+.left_text {
     color: #FFFFFF;
     height: 50rpx;
     line-height: 50rpx;

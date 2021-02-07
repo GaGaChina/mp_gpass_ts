@@ -1,0 +1,25 @@
+.info {
+    width: 750rpx;
+}
+
+.scroll {
+    display: flex;
+    flex-direction: column;
+    width: 750rpx;
+}
+
+.top {
+    width: 750rpx;
+}
+
+.item {
+    display: flex;
+    width: 750rpx;
+    margin-left: 30rpx;
+    background: linear-gradient(180deg, #020d2d, #000412);
+}
+
+.item>view {
+    color: #FFF;
+    margin-left: 30rpx;
+}

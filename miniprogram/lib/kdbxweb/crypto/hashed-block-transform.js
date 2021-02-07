@@ -9,7 +9,7 @@ var BinaryStream = require('./../utils/binary-stream'),
 var BlockSize = 1024 * 1024;
 
 /**
- * Decrypt buffer
+ * 解压 buffer
  * @param {ArrayBuffer} data
  * @returns {Promise.<ArrayBuffer>}
  */

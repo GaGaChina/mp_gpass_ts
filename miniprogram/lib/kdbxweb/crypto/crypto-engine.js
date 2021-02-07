@@ -26,7 +26,7 @@ var EmptySha512 = 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce
 var maxRandomQuota = 65536;
 
 /**
- * SHA-256 hash
+ * SHA-256 hash 32byt
  * @param {ArrayBuffer} data
  * @returns {Promise.<ArrayBuffer>}
  */
@@ -90,14 +90,13 @@ AesCbcCryptoJS.prototype.importKey = function (key) {
  * @param {ArrayBuffer} iv 
  */
 AesCbcCryptoJS.prototype.encrypt = function (data, iv) {
-   
     var that = this;
     return Promise.resolve().then(function () {
-        // $g.log('[CryptoJS][AesCbc]加密');
         const wordIn = CryptoJS.lib.WordArray.create(ByteUtils.arrayToBuffer(data))
-        // $g.log('[CryptoJS][AesCbc]加密 wordIn:', wordIn);
         const wordIV = CryptoJS.lib.WordArray.create(iv)
-        // $g.log('[CryptoJS][AesCbc]加密 wordIV:', wordIn);
+        // $g.log('[CryptoJS][AesCbc]加密');
+        // $g.log('[CryptoJS][AesCbc]加密 wordIn:', wordIn);
+        // $g.log('[CryptoJS][AesCbc]加密 wordIV:', wordIV);
         const wordOut = CryptoJS.AES.encrypt(wordIn, that.key, {
             iv: wordIV,
             mode: CryptoJS.mode.CBC,

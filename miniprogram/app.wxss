@@ -27,19 +27,38 @@ button::before{
     border-radius: 0;
 } */
 
-button:focus {
+/* button:focus {
     margin: 0;
     padding: 0;
     outline: none;
     border: 0 none;
     background: none;
     box-sizing: border-box;
-}
+} */
 
 /* 去掉按下样式 */
-button:hover {
+/* button:hover {
+    background: none;
+} */
+
+/* 获取焦点时的样式 */
+.bt_clear:focus {
     background: none;
 }
+/* 你光标经过某一元素时的样式 */
+.bt_clear:hover {
+    background: none;
+}
+/* 按钮按下去的样式 */
+.bt_clear.button-hover {
+    background: none;
+}
+/* 点击状态 */
+.bt_clear:active {
+    background: none;
+}
+
+
 
 .hide_flex {
     display: none;

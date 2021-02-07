@@ -37,16 +37,16 @@
             <swiper-item>
                 <view class="sw sw-item">
                     <view class="input_v">
-                        <input type="text" value="{{selectName}}" placeholder="请选择文件" disabled
-                            bindtap="btSelectFile" />
-                        <i class="input_icon fa fa-file-archive-o" bindtap="btSelectFile"></i>
+                        <input type="text" value="{{selectName}}" placeholder="请点击选择文件(支持 : kdbx AES模式)" disabled
+                            bindtap="btUploadFile" />
+                        <i class="input_icon fa fa-file-archive-o" bindtap="btUploadFile"></i>
                     </view>
                     <view class="input_v">
                         <input password type="text" value="{{passWord}}" bindinput="passChange" adjust-position
                             placeholder="档案解锁密码" />
                         <i class="input_icon fa fa-lock"></i>
                     </view>
-                    <button class="bt_big fa" bindtap="btOpenSelectFile"><i class="input_icon fa fa-file-archive-o"></i>
+                    <button class="bt_big fa" bindtap="btOpenSelectDb"><i class="input_icon fa fa-file-archive-o"></i>
                         导 入</button>
                     <block wx:if="{{dbLength > 0}}">
                         <view class="has_db_info">发现 {{dbLength}} 个本地档案, 需要选择打开它们吗?</view>
@@ -66,6 +66,8 @@
         <input password type="text" value="{{passWord}}" bindinput="passChange" adjust-position placeholder="档案解锁密码" />
         <i class="input_icon fa fa-lock"></i>
     </view>
+    <button wx:if="{{isFacial}}" class="bt_big fa" bindtap="btOpenSelectDbFace"><i
+            class="input_icon fa fa-file-archive-o"></i> 人脸解锁</button>
     <button class="bt_big fa" bindtap="btOpenSelectDb"><i class="input_icon fa fa-file-archive-o"></i> 解 锁</button>
     <block wx:if="{{dbLength > 1}}">
         <view class="has_db_info">发现 {{dbLength}} 个本地档案, 需要选择打开它们吗?</view>

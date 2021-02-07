@@ -94,7 +94,7 @@ export class WXShare {
      * 通过按钮上的数据来执行
      */
     public static runButtonData(e: any): ShareCallback | null {
-        if ($g.hasKeys(e, 'target.dataset.sharedata', true)) {
+        if ($g.hasKeys(e, 'target.dataset.sharedata')) {
             if ($g.isObject(e.target.dataset.sharedata)) {
                 let o: WXShareData = e.target.dataset.sharedata;
                 return this.runObj(o);

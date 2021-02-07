@@ -4,7 +4,6 @@ import { WXUser } from "./frame/wx/wx.user"
 import { WXFile } from "./frame/wx/wx.file"
 import { WXSize } from "./frame/wx/wx.resize"
 import { DBLib } from "./lib/g-data-lib/db"
-// import { DBLib } from "./lib/g-data-lib/db.lib"
 
 App<IAppOption>({
     globalData: {
@@ -26,20 +25,22 @@ App<IAppOption>({
             darkusable: false,
             darktype: 0,
             darkmode: true,
+            timeMouse: Date.now(),
+            timeMouseClose: 60000,
         },
         user: {
             id: ''
         },
         dbLib: new DBLib(),
     },
-    onLaunch() {
+    async onLaunch() {
         $g.init(this)
         WXSize.init()
         // 获取 Storage 的数据来设置
-        const dbLib:DBLib = this.globalData.dbLib
+        const dbLib: DBLib = this.globalData.dbLib
         dbLib.storageSetThis()
-        dbLib.checkFile()
-        dbLib.fileSizeRun()
+        await dbLib.checkFile()
+        //dbLib.fileSizeRun()
         // 版本升级需要维护本地缓存数据
         $g.log('版本检查 : ' + this.globalData.app.ver + ' → ' + $g.s.getS('app.ver'))
         if ($g.s.getS('app.ver') !== this.globalData.app.ver) {
@@ -54,6 +55,8 @@ App<IAppOption>({
             $g.s.copyGS('user', '*')
             $g.s.copyGS('userWX', '*')
             $g.s.copyGS('dbInfo', '*')
+        } else {
+            dbLib.storageSaveThis()
         }
         // 读取 app 中 除了 appVer 的内容
         $g.s.copyGS('app', '*,!appVer')
@@ -64,6 +67,7 @@ App<IAppOption>({
         $g.log('[App.globalData]', this.globalData)
         $g.log('[App.Storage]', $g.s.storageAll())
         $g.s.storageInfo()
+        // 输出文件夹下的整体情况
         WXFile.checkFileList('', true)
         // 登录
         WXUser.wxCode()

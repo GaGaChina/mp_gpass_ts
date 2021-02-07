@@ -1,10 +1,10 @@
 <g-page-bg></g-page-bg>
-<g-page-top canBack="{{true}}" title="本地档案列表"></g-page-top>
+<g-page-top canBack="{{true}}" title="本地档案列表({{dbList.length}}个)"></g-page-top>
 <view style="height:{{fullPageHeight}}rpx;">
     <scroll-view scroll-y enable-flex class="list" scroll-into-view="index{{selectIndex}}"
         style="height:{{centerPageHeight}}rpx;">
         <block wx:for="{{dbList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-            <view id="index{{index}}" class="item">
+            <view id="index{{item.id}}" class="item">
                 <view class="top_bar">
                     <view class="title_icon "><i class="fa fa-{{item.icon}}"></i></view>
                     <view class="title">{{item.name}}</view>

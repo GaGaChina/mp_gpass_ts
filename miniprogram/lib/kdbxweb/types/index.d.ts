@@ -598,6 +598,7 @@ interface KdbxWeb {
     Credentials: Credentials,
     Consts: any,//Consts
     ProtectedValue: ProtectedValue,
+    /** ByteUtils */
     ByteUtils: any,
     VarDictionary: VarDictionary,
     Int64: Int64,

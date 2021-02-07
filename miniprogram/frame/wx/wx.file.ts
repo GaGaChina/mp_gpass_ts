@@ -118,6 +118,53 @@ export class WXFile {
     }
 
     /**
+     * 拷贝 srcPath 到 copyPath
+     * @param srcPath 源文件路径，支持本地路径
+     * @param destPath 目标文件路径，支持本地路径
+     */
+    public static copyFile(srcPath: string, destPath: string): Promise<boolean> {
+        return new Promise(async function (resolve) {
+            if (await WXFile.checkDirectory(destPath)) {
+                WXFile.manager.copyFile({
+                    srcPath: `${wx.env.USER_DATA_PATH}/${srcPath}`,
+                    destPath: `${wx.env.USER_DATA_PATH}/${destPath}`,
+                    success: (res: WechatMiniprogram.GeneralCallbackResult) => {
+                        $g.log('[wx.file][copyFile][success]', res);
+                        resolve(true)
+                    },
+                    fail: (e) => {
+                        $g.log('[wx.file][copyFile][fail]', e);
+                        wx.showToast({ title: `保存文件失败, ${e.errMsg}`, icon: 'none', mask: false })
+                        resolve(false)
+                    }
+                })
+            } else {
+                resolve(false)
+            }
+        })
+    }
+
+    /**
+     * 删除临时文件
+     * @param tempFilePath 临时文件
+     */
+    public static clearTempFile(tempFilePath: string): Promise<boolean> {
+        return new Promise(async function (resolve) {
+            WXFile.manager.removeSavedFile({
+                filePath: tempFilePath,
+                success: (res: WechatMiniprogram.GeneralCallbackResult) => {
+                    $g.log('[wx.file][clearTempFile][success]', res);
+                    resolve(true)
+                },
+                fail: (e: WechatMiniprogram.RemoveSavedFileFailCallbackResult) => {
+                    $g.log('[wx.file][clearTempFile][fail]', e);
+                    resolve(false)
+                }
+            })
+        })
+    }
+
+    /**
      * 检查路径中的文件夹是否创建完毕, 没有就创建
      * @param filePath 
      */
@@ -131,8 +178,8 @@ export class WXFile {
             for (let i = 0; i < fileList.length; i++) {
                 if (i !== 0) path += '/'
                 path += fileList[i]
-                let info = await WXFile.getFileStat(path)
-                if (info === false || info.isDirectory() === false) {
+                let info: WechatMiniprogram.Stats | null = await WXFile.getFileStat(path)
+                if (info === null || info.isDirectory() === false) {
                     if (await WXFile.mkdir(path) === false) {
                         resolve(false)
                     }
@@ -144,12 +191,12 @@ export class WXFile {
 
     /**
      * 创建文件夹
-     * @param filePath 
+     * @param dirPath 
      */
-    public static mkdir(filePath: string): Promise<boolean> {
+    public static mkdir(dirPath: string): Promise<boolean> {
         return new Promise(resolve => {
             WXFile.manager.mkdir({
-                dirPath: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                dirPath: `${wx.env.USER_DATA_PATH}/${dirPath}`,
                 success: (res: WechatMiniprogram.GeneralCallbackResult) => {
                     $g.log('[wx.file][mkdir][success]', res);
                     resolve(true)
@@ -163,119 +210,10 @@ export class WXFile {
     }
 
     /**
-     * 获取这个文件的信息
-     * @param filePath 要存储的文件路径(已添加wx.env.USER_DATA_PATH/)
-     */
-    public static getFileStat(filePath: string): Promise<any> {
-        return new Promise(resolve => {
-            WXFile.manager.stat({
-                path: `${wx.env.USER_DATA_PATH}/${filePath}`,
-                recursive: false,
-                success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
-                    $g.log('[wx.file][FileStat][success]', res);
-                    resolve(res.stats)
-                },
-                fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
-                    $g.log('[wx.file][FileStat][fail]', e);
-                    resolve(false)
-                }
-            })
-        })
-    }
-
-    /**
-     * 获取文件尺寸
-     * @param filePath 文件路径(已添加wx.env.USER_DATA_PATH/)
-     * @param recursive 是否递归
-     */
-    public static getFileSize(filePath: string, recursive: boolean = false): Promise<number> {
-        return new Promise(resolve => {
-            if (recursive) {
-                WXFile.manager.stat({
-                    path: `${wx.env.USER_DATA_PATH}/${filePath}`,
-                    recursive: true,
-                    success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
-                        $g.log('[wx.file][FileSize][success]', res);
-                        let size: number = 0
-                        const list: any = res.stats
-                        for (let i = 0, l: number = list.length; i < l; i++) {
-                            const item: any = list[i]
-                            const file: WechatMiniprogram.Stats = item.stats
-                            size += file.size
-                        }
-                        resolve(size)
-                    },
-                    fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
-                        $g.log('[wx.file][FileSize][fail]', e);
-                        resolve(0)
-                    }
-                })
-            } else {
-                WXFile.manager.stat({
-                    path: `${wx.env.USER_DATA_PATH}/${filePath}`,
-                    recursive: false,
-                    success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
-                        $g.log('[wx.file][FileSize][success]', res);
-                        resolve(res.stats.size)
-                    },
-                    fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
-                        $g.log('[wx.file][FileSize][fail]', e);
-                        resolve(0)
-                    }
-                })
-            }
-        })
-    }
-
-    /**
-     * 输出里面的文件情况
-     * @param filePath 
-     * @param recursive 
-     */
-    public static checkFileList(filePath: string, recursive: boolean = false): Promise<boolean> {
-        return new Promise(resolve => {
-            if (recursive) {
-                WXFile.manager.stat({
-                    path: `${wx.env.USER_DATA_PATH}/${filePath}`,
-                    recursive: true,
-                    success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
-                        $g.log('[wx.file][FileSize][success]', res);
-                        const list: any = res.stats
-                        for (let i = 0, l: number = list.length; i < l; i++) {
-                            const item: any = list[i]
-                            const file: WechatMiniprogram.Stats = item.stats
-                            $g.log(`path:${item.path} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory()}`)
-                        }
-                        resolve(true)
-                    },
-                    fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
-                        $g.log('[wx.file][FileSize][fail]', e);
-                        resolve(false)
-                    }
-                })
-            } else {
-                WXFile.manager.stat({
-                    path: `${wx.env.USER_DATA_PATH}/${filePath}`,
-                    recursive: false,
-                    success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
-                        $g.log('[wx.file][FileSize][success]', res);
-                        //$g.log(`path:${list[i]} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory}`)
-                        resolve(true)
-                    },
-                    fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
-                        $g.log('[wx.file][FileSize][fail]', e);
-                        resolve(false)
-                    }
-                })
-            }
-        })
-    }
-
-    /**
      * 读取目录下的文件结构
      * @param dirPath 文件路径(已添加wx.env.USER_DATA_PATH/)
      */
-    public static readdir(dirPath: string = ''): Promise<string[]> {
+    public static readdir(dirPath: string = ''): Promise<Array<string>> {
         return new Promise(resolve => {
             if (!WXCompatible.canRun('1.9.9', '无法使用微信文件模块。')) return resolve([])
             WXFile.manager.readdir({
@@ -287,6 +225,112 @@ export class WXFile {
                 fail: (e: WechatMiniprogram.ReaddirFailCallbackResult) => {
                     $g.log('[wx.file][readdir][fail]', e);
                     resolve([])
+                }
+            })
+        })
+    }
+
+    /**
+     * 获取这个文件的信息
+     * @param filePath 要存储的文件路径(已添加wx.env.USER_DATA_PATH/)
+     */
+    public static getFileStat(filePath: string): Promise<WechatMiniprogram.Stats | null> {
+        return new Promise(resolve => {
+            WXFile.manager.stat({
+                path: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                recursive: false,
+                success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
+                    $g.log('[wx.file][FileStat][success]', res);
+                    // 如果就一个文件返回 res.stats 对象
+                    // 递归遍历就是一堆 res.stats = [ {path:'路径', stats: Stats对象} ]
+                    const stats: any = res.stats
+                    resolve(stats)
+                },
+                fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
+                    $g.log('[wx.file][FileStat][fail]', e);
+                    resolve(null)
+                }
+            })
+        })
+    }
+
+    /**
+     * 获取文件尺寸
+     * @param filePath 文件路径(已添加wx.env.USER_DATA_PATH/)
+     * @param recursive 是否递归, 遍历下面全部文件夹和文件
+     */
+    public static getFileSize(filePath: string, recursive: boolean = false): Promise<number> {
+        return new Promise(resolve => {
+            WXFile.manager.stat({
+                path: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                recursive: recursive,
+                success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
+                    $g.log('[wx.file][FileSize][success]', res);
+                    // 如果就一个文件返回 res.stats 对象
+                    // 递归遍历就是一堆 res.stats = [ {path:'路径', stats: Stats对象} ]
+                    if (res.stats) {
+                        if ($g.isArray(res.stats)) {
+                            var size: number = 0
+                            const list: any = res.stats
+                            for (let i = 0, l: number = list.length; i < l; i++) {
+                                const file: WechatMiniprogram.Stats = list[i].stats
+                                const fileSize: number = Number(file.size)
+                                if (fileSize) {
+                                    size += fileSize
+                                }
+                                // if (!file.isDirectory()) {
+                                //     size += file.size
+                                // }
+                            }
+                            resolve(size)
+                        } else {
+                            resolve(res.stats.size)
+                        }
+                    }
+                    resolve(0)
+                },
+                fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
+                    $g.log('[wx.file][FileSize][fail]', e);
+                    resolve(0)
+                }
+            })
+        })
+    }
+
+    /**
+     * 输出里面的文件情况
+     * @param filePath 
+     * @param recursive 
+     */
+    public static checkFileList(filePath: string, recursive: boolean = false): Promise<boolean> {
+        return new Promise(resolve => {
+            WXFile.manager.stat({
+                path: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                recursive: recursive,
+                success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
+                    $g.log('[wx.file][FileSize][success]', res);
+                    // 如果就一个文件返回 res.stats 对象
+                    // 递归遍历就是一堆 res.stats = [ {path:'路径', stats: Stats对象} ]
+                    let size: number = 0
+                    if (res.stats) {
+                        if ($g.isArray(res.stats)) {
+                            const list: any = res.stats
+                            for (let i = 0, l: number = list.length; i < l; i++) {
+                                const item: any = list[i]
+                                const file: WechatMiniprogram.Stats = item.stats
+                                $g.log(`path:${item.path} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory()}`)
+                            }
+                        } else {
+                            const item: any = res.stats
+                            const file: WechatMiniprogram.Stats = item.stats
+                            $g.log(`path:${item.path} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory()}`)
+                        }
+                    }
+                    resolve(true)
+                },
+                fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
+                    $g.log('[wx.file][FileSize][fail]', e);
+                    resolve(false)
                 }
             })
         })
@@ -335,30 +379,116 @@ export class WXFile {
         await WXFile.writeFile(filename, new ArrayBuffer(128), '64')
         back = await WXFile.readFile(filename)
         $g.log('第三次读取 :', back)
-     * 
-     * @param filePath 
+     * 测试 在 PC 上 , 写入 在读取 文件会发生变化
+     * @param filePath 文件路径(已添加wx.env.USER_DATA_PATH/)
      * @param data 
      * @param encoding 
      */
-    public static writeFile(filePath: string = '', data: string | ArrayBuffer, position?: string, encoding?: 'ascii' | 'base64' | 'binary' | 'hex' | 'ucs2' | 'ucs-2' | 'utf16le' | 'utf-16le' | 'utf-8' | 'utf8' | 'latin1'): Promise<boolean> {
+    public static writeFile(filePath: string = '', data: string | ArrayBuffer, position: number = 0, encoding?: 'ascii' | 'base64' | 'binary' | 'hex' | 'ucs2' | 'ucs-2' | 'utf16le' | 'utf-16le' | 'utf-8' | 'utf8' | 'latin1'): Promise<boolean> {
+        return new Promise(async function (resolve) {
+            // 检查并创建文件夹
+            if (await WXFile.checkDirectory(filePath)) {
+                WXFile.manager.writeFile({
+                    filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                    data: data,
+                    encoding: encoding,
+                    position: position,
+                    async success(res: WechatMiniprogram.GeneralCallbackResult) {
+                        $g.log('[wx.file][writeFile]写入空成功')
+                        resolve(true)
+                        // $g.log('[wx.file][writeFile]追加文件', filePath, data, encoding)
+                        // resolve(await WXFile.appendFile(filePath, data, encoding))
+                    },
+                    fail: (e: any) => {
+                        $g.log('[wx.file][writeFile][fail]', e);
+                        wx.showToast({ title: `文件写入失败, ${e.errMsg}`, icon: 'none', mask: false })
+                        resolve(false)
+                    }
+                })
+            } else {
+                resolve(false)
+            }
+        })
+    }
+
+    /**
+     * 在文件末尾追加
+     * @param filePath 文件路径(已添加wx.env.USER_DATA_PATH/)
+     * @param data 
+     * @param encoding 
+     */
+    public static appendFile(filePath: string = '', data: string | ArrayBuffer, encoding?: 'ascii' | 'base64' | 'binary' | 'hex' | 'ucs2' | 'ucs-2' | 'utf16le' | 'utf-16le' | 'utf-8' | 'utf8' | 'latin1'): Promise<boolean> {
+        return new Promise(async function (resolve) {
+            // 检查并创建文件夹
+            if (await WXFile.checkDirectory(filePath)) {
+                WXFile.manager.appendFile({
+                    filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                    data: data,
+                    encoding: encoding,
+                    success: (res: WechatMiniprogram.GeneralCallbackResult) => {
+                        $g.log('[wx.file][appendFile][success]', res)
+                        resolve(true)
+                    },
+                    fail: (e: any) => {
+                        $g.log('[wx.file][appendFile][fail]', e);
+                        wx.showToast({ title: `文件追加失败, ${e.errMsg}`, icon: 'none', mask: false })
+                        resolve(false)
+                    }
+                })
+            } else {
+                resolve(false)
+            }
+        })
+
+
+    }
+
+
+    /**
+     * 删除文件
+     * @param filePath 
+     */
+    public static delFile(filePath: string): Promise<boolean> {
         return new Promise(resolve => {
-            WXFile.manager.writeFile({
+            WXFile.manager.unlink({
                 filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
-                data: data,
-                encoding: encoding,
-                position: position,
-                success: (res: any) => {
-                    $g.log('[wx.file][writeFile][success]', res);
+                success: function (res) {
+                    $g.log('[wx.file][delFile][success]', res);
                     resolve(true)
                 },
-                fail: (e: any) => {
-                    $g.log('[wx.file][writeFile][fail]', e);
-                    wx.showToast({ title: `文件写入失败, ${e.errMsg}`, icon: 'none', mask: false })
+                fail: function (e: any) {
+                    $g.log('[wx.file][delFile][fail]', e);
                     resolve(false)
                 }
             })
         })
     }
+
+
+    /**
+     * 删除文件夹
+     * @param dirPath 路径
+     * @param recursive 递归全部文件
+     */
+    public static rmDir(dirPath: string, recursive: boolean = true): Promise<boolean> {
+        return new Promise(resolve => {
+            WXFile.manager.rmdir({
+                dirPath: `${wx.env.USER_DATA_PATH}/${dirPath}`,
+                recursive: recursive,
+                success: function (res) {
+                    $g.log('[wx.file][rmDir][success]', res);
+                    resolve(true)
+                },
+                fail: function (e: any) {
+                    $g.log('[wx.file][rmDir][fail]', e);
+                    resolve(false)
+                }
+            })
+        })
+    }
+
+
+
 
     /**
      * 将用户本地文件保存到用户端

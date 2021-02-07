@@ -17,9 +17,10 @@ export class ToolBytes {
         var j: number = 0
         while (true) {
             // here i is a multiple of 4
+            // 0xff == 1111 1111 flags & mask; // 1&1=1 1&0=0 当前设置不同的全部关闭
             if (i === l) break;
             var w = words[j++];
-            result[i++] = (w & 0xff000000) >>> 24;
+            result[i++] = (w & 0xff000000) >>> 24;// 只留下ff位的内容
             if (i === l) break;
             result[i++] = (w & 0x00ff0000) >>> 16;
             if (i === l) break;

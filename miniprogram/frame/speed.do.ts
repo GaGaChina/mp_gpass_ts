@@ -171,7 +171,7 @@ export class $g {
                 } else {
                     for (k of t_a) {
                         if (!!k && k.substr(0, 1) !== '!') {
-                            if ($g.hasKey(at, k, false)) {
+                            if ($g.hasKey(at, k)) {
                                 bt[k] = at[k];
                             }
                         }
@@ -225,20 +225,20 @@ export class $g {
      * @param key 对象是否含 key 的属性
      * @param checkValue 是String是否检查长度大于1, Number != 0
      */
-    public static hasKey(o: any, key?: string, checkValue: boolean = true): boolean {
+    public static hasKey(o: any, key?: string): boolean {
         if (o && !!key && !$g.isBase(o) && (o as Object).hasOwnProperty(key)) {
-            if (checkValue) {
-                const v: any = o[key];
-                switch ($g.typeM(v)) {
-                    case 'String':
-                        return !!v;
-                    /*
-                    上面的 checkValue false比较好, 否则不知道会产生什么后果
-                    case 'Number':
-                        return v !== 0;
-                    */
-                }
-            }
+            // if (checkValue) {
+            //     const v: any = o[key];
+            //     switch ($g.typeM(v)) {
+            //         case 'String':
+            //             return !!v;
+            //         /*
+            //         上面的 checkValue false比较好, 否则不知道会产生什么后果
+            //         case 'Number':
+            //             return v !== 0;
+            //         */
+            //     }
+            // }
             return true;
         }
         return false;
@@ -250,13 +250,13 @@ export class $g {
      * @param keys 对象是否含 key.key.key 的属性
      * @param checkValue 如果是String是否检查长度大于1
      */
-    public static hasKeys(o: any, keys?: string, checkValue: boolean = true): boolean {
+    public static hasKeys(o: any, keys?: string): boolean {
         if (o && !!keys && !$g.isBase(o)) {
             const a: Array<string> = keys.split('.');
             let l: string = '';
             for (const key of a) {
                 l = l + l.length ? '.' + key : key;
-                if ($g.hasKey(o, key, checkValue)) {
+                if ($g.hasKey(o, key)) {
                     o = o[key];
                 } else {
                     $g.log('hasKeys 中断 : ' + l);

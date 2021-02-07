@@ -18,8 +18,22 @@ Page({
         fileSizeUsable: ''
     },
     async onLoad() {
+        // $g.log('[Page][dblist]onLoad')
+        const scene: DataScene = $g.g.app.scene
+        const fullHeight: number = scene.winHeight - scene.topBarHeight - scene.topBarTop
+        const centerHeight: number = fullHeight - 240
+        this.setData({
+            fullPageHeight: fullHeight,
+            centerPageHeight: centerHeight,
+        })
+    },
+    onShow() {
+        // $g.log('[Page][dblist]onShow')
+        this.loadInfo()
+    },
+    async loadInfo() {
         const dbLib: DBLib = $g.g.dbLib
-        await dbLib.fileSizeRun()
+        // await dbLib.fileSizeRun()
         const dbList: Array<Object> = new Array<Object>();
         for (let i = 0, l: number = dbLib.lib.length; i < l; i++) {
             const item: DBItem = dbLib.lib[i];
@@ -35,13 +49,9 @@ Page({
             }
             dbList.push(dbItem)
         }
-        const scene: DataScene = $g.g.app.scene
-        const fullHeight: number = scene.winHeight - scene.topBarHeight - scene.topBarTop
-        const centerHeight: number = fullHeight - 240
         this.setData({
-            fullPageHeight: fullHeight,
-            centerPageHeight: centerHeight,
             dbList: dbList,
+            selectIndex: dbLib.selectId,
             fileSizeAll: GFileSize.getSize(dbLib.fileSizeAll, 3),
             fileSizeMax: GFileSize.getSize(dbLib.fileSizeMax, 3),
             fileSizeMore: GFileSize.getSize(1024 * 1024 * 10, 3),
@@ -59,11 +69,12 @@ Page({
     btOpen(e: any) {
         const dbLib: DBLib = $g.g.dbLib
         dbLib.selectId = e.currentTarget.dataset.id
+        dbLib.storageSaveThis()
         wx.reLaunch({
             url: './../../index/index?isCreat=0'
         })
     },
     btEdit(e: any) {
-        wx.showToast({ title: '开发中, 稍后呈现!', icon: 'none' })
+        wx.navigateTo({ url: './../dbedit/dbedit?id=' + e.currentTarget.dataset.id })
     }
 })

@@ -16,11 +16,15 @@ interface DataGlobalApp {
     /** 场景相关的参数 */
     scene: DataScene,
     /** 是否启用 dark 模式 */
-    darkusable:boolean,
+    darkusable: boolean,
     /** 用户设置的暗黑模式, 0 自动, 1 白色, 2 暗黑 */
     darktype: number,
     /** 是否开启暗黑模式 */
     darkmode: boolean,
+    /** 用户上一次操作的时间 */
+    timeMouse: number,
+    /** 用户多久不操作进行锁屏 */
+    timeMouseClose: number,
 }
 
 /** 用户数据相关内容 */
@@ -57,7 +61,7 @@ interface DataScene {
     /** [单位 rpx] 台头 Bar 有系统信息部分所占的高度 */
     topBarHeight: number,
     /** [单位 rpx] 台头 Bar 组件单独占用高度(不含 topBarHeight) */
-    topBarTop:number,
+    topBarTop: number,
     /** [单位 rpx] 下面 Bar 所占的高度 */
     endBarHeight: number,
     /** [单位 rpx] 整个窗口的高度 */

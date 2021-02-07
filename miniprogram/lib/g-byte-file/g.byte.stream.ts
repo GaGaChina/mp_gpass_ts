@@ -1,8 +1,4 @@
-const { EncodingIndexes } = require('../../text-encoding/EncodingIndexes');
-const textEncoding = require('./../../text-encoding/index');
-EncodingIndexes.init(textEncoding.EncodingIndexes)
-const textEncoder = new textEncoding.TextEncoder();
-const textDecoder = new textEncoding.TextDecoder();
+import { EncodingText } from "../text-encoding/EncodingText";
 
 /**
  * 二进制文件模块
@@ -71,7 +67,7 @@ export class GByteStream {
             }
             const newData = new Uint8Array(newLen)
             newData.set(this.u8)
-            this.init(newData)
+            this.init(newData.buffer)
         }
     }
 
@@ -278,13 +274,13 @@ export class GByteStream {
     /** 通过 textDecoder 获取字符串 */
     public rString(): string {
         const byte: ArrayBuffer | null = this.rByteAuto()
-        return byte ? textDecoder.decode(new Uint8Array(byte)) : ''
+        return byte ? EncodingText.decode(new Uint8Array(byte)) : ''
     }
 
     /** 通过 textDecoder 设置字符串 */
     public wString(s: string): void {
         if (s.length > 0) {
-            const u8: Uint8Array = textEncoder.encode(s)
+            const u8: Uint8Array = EncodingText.encode(s)
             this.wByteAuto(u8)
         } else {
             this.wByteAuto(new Uint8Array(0))

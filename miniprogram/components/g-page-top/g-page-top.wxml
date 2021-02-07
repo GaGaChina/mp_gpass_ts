@@ -1,6 +1,6 @@
 <view class="top" style="height:{{topHeight}}rpx">
     <view class="title {{darkmode?'title_dark':''}}">{{title}}</view>
-    <button wx:if="{{canBack}}" class="left" bindtap="btBack">
+    <button wx:if="{{canBack}}" class="left bt_clear" bindtap="btBack">
         <view class="left_icon"><i class="fa fa-chevron-left"></i></view>
         <view class="left_text">返回</view>
     </button>
@@ -8,7 +8,7 @@
         <image class="left_icon" src="{{ userHead }}" mode="cover"></image>
         <view class="left_text">Hi,{{nickName}}!</view>
     </view>
-    <button wx:else class="left" open-type="getUserInfo" bindgetuserinfo="btGetUserInfo">
+    <button wx:else class="left bt_clear" open-type="getUserInfo" bindgetuserinfo="btGetUserInfo">
         <view class="left_icon"><i class="fa fa-user"></i></view>
         <view class="left_text">请登录</view>
     </button>

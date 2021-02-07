@@ -12,18 +12,17 @@
 
 .item {
     width: 630rpx;
-    height: 280rpx;
     background: linear-gradient(180deg, #0d3376, #010e38);
     margin-left: 60rpx;
     margin-right: 60rpx;
-    margin-top: 20rpx;
-    margin-bottom: 20rpx;
+    margin-top: 40rpx;
+    margin-bottom: 40rpx;
     border-radius: 20rpx;
 }
 
 .top_bar {
     display: flex;
-    margin-top: 20rpx;
+    margin-top: 30rpx;
 }
 
 .title_icon {
@@ -70,30 +69,20 @@
 
 .center {
     width: 630rpx;
-    height: 200rpx;
-    display: flex;
-}
-
-.center_left {
-    width: 390rpx;
     margin-top: 20rpx;
     margin-left: 30rpx;
+    margin-bottom: 30rpx;
 }
 
-.center_left>view {
+.center>view {
     height: 40rpx;
     color: #fff;
     font-size: 24rpx;
     line-height: 40rpx;
 }
 
-.center_right {
-    width: 210rpx;
-    margin-top: 20rpx;
-}
-
-.center_right>button {
-    width: 180rpx;
+.center>button {
+    width: 570rpx;
     height: 65rpx;
     line-height: 65rpx;
     font-size: 32rpx;
@@ -102,51 +91,18 @@
     border: 1px solid #e9d592;
     border-radius: 0;
     background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
-    margin: 15rpx;
+    margin-top: 15rpx;
+    margin-bottom: 15rpx;
 }
 
-.center_right>button:hover {
+.center>button:hover {
     background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
 }
 
-
-.end {
-    width: 750rpx;
-    height: 240rpx;
-    background: linear-gradient(180deg, #020d2d, #000412);
+.red {
+    background: linear-gradient(180deg, #942111, #9b3632 49%, #7a1b1b 50%, #af3a3a) !important;
 }
 
-.info {
-    width: 750rpx;
-    height: 120rpx;
-    box-sizing: border-box;
-    color: #fff;
-    padding-top: 20rpx;
-    padding-left: 45rpx;
-    padding-right: 45rpx;
-}
-
-.end_bt {
-    width: 750rpx;
-    height: 120rpx;
-    box-sizing: border-box;
-    padding-left: 85rpx;
-    padding-top: 10rpx;
-}
-
-.bt_big {
-    width: 580rpx;
-    height: 75rpx;
-    font-size: 32rpx;
-    font-weight: bold;
-    color: #ffffff;
-    border-radius: 0;
-    border: 1px solid #e9d592;
-    line-height: 75rpx;
-    margin-bottom: 20rpx;
-    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
-}
-
-.bt_big:hover {
-    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+.red:hover {
+    background: linear-gradient(180deg, #942111, #9b3632 49%, #7a1b1b 50%, #af3a3a) !important;
 }

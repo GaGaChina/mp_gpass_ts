@@ -52,8 +52,8 @@ Page({
             centerPageHeight: centerHeight
         })
         const dbLib: DBLib = $g.g.dbLib
-        if (dbLib.selectDB) {
-            const dbItem: DBItem = dbLib.selectDB
+        if (dbLib.selectItem) {
+            const dbItem: DBItem = dbLib.selectItem
             $g.log(dbItem)
         }
         //const item:Entry = db.groups[0].groups[0].entries[0]

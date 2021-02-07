@@ -1,20 +1,26 @@
 import { $g } from "../../frame/speed.do";
 import { GFileSize } from "../g-byte-file/g.file.size";
-import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group } from "../kdbxweb/types/index";
+import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group, Entry } from "../kdbxweb/types/index";
 
 const KdbxWeb = require('./../kdbxweb/index')
-const Consts = require('./../kdbxweb/defs/consts')
 
 export class KdbxApi {
 
     public static kdbxweb: KdbxWeb = KdbxWeb as KdbxWeb
+
+    /** 通过密码, 获取加盐存储密码 */
+    public static getPassPV(pass: String): ProtectedValue {
+        const pv: ProtectedValue = (KdbxApi.kdbxweb.ProtectedValue as any).fromString(pass)
+        return pv
+    }
+
 
     /**
      * 通过文本获取密码对象
      * @param pass 文本密码
      */
     public static getPassCredentials(pass: String): Credentials {
-        const pv: ProtectedValue = (KdbxApi.kdbxweb.ProtectedValue as any).fromString(pass);
+        const pv: ProtectedValue = KdbxApi.getPassPV(pass)
         const n: any = KdbxApi.kdbxweb.Credentials
         const o: Credentials = new n(pv)
         return o
@@ -30,7 +36,7 @@ export class KdbxApi {
         const db: Kdbx = (KdbxApi.kdbxweb.Kdbx as any).create(c, name)
         //db.set({ active: true, created: true, name });
         const dbHeader: any = db.header
-        dbHeader.setKdf(Consts.KdfId.Aes)
+        dbHeader.setKdf(KdbxApi.kdbxweb.Consts.KdfId.Aes)
         return db
     }
 
@@ -40,21 +46,21 @@ export class KdbxApi {
      * @param pass 文本密码
      */
     public static async open(byte: ArrayBuffer, pass: string): Promise<Kdbx | null> {
-        try {
-            $g.log('g|time|start')
-            $g.log('[KdbxApi][open]文件长度 : ' + GFileSize.getSize(byte.byteLength, 3))
-            const c: Credentials = KdbxApi.getPassCredentials(pass)
-            const a: ArrayBuffer = await c.getHash()
-            // $g.log('[KdbxApi][open]credentials', a);
-            // $g.log('[KdbxApi][open]证书创建成功', credentials)
-            const db: Kdbx | null = await (KdbxApi.kdbxweb.Kdbx as any).load(byte, c)
-            $g.log('g|time|end')
-            return db
-        } catch (e) {
-            $g.log('[KdbxApi][open][error]', e)
-            $g.log('g|time|end')
-            return Promise.resolve(null);
-        }
+        // try {
+        $g.log('g|time|start')
+        $g.log('[KdbxApi][open]文件长度 : ' + GFileSize.getSize(byte.byteLength, 3))
+        const c: Credentials = KdbxApi.getPassCredentials(pass)
+        const a: ArrayBuffer = await c.getHash()
+        // $g.log('[KdbxApi][open]credentials', a);
+        // $g.log('[KdbxApi][open]证书创建成功', credentials)
+        const db: Kdbx | null = await (KdbxApi.kdbxweb.Kdbx as any).load(byte, c)
+        $g.log('g|time|end')
+        return db
+        // } catch (e) {
+        //     $g.log('[KdbxApi][open][error]', e)
+        //     $g.log('g|time|end')
+        //     return Promise.resolve(null);
+        // }
     }
 
     /**
@@ -62,7 +68,8 @@ export class KdbxApi {
      * @param db Kdbx对象
      */
     public static async save(db: Kdbx): Promise<ArrayBuffer> {
-        return db.save()
+        $g.log('[KdbxApi]save')
+        return await db.save()
     }
 
     /**
@@ -93,5 +100,39 @@ export class KdbxApi {
             }
         }
         return true
+    }
+
+    /**
+     * 在 Group 中查找 uuid 对象
+     * @param group 
+     * @param uuid 
+     */
+    public static findUUID(group: Group, uuid: string): Group | Entry | null {
+        if (group) {
+            if (group.uuid.id === uuid) {
+                return group
+            } else {
+                let out: any | null = null
+                let l: number = group.groups.length
+                for (let i = 0; i < l; i++) {
+                    const groupItem: Group = group.groups[i];
+                    // if(groupItem.uuid.id === uuid){
+                    //     return groupItem
+                    // }
+                    out = this.findUUID(groupItem, uuid)
+                    if (out) {
+                        return out
+                    }
+                }
+                l = group.entries.length
+                for (let i = 0; i < l; i++) {
+                    const entrieItem = group.entries[i];
+                    if (entrieItem.uuid.id === uuid) {
+                        return entrieItem
+                    }
+                }
+            }
+        }
+        return null
     }
 }

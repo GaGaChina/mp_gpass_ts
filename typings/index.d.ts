@@ -6,10 +6,11 @@ declare function requirePlugin<T>(name: string): T
 interface IAppOption {
   globalData: {
     app: DataGlobalApp,
+    systemInfo: WechatMiniprogram.GetSystemInfoSyncResult,
     user: DataGlobalUser,
     userWX?: WechatMiniprogram.UserInfo,
     /** 对象初始化的 DB 对象 */
-    dbLib:any,
+    dbLib: any,
   }
   userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
 }

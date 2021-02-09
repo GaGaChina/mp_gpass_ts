@@ -4,7 +4,6 @@ const encoding = require('./../text-encoding/lib/encoding.js')
 const pako = require('./../pako/index')
 const BinaryStream = require('./../kdbxweb/utils/binary-stream.js')
 const base64 = require('./encoding-base64.js')
-//const base64Old = require('./../text-encoding/lib/encoding-indexes.js')["encoding-indexes"]
 
 /**
  * 二进制和字符串之间的转换

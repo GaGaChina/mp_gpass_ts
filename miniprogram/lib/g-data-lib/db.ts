@@ -4,6 +4,9 @@ import { WXFile } from "../../frame/wx/wx.file"
 import { Entry, Group, Kdbx, ProtectedValue } from "../kdbxweb/types"
 import { KdbxApi } from "./kdbx.api"
 import { GByteStream } from "../g-byte-file/g.byte.stream"
+import { ToolBytes } from "../../frame/tools/tool.bytes"
+import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
+import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
 
 interface IDB {
     getInfo(): Object;
@@ -372,7 +375,7 @@ export class DBItem extends DBBase {
     public filename: string = ''
     /** 文件存放在 db 文件夹下的 使用 localId */
     public path: string = ''
-    /** 迷你版本的备份地址, 0 未备份, 1 主要是1 , 2 最新是2号 db.min.1.kdbx */
+    /** 迷你版本的备份地址, 0 未备份, 1 主要是1 , 2 最新是2号 db.min.1.kdbx, 3 db.base64.1.txt, 3 db.base64.1.txt, 4 db.base64.2.txt  */
     public pathMinIndex: number = 0
     /** 文件创建的时间 */
     public timeCreat: Date = new Date()
@@ -387,7 +390,7 @@ export class DBItem extends DBBase {
     /** 解密打开的 kdbx 文件 */
     public db: Kdbx | null = null
     /** 生成的需要删除的临时文件, 直接删除会导致发送不成功 */
-    public tempFileList:Array<string> = new Array<string>()
+    public tempFileList: Array<string> = new Array<string>()
 
     /** 获取这个目录下文件的尺寸 */
     public async fileSize(): Promise<number> {
@@ -407,21 +410,15 @@ export class DBItem extends DBBase {
      */
     public async checkFile(): Promise<boolean> {
         if (this.path) {
-            let info: WechatMiniprogram.Stats | null = await WXFile.getFileStat(`db/${this.path}/db.kdbx`)
-            $g.log('[DBItem]校验 : db ', info)
-            if (info && info.size > 0) {
-                return true
+            const checkList: Array<string> = ['db.kdbx', 'db.min.1.kdbx', 'db.min.2.kdbx', 'db.base64.1.txt', 'db.base64.2.txt']
+            for (let i = 0; i < checkList.length; i++) {
+                const name = checkList[i]
+                let info: WechatMiniprogram.Stats | null = await WXFile.getFileStat(`db/${this.path}/${name}`)
+                if (info && info.size > 0) {
+                    return true
+                }
             }
-            info = await WXFile.getFileStat(`db/${this.path}/db.min.1.kdbx`)
-            $g.log('[DBItem]校验 : db.min.1 ', info)
-            if (info && info.size > 0) {
-                return true
-            }
-            info = await WXFile.getFileStat(`db/${this.path}/db.min.2.kdbx`)
-            $g.log('[DBItem]校验 : db.min.2 ', info)
-            if (info && info.size > 0) {
-                return true
-            }
+            $g.log('[DBItem]校验文件失败')
         }
         return false
     }
@@ -432,28 +429,112 @@ export class DBItem extends DBBase {
         return await WXFile.rmDir(`db/${this.path}/`, true)
     }
 
+    /** 找到本地文件, 并打开 db */
+    public async open(passPV: ProtectedValue) {
+        await WXKeepScreen.on()
+        // string | ArrayBuffer | null
+        let readByte: any = null
+        let filePath: string = `db/${this.path}/`
+        let isBase64: boolean = false
+        if (this.pathMinIndex === 0) {
+            filePath += 'db.kdbx'
+        } else if (this.pathMinIndex === 1) {
+            filePath += 'db.min.1.kdbx'
+        } else if (this.pathMinIndex === 2) {
+            filePath += 'db.min.2.kdbx'
+        } else if (this.pathMinIndex === 3) {
+            filePath += 'db.base64.1.txt'
+            isBase64 = true
+        } else if (this.pathMinIndex === 4) {
+            filePath += 'db.base64.2.txt'
+            isBase64 = true
+        }
+        if (isBase64) {
+            readByte = await WXFile.readFile(filePath, 0, undefined, 'utf-8')
+            readByte = ToolBytes.Base64ToArrayBuffer(readByte)
+        } else {
+            readByte = await WXFile.readFile(filePath)
+        }
+        // $g.log('文件', filePath, '内容', readByte);
+        // if ($g.isTypeM(readByte, 'ArrayBuffer')) {
+        //     const a: any = readByte
+        //     const demo: GByteStream = new GByteStream(a, true)
+        //     const n1: number = demo.rUint32()
+        //     const n2: number = demo.rUint32()
+        //     $g.log(`读取的脑袋头 n1 : ${n1} n2 : ${n2}`)
+        // }
+
+        // 测试读取 binary 不行, 读取 base64 也没用
+        // readByte = await WXFile.readFile(filePath, 0, undefined, 'base64')
+        // if ($g.isString(readByte)) {
+        //     const temp: any = readByte
+        //     readByte = ToolBytes.Base64ToArrayBuffer(temp)
+        //     $g.log('转换后 : ', readByte)
+        // }
+
+        if (readByte && $g.isTypeM(readByte, 'ArrayBuffer')) {
+            const byte: any = readByte
+            const db: Kdbx | null = await KdbxApi.open(byte, passPV.getText());
+            if (db) {
+                let savePass: boolean = false
+                if (WXSoterAuth.facial && this.pass.facial === '') savePass = true
+                if (WXSoterAuth.fingerPrint && this.pass.fingerPrint === '') savePass = true
+                this.pass.pv = savePass ? KdbxApi.getPassPV(passPV.getText()) : null
+                this.db = db
+                // ----- 查询 db 中有没有附件, 有就对db进行拆解, 在保存
+                if (this.pathMinIndex === 0) {
+                    await this.getFileToDisk()
+                }
+            } else {
+                wx.showToast({ title: '打开文件失败, 请检查密码!', icon: 'none', mask: false })
+            }
+        } else {
+            $g.log('读取文件类型不符 : ', $g.className(readByte))
+            wx.showToast({ title: '文件类型不符:' + $g.className(readByte), icon: 'none', mask: false })
+        }
+        await WXKeepScreen.off()
+    }
+
     /** 保存 DbItem 到磁盘, 并且保存 DbLib 到 Storage */
+    /**
+     * DbItem (保存文件) DbLib (保存Storage) 
+     * devtools 用 Base64 保存
+     * 其他 用 二进制 保存
+     */
     public async saveFileAddStorage() {
         if (this.db) {
             $g.log('[DbItem][saveFileAddStorage] 创建新的DB二进制')
             const byte: ArrayBuffer = await this.db.save()
-
             // const demo: GByteStream = new GByteStream(byte, true)
             // const n1: number = demo.rUint32()
             // const n2: number = demo.rUint32()
             // $g.log(`[DbItem][saveFileAddStorage]保存头部 n1 : ${n1} n2 : ${n2}`)
-
             if (byte && byte.byteLength > 0) {
-                if (this.pathMinIndex === 1) {
-                    if (await WXFile.writeFile(`db/${this.path}/db.min.2.kdbx`, byte)) {
-                        this.pathMinIndex = 2
+                if ($g.g.systemInfo.brand === 'devtools') {
+                    // 如果是开发者工具, 就存Base64, 因为二进制不稳定
+                    const base64: string = ToolBytes.ArrayBufferToBase64(byte)
+                    if (this.pathMinIndex === 3) {
+                        if (await WXFile.writeFile(`db/${this.path}/db.base64.2.txt`, base64)) {
+                            this.pathMinIndex = 4
+                        }
+                    } else {
+                        if (await WXFile.writeFile(`db/${this.path}/db.base64.1.txt`, base64)) {
+                            this.pathMinIndex = 3
+                        }
                     }
                 } else {
-                    if (await WXFile.writeFile(`db/${this.path}/db.min.1.kdbx`, byte)) {
-                        this.pathMinIndex = 1
+                    if (this.pathMinIndex === 1) {
+                        if (await WXFile.writeFile(`db/${this.path}/db.min.2.kdbx`, byte, 0, 'binary')) {
+                            this.pathMinIndex = 2
+                        }
+                    } else {
+                        if (await WXFile.writeFile(`db/${this.path}/db.min.1.kdbx`, byte, 0, 'binary')) {
+                            this.pathMinIndex = 1
+                        }
                     }
                 }
-                ($g.g.dbLib as DBLib).storageSaveThis()
+                const lib: DBLib = $g.g.dbLib
+                lib.storageSaveThis()
             }
         } else {
             $g.log('[DbItem][saveFileAddStorage] 失败, db空')
@@ -516,21 +597,30 @@ export class DBItem extends DBBase {
                     const fileName: string = fileList[j]
                     const fileInfo: any = binaries[fileName]
                     const ref: string = fileInfo.ref
-                    let pass: string = (KdbxApi.kdbxweb.KdbxUuid as any).random().toString()
+                    const KdbxUuid: any = KdbxApi.kdbxweb.KdbxUuid
+                    let pass: string = KdbxUuid.random().toString()
                     let byte: ArrayBuffer = fileInfo.value
                     // Aes
                     await AES.setKey(pass)
                     const aes: ArrayBuffer | null = await AES.encryptCBC(byte)
                     if (aes) {
                         byte = aes
-                        // 创建本地文件 AES 加密
+                        // 文件名
                         const newPath: string = uuid + '_' + ref
-                        await WXFile.writeFile(`db/${this.path}/${newPath}`, byte, 0, 'binary')
-                        const fileItem: object = {
+                        const fileItem: any = {
                             name: fileName,
                             ref: ref,
                             path: newPath,
                             pass: pass,
+                            size: byte.byteLength,
+                            savetype: 'byte'
+                        }
+                        if ($g.g.systemInfo.brand === 'devtools') {
+                            const base64: string = ToolBytes.ArrayBufferToBase64(byte)
+                            await WXFile.writeFile(`db/${this.path}/${newPath}`, base64, 0, 'utf-8')
+                            fileItem['savetype'] = 'base64'
+                        } else {
+                            await WXFile.writeFile(`db/${this.path}/${newPath}`, aes, 0, 'binary')
                         }
                         jsonFileList.push(fileItem)
                         delete binaries[fileName]

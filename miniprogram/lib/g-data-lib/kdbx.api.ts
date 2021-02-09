@@ -10,7 +10,8 @@ export class KdbxApi {
 
     /** 通过密码, 获取加盐存储密码 */
     public static getPassPV(pass: String): ProtectedValue {
-        const pv: ProtectedValue = (KdbxApi.kdbxweb.ProtectedValue as any).fromString(pass)
+        const pvObj: any = KdbxApi.kdbxweb.ProtectedValue
+        const pv: ProtectedValue = pvObj.fromString(pass)
         return pv
     }
 
@@ -33,7 +34,8 @@ export class KdbxApi {
      */
     public static create(name: string, pass: string): Kdbx {
         const c: Credentials = KdbxApi.getPassCredentials(pass)
-        const db: Kdbx = (KdbxApi.kdbxweb.Kdbx as any).create(c, name)
+        const kdbx:any = KdbxApi.kdbxweb.Kdbx
+        const db: Kdbx = kdbx.create(c, name)
         //db.set({ active: true, created: true, name });
         const dbHeader: any = db.header
         dbHeader.setKdf(KdbxApi.kdbxweb.Consts.KdfId.Aes)
@@ -53,7 +55,8 @@ export class KdbxApi {
         const a: ArrayBuffer = await c.getHash()
         // $g.log('[KdbxApi][open]credentials', a);
         // $g.log('[KdbxApi][open]证书创建成功', credentials)
-        const db: Kdbx | null = await (KdbxApi.kdbxweb.Kdbx as any).load(byte, c)
+        const kdbx: any = KdbxApi.kdbxweb.Kdbx
+        const db: Kdbx | null = await kdbx.load(byte, c)
         $g.log('g|time|end')
         return db
         // } catch (e) {
@@ -129,6 +132,30 @@ export class KdbxApi {
                     const entrieItem = group.entries[i];
                     if (entrieItem.uuid.id === uuid) {
                         return entrieItem
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * 在 Group 中查找 uuid 对象
+     * @param group 
+     * @param uuid 
+     */
+    public static findUUIDGroup(group: Group, uuid: string): Group | null {
+        if (group) {
+            if (group.uuid.id === uuid) {
+                return group
+            } else {
+                let out: any | null = null
+                let l: number = group.groups.length
+                for (let i = 0; i < l; i++) {
+                    const groupItem: Group = group.groups[i];
+                    out = this.findUUID(groupItem, uuid)
+                    if (out) {
+                        return out
                     }
                 }
             }

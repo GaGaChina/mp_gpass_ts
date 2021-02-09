@@ -1,0 +1,136 @@
+.info {
+    width: 750rpx;
+}
+
+.scroll {
+    display: flex;
+    flex-direction: column;
+    width: 750rpx;
+}
+
+.top {
+    display: flex;
+    width: 750rpx;
+}
+
+.top_icon {
+    margin-left: 50rpx;
+    width: 54rpx;
+    height: 74rpx;
+}
+
+.top_icon>i {
+    width: 100rpx;
+    height: 100rpx;
+    margin-top: 10rpx;
+    font-size: 54rpx;
+    border-radius: 50%;
+    color: #9ce72a;
+    line-height: 54rpx;
+}
+
+.top_title {
+    margin-top: 10rpx;
+    margin-left: 20rpx;
+    font-size: 54rpx;
+    line-height: 54rpx;
+    color: #9ce72a;
+}
+
+.group {
+    display: flex;
+    width: 750rpx;
+}
+
+.group_icon {
+    margin-left: 50rpx;
+    width: 54rpx;
+    height: 74rpx;
+}
+
+.group_icon>i {
+    width: 100rpx;
+    height: 100rpx;
+    margin-top: 10rpx;
+    font-size: 32rpx;
+    border-radius: 50%;
+    color: #9ce72a;
+    line-height: 54rpx;
+}
+
+.group_title {
+    margin-top: 10rpx;
+    margin-left: 10rpx;
+    font-size: 32rpx;
+    line-height: 54rpx;
+    color: #9ce72a;
+}
+
+
+.item {
+    display: flex;
+    width: 750rpx;
+    margin-top: 10rpx;
+    margin-left: 30rpx;
+    /* background: linear-gradient(180deg, #020d2d, #000412); */
+}
+
+.item>view {
+    font-size: 36rpx;
+    font-weight: bold;
+}
+
+.item_info {
+    font-size: 36rpx;
+    font-weight: bold;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.item>view {
+    color: #FFF;
+    margin-left: 30rpx;
+}
+
+
+.time {
+    width: 750rpx;
+}
+
+.time>view {
+    color: #FFF;
+    font-size: 24rpx;
+    line-height: 32rpx;
+    text-align: center;
+}
+
+.end_bt {
+    width: 580rpx;
+    margin: 0 auto;
+}
+
+.bt_big {
+    width: 580rpx;
+    height: 75rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 0;
+    border: 1px solid #e9d592;
+    line-height: 75rpx;
+    margin-top: 20rpx;
+    margin-bottom: 20rpx;
+    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+}
+
+.bt_big:hover {
+    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+}
+
+.red {
+    background: linear-gradient(180deg, #942111, #9b3632 49%, #7a1b1b 50%, #af3a3a) !important;
+}
+
+.red:hover {
+    background: linear-gradient(180deg, #942111, #9b3632 49%, #7a1b1b 50%, #af3a3a) !important;
+}

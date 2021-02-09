@@ -11,6 +11,8 @@ Page({
         findPageHeight: 50,
         dbEmpty: true,
         dbName: '',
+        /** 垃圾桶的UUID */
+        recycleUUID: '',
         /** 现在选中的 Group */
         selectGroup: null,
         /** 组显示内容 {uuid, icon, name, notes, } */
@@ -31,6 +33,8 @@ Page({
             fullPageHeight: fullHeight,
             centerPageHeight: centerHeight
         })
+    },
+    onShow() {
         // 设置数据库
         const dbLib: DBLib = $g.g.dbLib
         const dbItem: DBItem | null = dbLib.selectItem
@@ -51,6 +55,13 @@ Page({
         this.data.itemList.length = 0
         const groups: Group[] = db.groups
         $g.log('添加节点信息 : ', groups[0])
+        const meta: any = db.meta
+        if (meta && meta.recycleBinUuid) {
+            this.data.recycleUUID = meta.recycleBinUuid.id
+        } else {
+            this.data.recycleUUID = ''
+        }
+        $g.log('回收站ID:', this.data.recycleUUID)
         this.setGroup(groups[0], true)
         this.setData({
             groupList: this.data.groupList,
@@ -63,17 +74,23 @@ Page({
      * @param addGroupList 
      */
     setGroup(group: Group, addGroupList: boolean = false) {
+        // 要绕过的UUID, 一般用于垃圾桶
+        let outUUID: string = ''
         if (addGroupList) {
             // 查看是否需要添加 返回上级 返回根目录
             const root: Group = $g.g.dbLib.selectItem.db.groups[0]
-            if (root && root.uuid.id !== group.uuid.id) {
-                const rootInfo: any = {
-                    icon: KdbxIcon.list[0],
-                    name: '返回根目录',
-                    notes: '',
-                    uuid: root.uuid.id
+            if (root) {
+                if (root.uuid.id === group.uuid.id) {
+                    outUUID = this.data.recycleUUID
+                } else {
+                    const rootInfo: any = {
+                        icon: KdbxIcon.list[0],
+                        name: '返回根目录',
+                        notes: '',
+                        uuid: root.uuid.id
+                    }
+                    this.data.groupList.push(rootInfo)
                 }
-                this.data.groupList.push(rootInfo)
             }
             const parent: Group = group.parentGroup
             if (parent && root.uuid.id !== parent.uuid.id) {
@@ -97,6 +114,10 @@ Page({
                         notes: groupItem.notes,
                         uuid: groupItem.uuid.id
                     }
+                    // 给回收站更名
+                    if (groupItem.uuid.id === this.data.recycleUUID) {
+                        groupInfo['name'] = '回收站'
+                    }
                     this.data.groupList.push(groupInfo)
                 } else {
                     const entryInfo: any = {
@@ -110,7 +131,9 @@ Page({
                     }
                     this.data.itemList.push(entryInfo)
                 }
-                this.setGroup(groupItem, false)
+                if (outUUID === '' || groupItem.uuid.id !== outUUID) {
+                    this.setGroup(groupItem, false)
+                }
             }
         }
         l = group.entries.length
@@ -153,7 +176,7 @@ Page({
             } else if ($g.isClass(findItem, 'KdbxEntry')) {
                 $g.log(`查看单条详情 ${uuid}`)
                 wx.navigateTo({
-                    url: `./../show/show?uuid=${uuid}`
+                    url: `./../entryshow/entryshow?uuid=${uuid}`
                 })
             } else {
                 $g.log('未找到类型, 请赶紧处理 : ' + $g.className(findItem))
@@ -194,12 +217,12 @@ Page({
         }
     },
     /** 将现在开启的密码关闭, 但不刷新界面 */
-    closeShowPass(){
-        const l:number = this.data.itemList.length
-        if(l){
+    closeShowPass() {
+        const l: number = this.data.itemList.length
+        if (l) {
             for (let i = 0; i < l; i++) {
                 const item = this.data.itemList[i];
-                if(item.showpass){
+                if (item.showpass) {
                     item.showpass = false
                     item.password = '******'
                 }
@@ -223,12 +246,12 @@ Page({
         $g.log(e)
         let type: string = String(e.currentTarget.dataset.type)
         wx.navigateTo({
-            url: './../add/add?type=add&infoType=bank'
+            url: './../entryedit/entryedit?type=add&infoType=bank'
         })
     },
     btEndAdd(e: any) {
         wx.navigateTo({
-            url: './../add/add?type=add'
+            url: './../entryedit/entryedit?type=add'
         })
     },
     btShowDbList(e: any) {

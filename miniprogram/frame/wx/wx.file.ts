@@ -322,8 +322,10 @@ export class WXFile {
                             }
                         } else {
                             const item: any = res.stats
-                            const file: WechatMiniprogram.Stats = item.stats
-                            $g.log(`path:${item.path} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory()}`)
+                            if (item.stats) {
+                                const file: WechatMiniprogram.Stats = item.stats
+                                $g.log(`path:${item.path} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory()}`)
+                            }
                         }
                     }
                     resolve(true)
@@ -391,10 +393,10 @@ export class WXFile {
                 WXFile.manager.writeFile({
                     filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
                     data: data,
-                    encoding: encoding,
                     position: position,
+                    encoding: encoding,
                     async success(res: WechatMiniprogram.GeneralCallbackResult) {
-                        $g.log('[wx.file][writeFile]写入空成功')
+                        $g.log('[wx.file][writeFile]写入成功')
                         resolve(true)
                         // $g.log('[wx.file][writeFile]追加文件', filePath, data, encoding)
                         // resolve(await WXFile.appendFile(filePath, data, encoding))

@@ -1,4 +1,5 @@
 import { $g } from "../speed.do"
+import { ToolString } from "./tool.string";
 
 
 export class ToolBytes {
@@ -38,7 +39,14 @@ export class ToolBytes {
      */
     public static ArrayBufferToBase64(buffer: ArrayBuffer): string {
         // wx.arrayBufferToBase64 2.4.0 以后就废弃了
-        return wx.arrayBufferToBase64(buffer)
+        // return wx.arrayBufferToBase64(buffer)
+        // 参考 KdbxApi.kdbxweb.ByteUtils.bytesToBase64(buffer)
+        const u8: Uint8Array = new Uint8Array(buffer)
+        let str = '';
+        for (var i = 0; i < u8.length; i++) {
+            str += String.fromCharCode(u8[i]);
+        }
+        return ToolString.btoa(str);
     }
 
     /**
@@ -46,6 +54,13 @@ export class ToolBytes {
      * @param buffer ArrayBuffer
      */
     public static Base64ToArrayBuffer(base64: string): ArrayBuffer {
-        return wx.base64ToArrayBuffer(base64)
+        // return wx.base64ToArrayBuffer(base64)
+        // 参考 KdbxApi.kdbxweb.ByteUtils.base64ToBytes(base64)
+        var byteStr = ToolString.atob(base64);
+        var arr = new Uint8Array(byteStr.length);
+        for (var i = 0; i < byteStr.length; i++) {
+            arr[i] = byteStr.charCodeAt(i);
+        }
+        return arr.buffer;
     }
 }

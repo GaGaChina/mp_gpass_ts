@@ -6,7 +6,10 @@ export class CallBackFunc {
     private _lib: Array<Function> = new Array<Function>();
 
     constructor(finish?: Function | undefined) {
-        if ($g.isFunction(finish)) this._lib.push(finish as any);
+        if ($g.isFunction(finish)) {
+            const f: any = finish
+            this._lib.push(f);
+        }
     }
 
     /** 遍历完成函数 */
@@ -27,7 +30,10 @@ export class CallBackFunc {
      */
     public add(finish?: Function | undefined, clear: boolean = true): void {
         if (clear) this.clear();
-        if ($g.isFunction(finish)) this._lib.push(finish as any);
+        if ($g.isFunction(finish)) {
+            const f: any = finish
+            this._lib.push(f);
+        }
     }
 
     /**

@@ -1,24 +1,25 @@
 import { $g } from "../speed.do";
+import { WXSystemInfo } from "./wx.system.info";
 
 export class WXSize {
 
-    /** 初始化并监听窗口尺寸变化 */
+    /** 初始化监听窗口尺寸变化 */
     public static init() {
-        WXSize.getSize();
         wx.onWindowResize(WXSize.resize);
     }
 
-    private static resize(size: WechatMiniprogram.OnWindowResizeCallbackResult): void {
-        $g.log(size)
-        WXSize.getSize();
+    /** 当尺寸变化的时候回调函数 */
+    public static resize(size: WechatMiniprogram.OnWindowResizeCallbackResult): void {
+        $g.g.systemInfo = WXSystemInfo.getSync()
+        $g.log('[WXSize]size', size)
+        $g.log('[WXSize]systemInfo', $g.g.systemInfo)
+        WXSize.getSize($g.g.systemInfo);
     }
 
     /**
      * 重新获取窗口尺寸
      */
-    public static getSize() {
-        const info = wx.getSystemInfoSync();
-        $g.log('wx.getSystemInfoSync : ', info);
+    public static getSize(info: WechatMiniprogram.GetSystemInfoSyncResult) {
         // px → rpx 的比例, px * 值 = rpx
         const scene: DataScene = $g.s.g.app.scene
         scene.pxRpx = 750 / info.windowWidth * 1000

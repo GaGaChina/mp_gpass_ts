@@ -9,6 +9,7 @@ import { GFileSize } from "../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../lib/g-data-lib/db"
 import { EncodingText } from "../../lib/text-encoding/EncodingText"
 import { AES } from "../../frame/crypto/AES"
+import { WXSystemInfo } from "../../frame/wx/wx.system.info"
 
 var passPV: ProtectedValue;
 
@@ -49,7 +50,8 @@ Page({
         stepList: []
     },
     onResize() {
-        WXSize.getSize()
+        $g.g.systemInfo = WXSystemInfo.getSync()
+        WXSize.getSize($g.g.systemInfo)
     },
     onLoad(query: any) {
         const dbLib: DBLib = $g.g.dbLib
@@ -158,59 +160,16 @@ Page({
                 if (dbItem.db) {
                     wx.reLaunch({ url: './../showdb/index/index' })
                 } else {
-                    // 关闭已经打开的库
-                    await WXKeepScreen.on()
                     const dbLib: DBLib = $g.g.dbLib
                     const findOpen: DBItem | null = dbLib.selectItem
+                    // 关闭已经打开的库
                     if (findOpen && findOpen.localId !== dbItem.localId) {
                         findOpen.db = null
                     }
-                    let readByte: string | ArrayBuffer | null = null
-                    let filePath: string = `db/${dbItem.path}/`
-                    if (dbItem.pathMinIndex === 0) {
-                        filePath += 'db.kdbx'
-                    } else if (dbItem.pathMinIndex === 1) {
-                        filePath += 'db.min.1.kdbx'
-                    } else {
-                        filePath += 'db.min.2.kdbx'
+                    await dbItem.open(passPV)
+                    if (dbItem.db) {
+                        wx.reLaunch({ url: './../showdb/index/index' })
                     }
-                    readByte = await WXFile.readFile(filePath)
-                    // $g.log('文件', filePath, '内容', readByte);
-                    // if ($g.isTypeM(readByte, 'ArrayBuffer')) {
-                    //     const a: any = readByte
-                    //     const demo: GByteStream = new GByteStream(a, true)
-                    //     const n1: number = demo.rUint32()
-                    //     const n2: number = demo.rUint32()
-                    //     $g.log(`读取的脑袋头 n1 : ${n1} n2 : ${n2}`)
-                    // }
-
-                    if (readByte && $g.isTypeM(readByte, 'ArrayBuffer')) {
-                        const db: Kdbx | null = await KdbxApi.open(readByte as any, passPV.getText());
-                        if (db) {
-                            let savePass: boolean = false
-                            if (WXSoterAuth.facial && dbItem.pass.facial === '') {
-                                savePass = true
-                            }
-                            if (WXSoterAuth.fingerPrint && dbItem.pass.fingerPrint === '') {
-                                savePass = true
-                            }
-                            if (savePass) {
-                                dbItem.pass.pv = KdbxApi.getPassPV(passPV.getText())
-                            }
-                            dbItem.db = db
-                            this.setData({ passWord: '' })
-                            // ----- 查询 db 中有没有附件, 有就对db进行拆解, 在保存
-                            // if (dbItem.pathMinIndex === 0) {
-                            //     await dbItem.getFileToDisk()
-                            // }
-                            await WXKeepScreen.off()
-                            wx.reLaunch({ url: './../showdb/index/index' })
-                            return
-                        } else {
-                            wx.showToast({ title: '打开文件失败, 请检查密码!', icon: 'none', mask: true })
-                        }
-                    }
-                    await WXKeepScreen.off()
                 }
             } else {
                 wx.showToast({ title: '请输入文件密码!', icon: 'none', mask: true })

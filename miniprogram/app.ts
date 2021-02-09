@@ -4,6 +4,7 @@ import { WXUser } from "./frame/wx/wx.user"
 import { WXFile } from "./frame/wx/wx.file"
 import { WXSize } from "./frame/wx/wx.resize"
 import { DBLib } from "./lib/g-data-lib/db"
+import { WXSystemInfo } from "./frame/wx/wx.system.info"
 
 App<IAppOption>({
     globalData: {
@@ -28,6 +29,7 @@ App<IAppOption>({
             timeMouse: Date.now(),
             timeMouseClose: 60000,
         },
+        systemInfo: WXSystemInfo.getSync(),
         user: {
             id: ''
         },
@@ -36,6 +38,8 @@ App<IAppOption>({
     async onLaunch() {
         $g.init(this)
         WXSize.init()
+        WXSize.getSize(this.globalData.systemInfo)
+        WXSystemInfo.showLog(this.globalData.systemInfo)
         // 获取 Storage 的数据来设置
         const dbLib: DBLib = this.globalData.dbLib
         dbLib.storageSetThis()

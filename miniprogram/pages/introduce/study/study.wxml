@@ -1,0 +1,22 @@
+<g-page-bg></g-page-bg>
+<g-page-top canBack="{{true}}" title="快速入门"></g-page-top>
+<scroll-view scroll-y enable-flex class="scroll" style="height:{{fullPageHeight}}rpx;">
+    <view class="title">
+        创建空仓库
+    </view>
+    <view class="info">
+        使用文本的密码进行空仓库的创建, 请牢记密码!
+    </view>
+    <view class="title">
+        导入 Kdbx 文件
+    </view>
+    <view class="info">
+        可导入 KeePass 文件, 目前只支持 AES256 加密格式, 文件不要过大, 最好控制在10M内, 否则可能内存溢出闪退, 如果没附件基本没有问题.导入过程根据文件大小周期会比较长, 10M要花1分钟以上, 主要是无法调用CPU内的AES指令进行解密.
+    </view>
+    <view class="title">
+        导出文件
+    </view>
+    <view class="info">
+        导出功能现在处于工程状态, 目前进展导出 Kdbx , XML 测试通过, 后续会增加 Excel, Word, MD, TXT等格式, 目前这个功能还未对大众开发.
+    </view>
+</scroll-view>

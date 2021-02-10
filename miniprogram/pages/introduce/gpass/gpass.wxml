@@ -1,0 +1,41 @@
+<g-page-bg></g-page-bg>
+<g-page-top canBack="{{true}}" title="软件介绍"></g-page-top>
+<scroll-view scroll-y enable-flex class="scroll" style="height:{{fullPageHeight}}rpx;">
+    <view class="title">
+        简介
+    </view>
+    <view class="info">
+        《密码档案》是款依托于 KDBX 开源加密格式的帐号管理小程序, 可导入导出 .kdbx 文件, 这种格式管理软件非常丰富。
+    </view>
+    <view class="title">
+        安全性
+    </view>
+    <view class="info">
+        <text>
+            本工具所有密码均保存用户本地系统!
+        </text>
+        <text>
+            你的初始密码千万不要忘记!密码不但使用了SHA256加密, 而且进行了加盐处理, 额外数十次循环AES加密, 外加偏移量, 就是说即使碰撞也无法解密!
+        </text>
+        <text>
+            大体的加密流程为, 文本 → 加盐封装 →二进制编码 → SHA256 加密 -> IV随机偏移量 -> IV偏移量SHA256加密 -> 追加校验码 -> AES256-CBC模式加密
+        </text>
+    </view>
+    <view class="title">
+        KDBX 格式介绍
+    </view>
+    <view class="info">
+        <text>
+            通过KeePass创建的数据文件称为KDBX文件, 它包含了一个强大的密码产生引擎与加密储存机能，能够提供一个安全的密码储存空间。
+        </text>
+        <text>
+            这个数据库采用当今非常安全的密码算法AES 和 Twofish
+        </text>
+    </view>
+    <view class="title">
+        KeePass 软件介绍
+    </view>
+    <view class="info">
+        是免费、小巧、绿色且开源的密码管理工具，它说保存的数据文件格式为 KDBX
+    </view>
+</scroll-view>

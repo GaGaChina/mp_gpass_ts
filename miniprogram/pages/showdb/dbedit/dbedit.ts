@@ -5,10 +5,8 @@ import { Kdbx } from "../../../lib/kdbxweb/types"
 import { WXSoterAuth } from "./../../../frame/wx/wx.soter.auth"
 import { WXFile } from "./../../../frame/wx/wx.file"
 import { AES } from "../../../frame/crypto/AES"
-import { EncodingText } from "../../../lib/text-encoding/EncodingText"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
-import { GByteStream } from "../../../lib/g-byte-file/g.byte.stream"
-import { SHA256 } from "../../../frame/crypto/SHA256"
+import { TimeFormat } from "../../../frame/time/time.format"
 
 var dbItem: DBItem;
 
@@ -65,9 +63,9 @@ Page({
                 icon: item.icon,
                 name: item.name,
                 path: item.path,
-                timeCreat: item.timeCreat.toLocaleString(),
-                timeRead: item.timeRead.toLocaleString(),
-                timeChange: item.timeChange.toLocaleString(),
+                timeCreat: TimeFormat.showLang(item.timeCreat),
+                timeRead: TimeFormat.showLang(item.timeRead),
+                timeChange: TimeFormat.showLang(item.timeChange),
                 fileSize: fileSize,
                 fingerPrint: WXSoterAuth.fingerPrint,
                 facial: WXSoterAuth.facial,

@@ -1,4 +1,5 @@
 import { $g } from "../../../frame/speed.do"
+import { TimeFormat } from "../../../frame/time/time.format"
 import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 
@@ -41,9 +42,9 @@ Page({
                 icon: item.icon,
                 name: item.name,
                 id: item.localId,
-                timeCreat: item.timeCreat.toLocaleString(),
-                timeRead: item.timeRead.toLocaleString(),
-                timeChange: item.timeChange.toLocaleString(),
+                timeCreat: TimeFormat.showLang(item.timeCreat),
+                timeRead: TimeFormat.showLang(item.timeRead),
+                timeChange: TimeFormat.showLang(item.timeChange),
                 fileSize: GFileSize.getSize(item.fileSizeAll, 3),
                 isSelect: item.localId === dbLib.selectId
             }

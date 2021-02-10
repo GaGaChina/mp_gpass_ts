@@ -1,0 +1,24 @@
+<g-page-bg></g-page-bg>
+<g-page-top canBack="{{true}}" title="个人中心"></g-page-top>
+<view class="head_view">
+    <image src="{{ avatarUrl }}" mode="cover"></image>
+    <text class="head_txt">{{ nickName }}</text>
+</view>
+<view class="bt_list">
+    <navigator class="bt_item" url="./../../introduce/study/study">快速入门</navigator>
+    <navigator class="bt_item" url="./../../introduce/gpass/gpass">软件介绍</navigator>
+    <button class="bt_item" bindtap="btClearClipboard">清空剪切板</button>
+    <view class="bt_item">版本:1.1.1</view>
+    <!-- <view>密码迁移</view>
+    <view></view>
+    <view>历史登录信息</view>
+    <view>清空剪切板</view>
+    <view>意见返回,聊天模式</view>
+    <view>意见反馈</view>
+    <view>分享APP</view>
+    <view>安全说明</view>
+    
+    <view></view>
+    <item></item>
+    <item>赞赏支持</item> -->
+</view>

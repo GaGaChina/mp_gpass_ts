@@ -1,0 +1,36 @@
+.head_view {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    width: 750rpx;
+}
+
+.head_view image {
+    width: 128rpx;
+    height: 128rpx;
+    margin: 20rpx;
+    border-radius: 50%;
+    background: #333333;
+}
+
+.head_txt {
+    color: #fff;
+}
+
+.bt_list {
+    width: 750rpx;
+    margin-top: 50rpx;
+}
+
+.bt_item {
+    color: #fff;
+    width: 690rpx;
+    height: 75rpx;
+    line-height: 75rpx;
+    margin: 0 auto;
+    margin-top: 10rpx;
+    background-color: rgba(0, 0, 0, 0.4);
+    font-size: 32rpx;
+    text-align: center;
+}

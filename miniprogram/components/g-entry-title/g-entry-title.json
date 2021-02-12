@@ -1,0 +1,6 @@
+{
+    "component": true,
+    "usingComponents": {
+        "g-sub-kdbx-icon": "./../g-sub-kdbx-icon/g-sub-kdbx-icon"
+    }
+}

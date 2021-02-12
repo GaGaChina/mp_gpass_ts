@@ -1,0 +1,10 @@
+<!-- <block wx:if="{{type==='show'}}"> -->
+<view class="show">
+    <block wx:for="{{list}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+        <g-entry-field info="{{item}}" type="{{type}}" showborder="{{index!==(list.length-1)}}" bind:change="fieldchange"></g-entry-field>
+    </block>
+</view>
+<!-- </block>
+<block wx:elif="{{type==='edit'}}">
+
+</block> -->

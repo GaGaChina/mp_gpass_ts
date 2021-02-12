@@ -4,17 +4,25 @@ import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
 import { KdbxIcon } from "../../../lib/g-data-lib/kdbx.icon"
 import { Kdbx, Group, Entry, ProtectedValue } from "../../../lib/kdbxweb/types"
 
+
+/** 整个库 */
+var dbLib: DBLib;
+/** 默认选中的库 */
+var dbItem: DBItem;
+/** 默认选中的库的Kdbx */
+var db: Kdbx;
+
 Page({
     data: {
+        /** 是否显示选择添加类别窗口 */
+        openWinSelectType: false,
         fullPageHeight: 0,
         centerPageHeight: 0,
-        findPageHeight: 50,
+        findPageHeight: 0,
         dbEmpty: true,
         dbName: '',
         /** 垃圾桶的UUID */
         recycleUUID: '',
-        /** 现在选中的 Group */
-        selectGroup: null,
         /** 组显示内容 {uuid, icon, name, notes, } */
         groupList: new Array<any>(),
         /** 组默认的索引 index */
@@ -33,21 +41,41 @@ Page({
             fullPageHeight: fullHeight,
             centerPageHeight: centerHeight
         })
+        // 设置默认的
+        dbLib = $g.g.dbLib
+        const select: any = dbLib.selectItem
+        if (select) {
+            dbItem = select
+            if (dbItem.db) db = dbItem.db
+        }
     },
     onShow() {
         // 设置数据库
-        const dbLib: DBLib = $g.g.dbLib
-        const dbItem: DBItem | null = dbLib.selectItem
-        if (dbItem && dbItem.db) {
-            const db: Kdbx = dbItem.db
+        if (db) {
+            // 清理添加的内容
+            if (dbItem.addEntry) {
+                db.remove(dbItem.addEntry)
+                dbItem.addEntry = null
+            }
+            // 清理添加的内容
+            if (dbItem.addGroup) {
+                db.remove(dbItem.addGroup)
+                dbItem.addEntry = null
+            }
             this.setData({
-                // dbEmpty: KdbxApi.isEmpty(db),
-                dbEmpty: false,
+                dbEmpty: KdbxApi.isEmpty(db),
                 dbName: dbItem.name
             })
             // $g.log('操作的库 : ', db)
             this.setKdbx(db)
         }
+    },
+    onUnload() {
+        $g.log('[page][index]清理')
+        var theNull: any = null
+        dbLib = theNull
+        dbItem = theNull
+        db = theNull
     },
     /** 获取默认打开的 Kdbx 里的列表等信息 */
     setKdbx(db: Kdbx) {
@@ -77,6 +105,9 @@ Page({
         // 要绕过的UUID, 一般用于垃圾桶
         let outUUID: string = ''
         if (addGroupList) {
+            if (group.uuid.id) {
+                dbItem.selectGroup = group
+            }
             // 查看是否需要添加 返回上级 返回根目录
             const root: Group = $g.g.dbLib.selectItem.db.groups[0]
             if (root) {
@@ -173,10 +204,31 @@ Page({
                     groupList: this.data.groupList,
                     itemList: this.data.itemList,
                 })
+            } else {
+                $g.log('未找到类型, 请赶紧处理 : ' + $g.className(findItem))
+                throw new Error()
+            }
+        } else {
+            $g.log('未找到子元件')
+            wx.showToast({ title: '未找到对应子节点', icon: 'none', mask: false })
+        }
+    },
+    btShowUUID(e: any) {
+        $g.log(e)
+        let uuid: string = String(e.currentTarget.dataset.uuid)
+        const root: Group = $g.g.dbLib.selectItem.db.groups[0]
+        const findItem: Group | Entry | null = KdbxApi.findUUID(root, uuid);
+        if (findItem) {
+            const findObj: any = findItem
+            if ($g.isClass(findItem, 'KdbxGroup')) {
+                $g.log(`查看文件夹详情 ${uuid}`)
+                wx.navigateTo({
+                    url: `./../group/group?type=show&uuid=${uuid}`
+                })
             } else if ($g.isClass(findItem, 'KdbxEntry')) {
                 $g.log(`查看单条详情 ${uuid}`)
                 wx.navigateTo({
-                    url: `./../entryshow/entryshow?uuid=${uuid}`
+                    url: `./../entry/entry?type=show&uuid=${uuid}`
                 })
             } else {
                 $g.log('未找到类型, 请赶紧处理 : ' + $g.className(findItem))
@@ -246,17 +298,37 @@ Page({
         $g.log(e)
         let type: string = String(e.currentTarget.dataset.type)
         wx.navigateTo({
-            url: './../entryedit/entryedit?type=add&infoType=bank'
+            url: './../entry/entry?type=add&infotype=bank'
         })
     },
     btEndAdd(e: any) {
-        wx.navigateTo({
-            url: './../entryedit/entryedit?type=add'
-        })
+        this.setData({ openWinIcon: true })
+        // wx.navigateTo({
+        //     url: './../entry/entry?type=add'
+        // })
     },
     btShowDbList(e: any) {
         wx.navigateTo({
             url: './../dblist/dblist'
         })
-    }
+    },
+    btFinance(e: any) {
+        wx.showModal({
+            title: '开发中',
+            content: '财报是简单快捷记录方式,已省时省力的模式进行财务归整!',
+            showCancel: false
+        })
+    },
+    btDaily(e: any) {
+        wx.showModal({
+            title: '开发中',
+            content: '待办系统将自动对信用卡房贷等待办事宜整理展示!',
+            showCancel: false
+        })
+    },
+    btUser(e: any) {
+        wx.navigateTo({
+            url: "./../../user/usercenter/usercenter"
+        })
+    },
 })

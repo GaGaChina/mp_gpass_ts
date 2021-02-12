@@ -1,5 +1,6 @@
 <g-page-bg></g-page-bg>
 <g-page-top canBack="{{false}}" title="{{dbEmpty?'欢迎添加条目':dbName}}"></g-page-top>
+<g-sub-select-type open="{{openWinSelectType}}"></g-sub-select-type>
 <view class="full_page" style="height:{{fullPageHeight}}rpx">
     <!-- 没条目 -->
     <view wx:if="{{dbEmpty}}" style="height:{{centerPageHeight}}rpx" class="first">
@@ -29,7 +30,7 @@
                 <block wx:for="{{groupList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
                     <button id="index{{index}}" data-uuid="{{item.uuid}}" class="info_group" bindtap="btChangeUUID">
                         <view class="info_group_icon"><i class="fa fa-{{item.icon}}"></i></view>
-                        <view class="info_group_title">{{item.name}}</view>
+                        <text class="info_group_title">{{item.name}}</text>
                     </button>
                 </block>
             </scroll-view>
@@ -37,16 +38,18 @@
         </view>
 
         <view class="info_right" style="height:{{centerPageHeight}}rpx">
-            <view style="height:{{findPageHeight}}rpx;">搜索</view>
+            <view class="find" style="height:{{findPageHeight}}rpx;">
+                <!-- 准备放查询模块 -->
+            </view>
             <scroll-view scroll-y enable-flex class="info_right_list" scroll-into-view="index{{itemIndex}}"
                 style="height:{{centerPageHeight - findPageHeight}}rpx;">
                 <block wx:for="{{itemList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
                     <view id="index{{index}}" class="info_item {{item.isGroup?'info_item_isgroup':''}}">
                         <view class="info_item_icon"><i class="fa fa-{{item.icon}}"></i></view>
-                        <button data-uuid="{{item.uuid}}" class="info_item_center bt_clear" bindtap="btChangeUUID">
-                            <view class="info_item_title">{{item.title}}</view>
-                            <view wx:if="{{item.password}}" class="info_item_other">用户名 : {{item.username}}</view>
-                            <view wx:if="{{item.password}}" class="info_item_other">密　码 : {{item.password}}</view>
+                        <button data-uuid="{{item.uuid}}" class="info_item_center bt_clear" bindtap="btShowUUID">
+                            <text class="info_item_title">{{item.title}}</text>
+                            <text wx:if="{{item.password}}" class="info_item_other">用户名 : {{item.username}}</text>
+                            <text wx:if="{{item.password}}" class="info_item_other">密　码 : {{item.password}}</text>
                         </button>
                         <view wx:if="{{item.password}}" class="info_item_right">
                             <button class="bt_clear" data-uuid="{{item.uuid}}" bindtap="btShowPass"><i class="fa fa-{{item.showpass?'eye':'eye-slash'}}"></i></button>
@@ -64,20 +67,20 @@
                 <view class="end_small_icon end_small_1"><i class="fa fa-database"></i></view>
                 <view class="end_small_text">档案</view>
             </button>
-            <button class="end_small {{dbEmpty?'hide':'show'}}">
+            <button class="end_small {{dbEmpty?'hide':'show'}}" bindtap="btFinance">
                 <view class="end_small_icon end_small_2"><i class="fa fa-line-chart"></i></view>
                 <view class="end_small_text">财报</view>
             </button>
             <button class="end_big" bindtap="btEndAdd">
                 <view class="end_big_icon"><i class="end_big_text fa fa-plus"></i></view>
             </button>
-            <button class="end_small {{dbEmpty?'hide':'show'}}">
+            <button class="end_small {{dbEmpty?'hide':'show'}}" bindtap="btDaily">
                 <view class="end_small_icon end_small_3"><i class="fa fa-calendar-check-o"></i></view>
-                <view class="end_small_text">日常</view>
+                <view class="end_small_text">待办</view>
             </button>
-            <button class="end_small {{dbEmpty?'hide':'show'}}">
-                <view class="end_small_icon"><i class="fa fa-eye"></i></view>
-                <view class="end_small_text">日志</view>
+            <button class="end_small {{dbEmpty?'hide':'show'}}" bindtap="btUser">
+                <view class="end_small_icon"><i class="fa fa-user"></i></view>
+                <view class="end_small_text">我的</view>
             </button>
         </view>
     </view>

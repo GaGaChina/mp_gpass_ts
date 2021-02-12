@@ -1,0 +1,95 @@
+@import "./../../fonts/awesome.wxss";
+
+.show {
+    width: 750rpx;
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 30rpx;
+}
+
+.show_icon {
+    width: 100rpx;
+    height: 100rpx;
+    margin-left: 30rpx;
+}
+
+.show_icon>i {
+    width: 100rpx;
+    height: 100rpx;
+    font-size: 54rpx;
+    line-height: 100rpx;
+    text-align: center;
+    color: #9ce72a;
+}
+
+.show_right {
+    width: 620rpx;
+}
+
+.show_small_title {
+    width: 620rpx;
+    color: #ccc;
+    font-size: 24rpx;
+    line-height: 30rpx;
+}
+
+.show_title {
+    color: #9ce72a;
+    width: 570rpx;
+    font-size: 54rpx;
+    line-height: 54rpx;
+    font-weight: bold;
+}
+
+.edit {
+    width: 750rpx;
+    display: flex;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 30rpx;
+}
+
+.edit_icon {
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 25%;
+    background: #9ce72a;
+    margin-left: 30rpx;
+    margin-top: 30rpx;
+    margin-bottom: 30rpx;
+}
+
+.edit_icon>i {
+    color: #001044;
+    font-size: 50rpx;
+    line-height: 100rpx;
+}
+
+.edit_right{
+    width: 620rpx;
+    margin-left: 30rpx;
+}
+
+.edit_small_title {
+    width: 560rpx;
+    color: #ccc;
+    font-size: 24rpx;
+    line-height: 30rpx;
+    margin-top: 20rpx;
+}
+
+.edit_title {
+    width: 560rpx;
+    height: 75rpx;
+    border-radius: 0;
+    border: 1px solid #9b9b9d;
+    line-height: 75rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    box-sizing: border-box;
+    padding: 21rpx;
+    background: #202435;
+    color: #FFF;
+    margin-bottom: 30rpx;
+}

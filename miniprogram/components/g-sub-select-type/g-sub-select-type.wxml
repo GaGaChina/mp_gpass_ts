@@ -1,0 +1,17 @@
+<view wx:if="{{open}}" class="root" style="height:{{sceneHeight}}rpx;">
+    <view class="top" style="height:{{topHeight}}rpx;" bindtap="btClose">
+        <view class="top_line">
+            <view class="title">请选择要添加的类别</view>
+            <view class="close">关闭 <i class="fa fa-times"></i></view>
+        </view>
+    </view>
+    <scroll-view scroll-y enable-flex class="list" scroll-into-view="icon{{selectIndex}}"
+        style="height:{{listHeight}}rpx;">
+        <block wx:for="{{iconList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+            <button id="icon{{index}}" class="bt_icon {{ selectIndex===index?'bt_icon_select':'' }}"
+                bindtap="btSelectIcon" data-name="{{ item }}"><i class="fa fa-{{item}}"></i></button>
+        </block>
+    </scroll-view>
+    <view class="end" style="height:{{endHeight}}rpx;" bindtap="btClose">
+    </view>
+</view>

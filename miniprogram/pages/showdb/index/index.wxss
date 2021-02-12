@@ -73,7 +73,7 @@ view {
 .info_group {
     height: 60rpx;
     display: flex;
-    background: linear-gradient(180deg, #020d2d, #6925f6);
+    background: linear-gradient(180deg, #0d3376, #010e38);
     border-radius: 10rpx;
 }
 
@@ -97,8 +97,13 @@ view {
 
 .info_group_title {
     font-size: 24rpx;
+    font-weight: bold;
+    color: #fff;
     margin-left: 10rpx;
     line-height: 60rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* 530-120 - 60 */
@@ -112,20 +117,26 @@ view {
 }
 
 .info_item_title {
+    color: #fff;
     width: 350rpx;
     font-size: 32rpx;
     font-weight: bold;
     line-height: 50rpx;
     text-align: left;
-    text-overflow: ellipsis
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .info_item_other {
+    color: #ccc;
     width: 350rpx;
     font-size: 24rpx;
     line-height: 30rpx;
     text-align: left;
-    text-overflow: ellipsis
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .info_item_right {
@@ -146,8 +157,15 @@ view {
     color: #FFF;
 }
 
-/* 右侧信息区域 */
+/* 右侧搜索区域 */
+.find {
+    width: 530rpx;
+    margin-left: 10rpx;
+    margin-right: 10rpx;
+    background: linear-gradient(180deg, #0d3376, #010e38);
+}
 
+/* 右侧信息区域 */
 .info_right {
     width: 550rpx;
 }
@@ -166,7 +184,7 @@ view {
     margin-left: 10rpx;
     margin-right: 10rpx;
     border-radius: 20rpx;
-    background: linear-gradient(180deg, #020d2d, #000412);
+    background: linear-gradient(180deg, #0d3376, #010e38);
 }
 
 .info_item:last-child {
@@ -174,7 +192,7 @@ view {
 }
 
 .info_item_isgroup {
-    background: linear-gradient(180deg, #020d2d, #6925f6);
+    background: linear-gradient(180deg, #0d3376, #010e38);
 }
 
 /* 80+30 120 */

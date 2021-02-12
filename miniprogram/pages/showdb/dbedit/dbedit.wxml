@@ -25,10 +25,12 @@
                     {{isFingerPrint?'关闭':'开启'}}指纹解锁</button>
                 <button bindtap="btSaveKdbx"><i class="fa fa-envelope-open-o"></i> 导出:Kdbx</button>
                 <button bindtap="btSaveXML"><i class="fa fa-envelope-open-o"></i> 导出:XML</button>
-                <button bindtap="btSaveTXT"><i class="fa fa-envelope-open-o"></i> 导出:TXT</button>
-                <button bindtap="btSaveCSV"><i class="fa fa-envelope-open-o"></i> 导出:CSV</button>
-                <button bindtap="btSaveXLS"><i class="fa fa-envelope-open-o"></i> 导出:Excal</button>
-                <button bindtap="btSaveMD"><i class="fa fa-envelope-open-o"></i> 导出:MD</button>
+                <block wx:if="{{ DEBUG }}">
+                    <button bindtap="btSaveTXT"><i class="fa fa-envelope-open-o"></i> 导出:TXT</button>
+                    <button bindtap="btSaveCSV"><i class="fa fa-envelope-open-o"></i> 导出:CSV</button>
+                    <button bindtap="btSaveXLS"><i class="fa fa-envelope-open-o"></i> 导出:Excal</button>
+                    <button bindtap="btSaveMD"><i class="fa fa-envelope-open-o"></i> 导出:MD</button>
+                </block>
                 <button bindtap="btClearTemp"><i class="fa fa-envelope-open-o"></i> 清理导出临时文件</button>
                 <button class="red" bindtap="btDel"><i class="fa fa-envelope-open-o"></i> 删　　除</button>
             </view>

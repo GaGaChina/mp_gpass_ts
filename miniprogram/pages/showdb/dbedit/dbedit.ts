@@ -13,6 +13,7 @@ var dbItem: DBItem;
 Page({
     data: {
         fullPageHeight: 0,
+        DEBUG: $g.g.app.DEBUG,
         /** 是否显示出密码输入界面 */
         passShow: false,
         /** 是否支持指纹识别 */
@@ -97,7 +98,7 @@ Page({
         })
     },
     /** 删除这个库 */
-    btDel(e: any) {
+    async btDel(e: any) {
         const that = this
         wx.showModal({
             title: '提示',
@@ -106,15 +107,17 @@ Page({
                 dbItem.db = null
                 await dbItem.rmDir()
                 const dbLib: DBLib = $g.g.dbLib
-                if (dbLib.remove(that.data.dbLocalId) === false) {
+                if (await dbLib.remove(that.data.dbLocalId) === false) {
                     wx.showToast({ title: '本地库删除失败', icon: 'none', mask: true })
                 }
-                // 找到最后一个为选中的库
-                if (dbLib.lib.length) {
-                    const dbItem: DBItem = dbLib.lib[dbLib.lib.length - 1]
-                    dbLib.selectId = dbItem.localId
-                } else {
-                    dbLib.selectId = 0
+                if (that.data.dbLocalId === dbLib.selectId) {
+                    // 找到最后一个为选中的库
+                    if (dbLib.lib.length) {
+                        const dbItem: DBItem = dbLib.lib[dbLib.lib.length - 1]
+                        dbLib.selectId = dbItem.localId
+                    } else {
+                        dbLib.selectId = 0
+                    }
                 }
                 wx.navigateBack();
             }
@@ -169,15 +172,14 @@ Page({
     },
     /** 保存文件到 kdbx */
     async btSaveKdbx(e: any) {
-        let path: string = `db/${dbItem.path}/db.kdbx`
-        if (dbItem.pathMinIndex === 1) {
-            path = `db/${dbItem.path}/db.min.1.kdbx`
-        } else if (dbItem.pathMinIndex === 2) {
-            path = `db/${dbItem.path}/db.min.2.kdbx`
-        }
+        let path: string = `db/${dbItem.path}/` + dbItem.getFilePath()
         $g.log('保存文件到 kdbx:' + path)
         const destPath: string = `db/${dbItem.path}/${dbItem.name}.kdbx.doc`
         if (await WXFile.copyFile(path, destPath)) {
+            if (dbItem.tempFileList.indexOf(path) === -1) {
+                dbItem.tempFileList.push(path);
+                ($g.g.dbLib as DBLib).storageSaveThis()
+            }
             if (await WXFile.openDocument(destPath)) {
 
             } else {
@@ -194,6 +196,10 @@ Page({
                 const xml: string = await db.saveXml()
                 let path: string = `db/${dbItem.path}/${dbItem.name}.xml.doc`
                 if (await WXFile.writeFile(path, xml, 0, 'utf-8')) {
+                    if (dbItem.tempFileList.indexOf(path) === -1) {
+                        dbItem.tempFileList.push(path);
+                        ($g.g.dbLib as DBLib).storageSaveThis()
+                    }
                     if (await WXFile.openDocument(path)) {
 
                     } else {
@@ -214,6 +220,10 @@ Page({
                 const xml: string = await db.saveXml()
                 let path: string = `db/${dbItem.path}/${dbItem.name}.txt.doc`
                 if (await WXFile.writeFile(path, xml, 0, 'utf-8')) {
+                    if (dbItem.tempFileList.indexOf(path) === -1) {
+                        dbItem.tempFileList.push(path);
+                        ($g.g.dbLib as DBLib).storageSaveThis()
+                    }
                     if (await WXFile.openDocument(path)) {
 
                     } else {
@@ -234,6 +244,10 @@ Page({
                 const xml: string = await db.saveXml()
                 let path: string = `db/${dbItem.path}/${dbItem.name}.csv.doc`
                 if (await WXFile.writeFile(path, xml, 0, 'utf-8')) {
+                    if (dbItem.tempFileList.indexOf(path) === -1) {
+                        dbItem.tempFileList.push(path);
+                        ($g.g.dbLib as DBLib).storageSaveThis()
+                    }
                     if (await WXFile.openDocument(path)) {
 
                     } else {
@@ -255,6 +269,10 @@ Page({
                 const xml: string = await db.saveXml()
                 let path: string = `db/${dbItem.path}/${dbItem.name}.xls.doc`
                 if (await WXFile.writeFile(path, xml, 0, 'utf-8')) {
+                    if (dbItem.tempFileList.indexOf(path) === -1) {
+                        dbItem.tempFileList.push(path);
+                        ($g.g.dbLib as DBLib).storageSaveThis()
+                    }
                     if (await WXFile.openDocument(path)) {
 
                     } else {

@@ -3,33 +3,6 @@
 <view class="info" style="height:{{fullPageHeight}}rpx;">
     <scroll-view scroll-y enable-flex class="scroll" style="height:{{fullPageHeight}}rpx;">
         <g-entry-title icon="{{icon}}" title="{{title}}" type="{{pagetype}}" bind:change="titleChange"></g-entry-title>
-        <g-entry-field-group list="{{defaultList}}" type="{{pagetype}}" bind:change="defaultListChange">
-        </g-entry-field-group>
-        <block wx:if="{{otherList.length}}">
-            <view class="group">
-                <view class="group_icon"><i class="fa fa-key"></i></view>
-                <view class="group_title">其他内容</view>
-            </view>
-            <g-entry-field-group list="{{otherList}}" type="{{pagetype}}" bind:change="otherListChange">
-            </g-entry-field-group>
-        </block>
-
-
-        <block wx:if="{{fileList.length}}">
-
-            <view class="group">
-                <view class="group_icon"><i class="fa fa-key"></i></view>
-                <view class="group_title">附件</view>
-            </view>
-            <block wx:for="{{fileList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-                <view class="item">
-                    <view wx:if="{{item.icon}}"><i class="fa fa-{{item.icon}}"></i></view>
-                    <view>{{item.type}}　：</view>
-                    <view class="item_info">{{item.name}}</view>
-                </view>
-            </block>
-
-        </block>
         <block wx:if="{{pagetype === 'show'}}">
             <view class="group">
                 <view class="group_icon"><i class="fa fa-key"></i></view>
@@ -62,13 +35,11 @@
                     class="fa fa-envelope-open-o"></i> 返回</button>
             <button wx:if="{{pagetype === 'show'}}" class="bt_big" bindtap="btEdit"><i
                     class="fa fa-envelope-open-o"></i> 编辑</button>
-            <button wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btAddField"><i
-                    class="fa fa-envelope-open-o"></i> 添加自定义字段</button>
-            <button wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btSave"><i
+                    <button wx:if="{{pagetype === 'edit'}}" class="bt_big" bindtap="btSave"><i
                     class="fa fa-envelope-open-o"></i> 保存</button>
-            <button wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btBackShow"><i
+            <button wx:if="{{pagetype === 'edit'}}" class="bt_big" bindtap="btBackShow"><i
                     class="fa fa-envelope-open-o"></i> 取消</button>
-            <button wx:if="{{ pagetype === 'edit' }}" class="bt_big red" bindtap="btDel"><i
+            <button wx:if="{{pagetype === 'edit'}}" class="bt_big red" bindtap="btDel"><i
                     class="fa fa-envelope-open-o"></i> 删除</button>
         </view>
     </scroll-view>

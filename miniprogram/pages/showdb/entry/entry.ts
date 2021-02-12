@@ -3,7 +3,7 @@ import { TimeFormat } from "../../../frame/time/time.format"
 import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
-import { Entry, Group, Kdbx } from "../../../lib/kdbxweb/types"
+import { Entry, Group, Kdbx, ProtectedValue } from "../../../lib/kdbxweb/types"
 
 /** 整个库 */
 var dbLib: DBLib;
@@ -13,6 +13,8 @@ var dbItem: DBItem;
 var db: Kdbx;
 /** 现在在操作的 entry */
 var entry: Entry;
+/** 现在操作的entry内的GKeyValue */
+var gkv: any;
 
 /**
  * 列表
@@ -53,8 +55,6 @@ Page({
         pagetitle: '',
         /** 本页添加的模板 */
         infotype: '',
-        /** 选择操作的父级 */
-        uuidGroup: '',
         /** 本页展示的UUID对象 */
         uuid: '',
         icon: 0,
@@ -99,6 +99,8 @@ Page({
                 title = '条目展示'
             } else if (type === 'edit') {
                 title = '条目编辑'
+            } else if (type === 'history') {
+                title = '展示历史(无法修改)'
             }
             this.setData({
                 pagetype: type,
@@ -109,15 +111,6 @@ Page({
         if ($g.hasKey(query, 'infotype')) {
             this.data.infotype = String(query.type)
         }
-        if ($g.hasKey(query, 'group')) {
-            this.data.uuidGroup = String(query.group)
-            let length = this.data.uuidGroup.length % 4
-            if (length > 0) {
-                while (++length < 5) {
-                    this.data.uuidGroup += '='
-                }
-            }
-        }
         // 设置默认的
         dbLib = $g.g.dbLib
         const select: any = dbLib.selectItem
@@ -126,9 +119,7 @@ Page({
             if (dbItem.db) db = dbItem.db
         }
         // 没有设置会返回
-        if (!db) {
-            wx.navigateBack()
-        }
+        if (!db) wx.navigateBack()
     },
     onShow() {
         switch (this.data.pagetype) {
@@ -137,9 +128,20 @@ Page({
                 if (findEntry && $g.isClass(findEntry, 'KdbxEntry')) {
                     entry = findEntry
                     entry.times.lastAccessTime = new Date()
+                    dbItem.selectEntry = entry
                     this.setInfo()
                 } else {
                     wx.navigateBack()
+                }
+                break;
+            case 'add':
+                if (dbItem.selectGroup) {
+                    entry = db.createEntry(dbItem.selectGroup)
+                    dbItem.addEntry = entry
+                    dbItem.selectEntry = entry
+                    this.setInfo()
+                } else {
+                    $g.log('缺少选中组')
                 }
                 break;
             default:
@@ -147,9 +149,14 @@ Page({
         }
     },
     onUnload() {
+        $g.log('[page][entry]清理')
         var theNull: any = null
         dbLib = theNull
-        dbItem = theNull
+        if (dbItem) {
+            // dbItem.selectGroup = null
+            // dbItem.selectEntry = null
+            dbItem = theNull
+        }
         db = theNull
     },
     setInfo() {
@@ -157,12 +164,12 @@ Page({
         // --------------------------设置标题
         let title: string = ''
         if ($g.isClass(entry.fields?.Title, 'ProtectedValue')) {
-            title = '***'
+            title = '******'
         } else {
             title = String(entry.fields?.Title)
         }
         // --------------------------特殊意义对象
-        let gkv: any = {}
+        gkv = {}
         if ($g.hasKey(entry.fields, 'GKeyValue')) {
             const gkvJSON: any = entry.fields['GKeyValue']
             gkv = JSON.parse(gkvJSON)
@@ -171,7 +178,7 @@ Page({
         const defaultList: Array<Object> = new Array<Object>()
         const firstKey: Array<string> = ['UserName', 'Password', 'URL', 'Notes']
         for (let i = 0; i < firstKey.length; i++) {
-            defaultList.push(this.getFieldKey(gkv, firstKey[i]))
+            defaultList.push(this.getFieldKey(firstKey[i], defaultList.length, true, false, false, false))
         }
         // --------------------------添加其他的字段
         const otherList: Array<Object> = new Array<Object>()
@@ -179,7 +186,7 @@ Page({
         for (let i = 0; i < otherKey.length; i++) {
             const key = otherKey[i];
             if (key !== 'GKeyValue' && key !== 'Title' && firstKey.indexOf(key) === -1) {
-                otherList.push(this.getFieldKey(gkv, key))
+                otherList.push(this.getFieldKey(key, otherList.length, true, true, true, true))
             }
         }
         // --------------------------添加附件
@@ -287,77 +294,223 @@ Page({
         item['type'] = fileType
         fileList.push(item)
     },
-
+    defaultListChange(e: any): void {
+        this.data.defaultList = e.detail
+    },
+    otherListChange(e: any): void {
+        this.data.otherList = e.detail
+        this.checkOther()
+    },
     /**
-     * 
-     * @param key 
+     * 添加一些默认值
+     * @param key 键值
+     * @param index 在父数组中的索引
+     * @param changeicon 是否可以修改icon图标 
+     * @param changetype 是否可以修改值的类型
+     * @param changekey 是否可以修改键名
+     * @param candel 是否可以删除这一条
      */
-    getFieldKey(gkv: any, key: string): Object {
-        let display: string = ''
-        let isPV: boolean = false
-        let title: string = key
-        let def_icon: string = ''
+    getFieldKey(key: string, index: number, changeicon: boolean = true, changetype: boolean = true, changekey: boolean = true, candel: boolean = true): Object {
+        let keyname: string = key
+        let value: string = ''
+        let valuetype: string = 'string'
+        let icon: string = ''
         switch (key) {
             case 'UserName':
-                title = '用户名'
-                def_icon = 'user'
+                keyname = '用户名'
+                icon = 'user'
                 break;
             case 'Password':
-                title = '密　码'
-                def_icon = 'key'
+                keyname = '密　码'
+                icon = 'key'
                 break;
             case 'Notes':
-                title = '备　注'
-                def_icon = 'key'
+                keyname = '备　注'
+                icon = 'key'
+                valuetype = 'txt'
                 break;
             case 'URL':
-                title = '网　址'
-                def_icon = 'key'
+                keyname = '网　址'
+                icon = 'key'
                 break
         }
         if (entry.fields && $g.hasKey(entry.fields, key)) {
             const item: any = entry.fields[key]
             if ($g.isClass(item, 'ProtectedValue')) {
-                isPV = true
-                display = '******'
+                valuetype = 'pv'
+                // value = '******'
+                value = item.getText()
             } else {
-                display = item
+                value = item
             }
         }
         // 从 gkv 中取出 icon的设置
         if ($g.hasKey(gkv, 'icon') && $g.hasKey(gkv.icon, key)) {
-            def_icon = gkv.icon[key]
+            icon = gkv.icon[key]
         }
         let out: Object = {
-            icon: def_icon,
-            title: title,
-            display: display,
-            ispv: isPV,
+            index: index,
+            icon: icon,
+            key: key,
+            keyname: keyname,
+            value: value,
+            valuetype: valuetype,
+            changeicon: changeicon,
+            changetype: changetype,
+            changekey: changekey,
+            candel: candel,
+            warning: false,
         }
         return out
     },
+    /** 添加一个新的字段 */
+    btAddField() {
+        let out: Object = {
+            index: this.data.otherList.length,
+            icon: 'key',
+            key: '',
+            keyname: '',
+            value: '',
+            valuetype: 'string',
+            changeicon: true,
+            changetype: true,
+            changekey: true,
+            candel: true,
+            warning: false,
+        }
+        this.data.otherList.push(out)
+        this.setData({ otherList: this.data.otherList })
+    },
     btBack(e: any) {
+        if (dbItem.addEntry) {
+            db.remove(dbItem.addEntry)
+            dbItem.addEntry = null
+        }
         wx.navigateBack();
+    },
+    /** 从编辑模式切换回展示 */
+    btBackShow(e: any) {
+        this.setInfo()
+        this.setData({ pagetype: 'show' })
+    },
+    /** 清理掉 otherList 中空白的选项 */
+    clearOtherNull(): void {
+        let length: number = this.data.otherList.length
+        while (--length > -1) {
+            const info: any = this.data.otherList[length]
+            if (info.key === '' && info.value === '') {
+                this.data.otherList.splice(length, 1)
+            }
+        }
+    },
+    /** 鉴定 otherList 中的值是否全合法 */
+    checkOther(): boolean {
+        let haveCheck: boolean = false
+        const firstKey: Array<string> = ['Title', 'UserName', 'Password', 'URL', 'Notes']
+        // --------- 查找重命名的
+        let keyName: Array<string> = new Array<string>()
+        let keyLen: Array<number> = new Array<number>()
+        let keyLib: Array<Array<number>> = new Array<Array<number>>()
+        for (let i = 0; i < this.data.otherList.length; i++) {
+            const info: any = this.data.otherList[i]
+            if (firstKey.indexOf(info.key) !== -1) {
+                info.warning = true
+                haveCheck = true
+            } else {
+                let keyIndex: number = keyName.indexOf(info.key)
+                if (keyIndex === -1) {
+                    keyName.push(info.key)
+                    keyLen.push(1)
+                    keyLib.push([i])
+                } else {
+                    keyLen[keyIndex] = keyLen[keyIndex] + 1
+                    keyLib[keyIndex].push(i)
+                }
+            }
+        }
+        for (let i = 0; i < keyName.length; i++) {
+            if (keyLen[i] > 1) {
+                for (let j = 0; j < keyLib[i].length; j++) {
+                    const item: any = this.data.otherList[keyLib[i][j]]
+                    item.warning = true
+                    haveCheck = true
+                }
+            }
+        }
+        if (haveCheck) {
+            this.setData({ otherList: this.data.otherList })
+        }
+        return !haveCheck
     },
     btSave(e: any) {
         $g.log('[entry][Save]', this.data.title)
+        this.clearOtherNull()
+        // 前5个只允许出现在 defaultList , 并检查 otherList 不允许重名
+        const firstKey: Array<string> = ['Title', 'UserName', 'Password', 'URL', 'Notes']
+        // 判断 key 值是否全部合法
+        if(!this.checkOther()){
+            wx.showToast({ title: '请修复不合法的键值', icon: 'none', mask: false })
+            return
+        }
+        // 通过判断测试..........
+        if (dbItem.addEntry) dbItem.addEntry = null
         entry.pushHistory()
         entry.times.update()
         entry.icon = this.data.icon
         entry.fields.Title = this.data.title
+        // 清理老的记录
+        const delKey: Array<string> = Object.keys(entry.fields)
+        firstKey.push('GKeyValue')
+        for (let i = 0; i < delKey.length; i++) {
+            const key = delKey[i];
+            if (firstKey.indexOf(key) === -1) {
+                delete entry.fields[key]
+            }
+        }
+        gkv['icon'] = {}
+        // 设置普通的值
+        for (let i = 0; i < this.data.defaultList.length; i++) {
+            const info: any = this.data.defaultList[i];
+            gkv['icon'][info.key] = info.icon
+            switch (info.valuetype) {
+                case 'string':
+                case 'txt':
+                    entry.fields[info.key] = info.value
+                    break;
+                case 'pv':
+                    entry.fields[info.key] = KdbxApi.getPassPV(info.value)
+                    break;
+            }
+        }
+        // 设置自定义字段
+        for (let i = 0; i < this.data.otherList.length; i++) {
+            const info: any = this.data.otherList[i];
+            if (!$g.hasKey(gkv, 'icon')) gkv['icon'] = {}
+            gkv['icon'][info.key] = info.icon
+            switch (info.valuetype) {
+                case 'string':
+                case 'txt':
+                    entry.fields[info.key] = info.value
+                    break;
+                case 'pv':
+                    entry.fields[info.key] = KdbxApi.getPassPV(info.value)
+                    break;
+            }
+        }
+        entry.fields['GKeyValue'] = JSON.stringify(gkv)
         dbItem.saveFileAddStorage()
         this.setData({ pagetype: 'show' })
     },
     btEdit(e: any) {
-        if (this.data.pagetype === 'show') {
-            this.setData({ pagetype: 'edit' })
-        } else {
-            this.setData({ pagetype: 'show' })
-        }
-
-        // wx.navigateTo({
-        //     url: './../entryedit/entryedit?uuid=' + this.data.uuid
-        // })
+        this.setData({ pagetype: 'edit' })
+    },
+    /** 组件, 当台头输入框有变化的时候回调 */
+    titleChange(e: any) {
+        const info: any = e.detail
+        this.setData({
+            icon: info.icon,
+            title: info.title
+        })
     },
     btDel(e: any) {
         const that = this

@@ -2,7 +2,7 @@
   "usingComponents": {
     "g-page-bg": "./../../../components/g-page-bg/g-page-bg",
     "g-page-top": "./../../../components/g-page-top/g-page-top",
-    "g-sub-kdbx-icon": "./../../../components/g-sub-kdbx-icon/g-sub-kdbx-icon"
+    "g-entry-title": "./../../../components/g-entry-title/g-entry-title"
   },
   "disableScroll": true
 }

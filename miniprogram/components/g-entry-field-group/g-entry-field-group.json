@@ -1,0 +1,6 @@
+{
+    "component": true,
+    "usingComponents": {
+        "g-entry-field": "./../g-entry-field/g-entry-field"
+    }
+}

@@ -1,0 +1,68 @@
+<g-sub-awesome-icon open="{{openWinIcon}}" selectName="{{info.icon}}" bind:change="changeIcon"></g-sub-awesome-icon>
+<block wx:if="{{type === 'show'}}">
+    <!-- 值为密码的时候 -->
+    <block wx:if="{{ valuetype === 'pv' }}">
+        <view class="showpv">
+            <view class="showpv_left">
+                <view class="showpv_top">
+                    <view class="show_icon"><i class="fa fa-{{ info.icon }}"></i></view>
+                    <view class="show_key">{{ info.keyname }}</view>
+                </view>
+                <button class="showpv_value bt_clear" selectable="true"
+                    bindtap="btCopy">{{ showpass?info.value:'******' }}</button>
+            </view>
+            <view class="showpv_right">
+                <button class="showpv_showps bt_clear" bindtap="btShowPass"><i
+                        class="fa fa-{{ showpass?'eye':'eye-slash' }}"></i></button>
+            </view>
+        </view>
+    </block>
+    <!-- 值不为密码的时候 -->
+    <block wx:else>
+        <view class="show">
+            <view class="show_top">
+                <view class="show_icon"><i class="fa fa-{{info.icon}}"></i></view>
+                <view class="show_key">{{info.keyname}}</view>
+            </view>
+            <button class="show_value bt_clear" selectable="true" bindtap="btCopy">{{info.value}}</button>
+        </view>
+    </block>
+    <view wx:if="{{showborder}}" class="show_border"></view>
+</block>
+<block wx:elif="{{ type === 'edit' || type === 'add' }}">
+    <view class="edit">
+        <view class="edit_top">
+            <!-- 图标 -->
+            <block wx:if="{{ info.changeicon }}">
+                <button class="edit_icon" bindtap="btSelectIcon"><i class="fa fa-{{info.icon}}"></i></button>
+            </block>
+            <block wx:else>
+                <view class="edit_icon"><i class="fa fa-{{info.icon}}"></i></view>
+            </block>
+            <!-- 键值 -->
+            <block wx:if="{{ info.changekey }}">
+                <input class="edit_key{{info.warning?' edit_key_warning':''}}" type="text" placeholder="请输入字段名称"
+                    value="{{info.key}}" bindinput="inputKeyChange" />
+            </block>
+            <block wx:else>
+                <input class="edit_key edit_key_disabled" type="text" disabled value="{{info.key}}" />
+            </block>
+        </view>
+        <!-- 值 : 字符串形式 -->
+        <block wx:if="{{ info.valuetype === 'string' }}">
+            <input class="edit_string" type="text" placeholder="请输入字段内容" value="{{info.value}}"
+                bindinput="inputValChange" />
+        </block>
+        <!-- 值 : 密码 -->
+        <block wx:elif="{{ info.valuetype === 'pv' }}">
+            <input class="edit_string" password type="text" placeholder="请输入字段内容" value="{{info.value}}"
+                bindinput="inputValChange" />
+        </block>
+        <!-- 值 : 多行文本 -->
+        <block wx:elif="{{ info.valuetype === 'txt' }}">
+            <textarea class="edit_txt" auto-height placeholder="请输入字段内容" value="{{info.value}}"
+                bindinput="inputValChange"></textarea>
+        </block>
+    </view>
+    <view wx:if="{{showborder}}" class="edit_border"></view>
+</block>

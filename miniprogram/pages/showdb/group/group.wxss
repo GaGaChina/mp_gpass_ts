@@ -8,35 +8,6 @@
     width: 750rpx;
 }
 
-.top {
-    display: flex;
-    width: 750rpx;
-}
-
-.top_icon {
-    margin-left: 50rpx;
-    width: 54rpx;
-    height: 74rpx;
-}
-
-.top_icon>i {
-    width: 100rpx;
-    height: 100rpx;
-    margin-top: 10rpx;
-    font-size: 54rpx;
-    border-radius: 50%;
-    color: #9ce72a;
-    line-height: 54rpx;
-}
-
-.top_title {
-    margin-top: 10rpx;
-    margin-left: 20rpx;
-    font-size: 54rpx;
-    line-height: 54rpx;
-    color: #9ce72a;
-}
-
 .group {
     display: flex;
     width: 750rpx;

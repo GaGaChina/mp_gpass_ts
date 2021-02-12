@@ -1,0 +1,95 @@
+@import "./../../fonts/awesome.wxss";
+
+.root {
+    position: fixed;
+    width: 750rpx;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.8);
+}
+
+.top {
+    position: relative;
+    width: 750rpx;
+}
+
+.top_line{
+    position: absolute;
+    bottom: 0;
+    left: 60rpx;
+    width: 630rpx;
+    height: 80rpx;
+}
+
+.title {
+    position: absolute;
+    height: 50rpx;
+    color: #fff;
+    font-size: 32rpx;
+    font-weight: bold;
+}
+
+.close {
+    position: absolute;
+    right: 0;
+    width: 120rpx;
+    height: 50rpx;
+    color: #001044;
+    font-size: 24rpx;
+    line-height: 50rpx;
+    background: #fff;
+    border-radius: 25rpx;
+    text-align: center;
+}
+
+.close>i {
+    color: #001044;
+    font-size: 38rpx;
+    line-height: 50rpx;
+}
+
+.list {
+    display: flex;
+    box-sizing: border-box;
+    width: 630rpx;
+    margin-left: 60rpx;
+    padding-top: 30rpx;
+    padding-bottom: 30rpx;
+    border-radius: 30rpx;
+    background: linear-gradient(180deg, #020d2d, #000412);
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.bt_icon {
+    width: 90rpx;
+    height: 90rpx;
+    border-radius: 50%;
+    background: #9ce72a;
+    margin: 10rpx;
+}
+
+.bt_icon:hover{
+    background: #9ce72a;
+}
+
+.bt_icon_select{
+    background: #fd720d;
+}
+.bt_icon_select:hover{
+    background: #fd720d;
+}
+
+.bt_icon>i {
+    font-size: 55rpx;
+    line-height: 90rpx;
+    text-align: center;
+    color: #001044;
+}
+
+.end{
+    width: 750rpx;
+}

@@ -1,0 +1,19 @@
+<block wx:if="{{ type==='show' }}">
+    <view class="show">
+        <view class="show_icon"><i class="fa fa-{{iconstr}}"></i></view>
+        <view class="show_right">
+            <view class="show_small_title">条目标题</view>
+            <text class="show_title">{{title}}</text>
+        </view>
+    </view>
+</block>
+<block wx:elif="{{ type==='edit' || type==='add' }}">
+    <g-sub-kdbx-icon open="{{openWinIcon}}" selectIndex="{{icon}}" bind:change="changeIcon"></g-sub-kdbx-icon>
+    <view class="edit">
+        <button class="edit_icon" bindtap="btSelectIcon"><i class="fa fa-{{iconstr}}"></i></button>
+        <view class="edit_right">
+            <view class="edit_small_title">条目标题</view>
+            <input class="edit_title" type="text" placeholder="请输入标题" value="{{title}}" bindinput="inputValChange"/>
+        </view>
+    </view>
+</block>

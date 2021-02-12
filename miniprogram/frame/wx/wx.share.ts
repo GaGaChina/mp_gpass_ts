@@ -6,7 +6,7 @@ export class WXShareData {
     public key: string = '';
     /** 分享朋友圈的标题 */
     public title: string = '';
-    /** 分享朋友圈的标题 */
+    /** 分享朋友圈的信息 */
     public desc: string = '';
     /** 默认是当前页面，必须是以/开头的完整路径 */
     public path: string = '';
@@ -142,14 +142,12 @@ export class WXShare {
             path: path,
             imageUrl: imageUrl,
             success: (res: any) => {
-                $g.log('[wx.share]分享成功 : ');
-                $g.log(res);
+                $g.log('[wx.share]分享成功 : ', res);
                 if (res.errMsg == 'shareAppMessage:ok') { }
                 if (success) success(res);
             },
             fail: (res: any) => {
-                $g.log('[wx.share]分享失败 : ');
-                $g.log(res);
+                $g.log('[wx.share]分享失败 : ', res);
                 // 转发失败之后的回调
                 switch (res.errMsg) {
                     case 'shareAppMessage:fail cancel':

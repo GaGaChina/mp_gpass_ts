@@ -71,7 +71,18 @@ Page({
         if ($g.hasKey(query, 'isCreat')) {
             this.setData({ isCreatPage: Number(query.isCreat) === 1 ? true : false })
         }
-        // this.fileFindInDir()
+    },
+    onShow() {
+        const dbLib: DBLib = $g.g.dbLib
+        const dbItem: DBItem | null = dbLib.selectItem
+        if (dbItem) {
+            this.setData({
+                dbName: dbItem.name,
+                dbLength: dbLib.lib.length,
+                isFingerPrint: dbItem.pass.fingerPrint.length > 0,
+                isFacial: dbItem.pass.facial.length > 0,
+            })
+        }
     },
     /** 用户选择一个文件 */
     async btUploadFile(e: any) {
@@ -166,16 +177,20 @@ Page({
                     if (findOpen && findOpen.localId !== dbItem.localId) {
                         findOpen.db = null
                     }
-                    await dbItem.open(passPV)
+                    try {
+                        await dbItem.open(passPV)
+                    } catch (e) {
+                        wx.showToast({ title: '解密失败!', icon: 'none', mask: false })
+                    }
                     if (dbItem.db) {
                         wx.reLaunch({ url: './../showdb/index/index' })
                     }
                 }
             } else {
-                wx.showToast({ title: '请输入文件密码!', icon: 'none', mask: true })
+                wx.showToast({ title: '请输入文件密码!', icon: 'none', mask: false })
             }
         } else {
-            wx.showToast({ title: '未找到选择的档案!', icon: 'none', mask: true })
+            wx.showToast({ title: '未找到选择的档案!', icon: 'none', mask: false })
         }
     },
     /** 创建一个新库 */

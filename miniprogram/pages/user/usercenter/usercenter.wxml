@@ -8,7 +8,9 @@
     <navigator class="bt_item" url="./../../introduce/study/study">快速入门</navigator>
     <navigator class="bt_item" url="./../../introduce/gpass/gpass">软件介绍</navigator>
     <button class="bt_item" bindtap="btClearClipboard">清空剪切板</button>
-    <view class="bt_item">版本:1.1.1</view>
+    <button class="bt_item" open-type="share">分享APP</button>
+    
+    <view class="bt_item">版本 : {{ version }}</view>
     <!-- <view>密码迁移</view>
     <view></view>
     <view>历史登录信息</view>

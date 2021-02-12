@@ -13,6 +13,21 @@ export class AES {
     /** 设置加密key */
     private static key: any = null
 
+    private static getBuffer(data: ArrayBuffer | Uint8Array | string): ArrayBuffer {
+        const v: any = data
+        let b: ArrayBuffer;
+        if ($g.isString(data)) {
+            const u8: Uint8Array = EncodingText.encode(v)
+            b = u8.buffer
+        } else if ($g.isTypeM(data, 'ArrayBuffer')) {
+            b = v
+        } else {
+            // Uint8Array
+            b = v.buffer
+        }
+        return b
+    }
+
     /**
      * 使用 key 的 SHA256 进行设置 key 32字节 → AES256
      * ArrayBuffer : 直接设置
@@ -21,17 +36,7 @@ export class AES {
      * @param key 
      */
     public static async setKey(key: ArrayBuffer | Uint8Array | string): Promise<void> {
-        const k: any = key
-        let byte: ArrayBuffer;
-        if ($g.isString(key)) {
-            const u8: Uint8Array = EncodingText.encode(k)
-            byte = u8.buffer
-        } else if ($g.isTypeM(key, 'ArrayBuffer')) {
-            byte = k
-        } else {
-            // Uint8Array
-            byte = k.buffer
-        }
+        let byte: ArrayBuffer = AES.getBuffer(key);
         byte = await SHA256.sha256(byte)
         AES.key = CryptoJS.lib.WordArray.create(byte)
         return Promise.resolve();
@@ -45,17 +50,7 @@ export class AES {
      */
     public static async encryptCBC(data: ArrayBuffer | Uint8Array | string, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
         if (iv === null || iv === undefined) iv = new ArrayBuffer(16)
-        const d: any = data
-        let byte: ArrayBuffer;
-        if ($g.isString(data)) {
-            const u8: Uint8Array = EncodingText.encode(d)
-            byte = u8.buffer
-        } else if ($g.isTypeM(data, 'ArrayBuffer')) {
-            byte = d
-        } else {
-            // Uint8Array
-            byte = d.buffer
-        }
+        let byte: ArrayBuffer = AES.getBuffer(data);
         // 处理 iv 为字符串
         const v: any = iv
         if ($g.isString(iv)) {
@@ -90,13 +85,7 @@ export class AES {
      */
     public static async decryptCBC(data: ArrayBuffer | Uint8Array, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
         if (iv === null || iv === undefined) iv = new ArrayBuffer(16)
-        const d: any = data
-        let byte: ArrayBuffer;
-        if ($g.isTypeM(data, 'ArrayBuffer')) {
-            byte = d
-        } else {
-            byte = d.buffer// Uint8Array
-        }
+        let byte: ArrayBuffer = AES.getBuffer(data);
         // 处理 iv 为字符串
         const v: any = iv
         if ($g.isString(iv)) {

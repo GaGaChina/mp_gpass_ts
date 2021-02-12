@@ -3,7 +3,6 @@ import { $g } from "../../frame/speed.do"
 import { WXFile } from "../../frame/wx/wx.file"
 import { Entry, Group, Kdbx, ProtectedValue } from "../kdbxweb/types"
 import { KdbxApi } from "./kdbx.api"
-import { GByteStream } from "../g-byte-file/g.byte.stream"
 import { ToolBytes } from "../../frame/tools/tool.bytes"
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
 import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
@@ -217,15 +216,13 @@ export class DBLib extends DBBase {
     }
 
     /** 删除某个id的库 */
-    public remove(localId: number): boolean {
-        const l: number = this.lib.length
-        if (l) {
-            for (let i = 0; i < l; i++) {
-                let item: DBItem = this.lib[i]
-                if (item.localId === localId) {
-                    this.lib.splice(i, 1)
-                    return true
-                }
+    public async remove(localId: number): Promise<boolean> {
+        for (let i = 0; i < this.lib.length; i++) {
+            if (this.lib[i].localId === localId) {
+                this.lib.splice(i, 1)
+                await this.lib[i].rmDir()
+                this.storageSaveThis()
+                return true
             }
         }
         return false
@@ -375,6 +372,18 @@ export class DBItem extends DBBase {
     public filename: string = ''
     /** 文件存放在 db 文件夹下的 使用 localId */
     public path: string = ''
+    /** 现在用户选中的组 */
+    public selectGroup: Group | null = null
+    /** 现在用户选中的条目 */
+    public selectEntry: Entry | null = null
+    /** 正在添加的组 */
+    public addGroup: Group | null = null
+    /** 正在添加的条目 */
+    public addEntry: Entry | null = null
+    /** 现在选中的组 uuid */
+    public selectGroupUUID: string = ''
+    /** 现在选中的 Entry uuid */
+    public selectEntryUUID: string = ''
     /** 迷你版本的备份地址, 0 未备份, 1 主要是1 , 2 最新是2号 db.min.1.kdbx, 3 db.base64.1.txt, 3 db.base64.1.txt, 4 db.base64.2.txt  */
     public pathMinIndex: number = 0
     /** 文件创建的时间 */
@@ -429,27 +438,30 @@ export class DBItem extends DBBase {
         return await WXFile.rmDir(`db/${this.path}/`, true)
     }
 
+    /** 获取现在可以导出的文件名 */
+    public getFilePath(): string {
+        if (this.pathMinIndex === 0) {
+            return 'db.kdbx'
+        } else if (this.pathMinIndex === 1) {
+            return 'db.min.1.kdbx'
+        } else if (this.pathMinIndex === 2) {
+            return 'db.min.2.kdbx'
+        } else if (this.pathMinIndex === 3) {
+            return 'db.base64.1.txt'
+        } else if (this.pathMinIndex === 4) {
+            return 'db.base64.2.txt'
+        }
+        return ''
+    }
+
     /** 找到本地文件, 并打开 db */
     public async open(passPV: ProtectedValue) {
         await WXKeepScreen.on()
         // string | ArrayBuffer | null
         let readByte: any = null
-        let filePath: string = `db/${this.path}/`
-        let isBase64: boolean = false
-        if (this.pathMinIndex === 0) {
-            filePath += 'db.kdbx'
-        } else if (this.pathMinIndex === 1) {
-            filePath += 'db.min.1.kdbx'
-        } else if (this.pathMinIndex === 2) {
-            filePath += 'db.min.2.kdbx'
-        } else if (this.pathMinIndex === 3) {
-            filePath += 'db.base64.1.txt'
-            isBase64 = true
-        } else if (this.pathMinIndex === 4) {
-            filePath += 'db.base64.2.txt'
-            isBase64 = true
-        }
-        if (isBase64) {
+        let filePath: string = `db/${this.path}/` + this.getFilePath()
+        $g.log(`[DbItem][open]${filePath}`)
+        if (this.pathMinIndex === 3 || this.pathMinIndex === 4) {
             readByte = await WXFile.readFile(filePath, 0, undefined, 'utf-8')
             readByte = ToolBytes.Base64ToArrayBuffer(readByte)
         } else {

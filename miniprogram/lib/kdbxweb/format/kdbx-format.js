@@ -36,9 +36,9 @@ KdbxFormat.prototype.load = function (data) {
         kdbx: kdbx
     });
     return kdbx.credentials.ready.then(function () {
-        $g.log('[KdbxFormat]证书准备完毕')
+        // $g.log('[KdbxFormat]证书准备完毕')
         kdbx.header = KdbxHeader.read(stm, that.ctx);
-        $g.log('[KdbxFormat]头部读取完毕')
+        // $g.log('[KdbxFormat]头部读取完毕')
         if (kdbx.header.versionMajor === 3) {
             return that._loadV3(stm);
         } else if (kdbx.header.versionMajor === 4) {
@@ -57,7 +57,7 @@ KdbxFormat.prototype._loadV3 = function (stm) {
     var that = this;
     $g.log('[KdbxFormat]loadV3');
     return that._decryptXmlV3(kdbx, stm).then(function (xmlStr) {
-        $g.log('[KdbxFormat]loadV3 解析XML:', xmlStr);
+        // $g.log('[KdbxFormat]loadV3 解析XML:', xmlStr);
         kdbx.xml = XmlUtils.parse(xmlStr);
         return that._setProtectedValues().then(function () {
             return kdbx._loadFromXml(that.ctx).then(function () {
@@ -91,16 +91,16 @@ KdbxFormat.prototype._loadV4 = function (stm) {
                             ByteUtils.zeroBuffer(keys.cipherKey);
                             $g.log('[KdbxFormat]loadV4 decryptData');
                             if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
-                                $g.log('[KdbxFormat]loadV4 ungzip', data);
+                                // $g.log('[KdbxFormat]loadV4 ungzip', data);
                                 data = pako.ungzip(data);
                             }
                             stm = new BinaryStream(ByteUtils.arrayToBuffer(data));
-                            $g.log('[KdbxFormat]loadV4 readInnerHeader', stm);
+                            // $g.log('[KdbxFormat]loadV4 readInnerHeader', stm);
                             that.kdbx.header.readInnerHeader(stm, that.ctx);
                             data = stm.readBytesToEnd();
-                            $g.log('[KdbxFormat]loadV4 readBytesToEnd', data);
+                            // $g.log('[KdbxFormat]loadV4 readBytesToEnd', data);
                             var xmlStr = ByteUtils.bytesToString(data);
-                            $g.log('[KdbxFormat]loadV4 XmlUtils.parse', xmlStr);
+                            // $g.log('[KdbxFormat]loadV4 XmlUtils.parse', xmlStr);
                             that.kdbx.xml = XmlUtils.parse(xmlStr);
                             return that._setProtectedValues().then(function () {
                                 return that.kdbx._loadFromXml(that.ctx);
@@ -253,7 +253,7 @@ KdbxFormat.prototype._decryptXmlV3 = function (kdbx, stm) {
                     // $g.log('[KdbxFormat]ungzip 完毕')
                     // $g.log('[KdbxFormat]decryptXmlV3 ungzip 结束 : ', data);
                 }
-                $g.log('[KdbxFormat]decryptXmlV3 准备读XML', data);
+                // $g.log('[KdbxFormat]decryptXmlV3 准备读XML', data);
                 return ByteUtils.bytesToString(data);
             });
         });

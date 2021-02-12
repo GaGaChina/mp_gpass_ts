@@ -34,7 +34,7 @@ export class KdbxApi {
      */
     public static create(name: string, pass: string): Kdbx {
         const c: Credentials = KdbxApi.getPassCredentials(pass)
-        const kdbx:any = KdbxApi.kdbxweb.Kdbx
+        const kdbx: any = KdbxApi.kdbxweb.Kdbx
         const db: Kdbx = kdbx.create(c, name)
         //db.set({ active: true, created: true, name });
         const dbHeader: any = db.header
@@ -81,10 +81,17 @@ export class KdbxApi {
      */
     public static isEmpty(db: Kdbx): boolean {
         if (db) {
+            let excludeUUID: string = ''
+            if (db.meta) {
+                const meta: any = db.meta
+                if (meta.recycleBinUuid && meta.recycleBinUuid.id) {
+                    excludeUUID = meta.recycleBinUuid.id
+                }
+            }
             if (db.groups.length > 1) return false
             if (db.groups.length > 0) {
                 const group: Group = db.groups[0]
-                return KdbxApi.isGroupEmpty(group)
+                return KdbxApi.isGroupEmpty(group, excludeUUID)
             }
         }
         return true
@@ -93,13 +100,17 @@ export class KdbxApi {
     /**
      * 递归查询group和以下内容是否都是空
      * @param group 
+     * @param excludeUUID 
      */
-    public static isGroupEmpty(group: Group): boolean {
+    public static isGroupEmpty(group: Group, excludeUUID: string): boolean {
         if (group) {
             if (group.groups.length > 1) return false
+            if (group.uuid.id !== excludeUUID) {
+                if (group.entries.length > 0) return false
+            }
             if (group.groups.length > 0) {
                 const next: Group = group.groups[0]
-                return KdbxApi.isGroupEmpty(next)
+                return KdbxApi.isGroupEmpty(next, excludeUUID)
             }
         }
         return true
@@ -119,20 +130,13 @@ export class KdbxApi {
                 let l: number = group.groups.length
                 for (let i = 0; i < l; i++) {
                     const groupItem: Group = group.groups[i];
-                    // if(groupItem.uuid.id === uuid){
-                    //     return groupItem
-                    // }
                     out = this.findUUID(groupItem, uuid)
-                    if (out) {
-                        return out
-                    }
+                    if (out) return out
                 }
                 l = group.entries.length
                 for (let i = 0; i < l; i++) {
                     const entrieItem = group.entries[i];
-                    if (entrieItem.uuid.id === uuid) {
-                        return entrieItem
-                    }
+                    if (entrieItem.uuid.id === uuid) return entrieItem
                 }
             }
         }

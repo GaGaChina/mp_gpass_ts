@@ -6,7 +6,8 @@ var ProtectedValue = require('../crypto/protected-value'),
     Consts = require('../defs/consts'),
     KdbxCustomData = require('./kdbx-custom-data'),
     KdbxUuid = require('./kdbx-uuid'),
-    KdbxTimes = require('./kdbx-times');
+    KdbxTimes = require('./kdbx-times'),
+    $g = require('../../../frame/speed.do').$g;
 
 var tagsSplitRegex = /\s*[;,:]\s*/;
 

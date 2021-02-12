@@ -97,6 +97,11 @@ Component({
                         $g.log('无法返回!')
                     }
             }
-        }
+        },
+        btUserCenter(e: any) {
+            wx.navigateTo({
+                url: '/pages/user/usercenter/usercenter'
+            })
+        },
     },
 })

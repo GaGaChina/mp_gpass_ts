@@ -3,6 +3,8 @@ import { AwesomeIcon } from "./../../fonts/awesome"
 
 /**
  * 组件, 标题ICON
+ * 属性 : selectName 为字符串, 是 icon 的名称
+ * 监听 : change 回传为对象, 里面的 name 是 icon 的名称
  */
 Component({
     options: {
@@ -12,7 +14,7 @@ Component({
     /** 组件属性列表 properties和data指向同对象, 可定义函数 */
     properties: {
         open: { type: Boolean, value: true },// 默认是否为关闭
-        selectIndex: { type: Number, value: 0 },// 现在选中的图标序列
+        selectName: { type: String, value: 'key' },// 现在选中的图标序列
     },
     /** 组件的内部数据 */
     data: {
@@ -22,15 +24,6 @@ Component({
         endHeight: 0,
         findName: '',
         iconList: AwesomeIcon.list,
-    },
-    observers: {
-        'selectIndex'(index: number) {
-            // <abc bind:change="showTab"></abc>
-            // 父级 showTab(e){e.detail}
-            if (this.data.selectIndex !== index) {
-                this.triggerEvent('change', { 'index': index });
-            }
-        },
     },
     /** [推荐]外面声明生命周期会被这里覆盖 */
     lifetimes: {
@@ -56,9 +49,10 @@ Component({
     /** 组件的方法列表 */
     methods: {
         btSelectIcon(e: any) {
-            if (this.data.selectIndex !== e.currentTarget.dataset.index) {
+            if (this.data.selectName !== e.currentTarget.dataset.name) {
+                this.triggerEvent('change', { 'name': e.currentTarget.dataset.name });
                 this.setData({
-                    selectIndex: e.currentTarget.dataset.index,
+                    selectName: e.currentTarget.dataset.name,
                     open: false
                 })
             } else {

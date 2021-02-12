@@ -84,7 +84,6 @@ Component({
             // 父级 showTab(e){e.detail}
             this.triggerEvent('showTab', arr12);
         },
-
         // 在 numberA 或者 numberB 被设置时，触发一次函数
         'numberA, numberB': function (numberA, numberB) {
             this.setData({ sum: numberA + numberB })
@@ -100,6 +99,9 @@ Component({
         // 设置 this.data.some 或 this.data.some.field 本身或其下任何子数据字段时触发
         'some.field.**': function (field) {
             //field === this.data.some.field
+        },
+        '**': function () {
+            $g.log('[组件][Entry-Field]**')
         },
     },
     /** [推荐]外面声明生命周期会被这里覆盖 */

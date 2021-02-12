@@ -22,15 +22,6 @@ Component({
         endHeight: 0,
         iconList: KdbxIcon.list,
     },
-    observers: {
-        'selectIndex'(index: number) {
-            // <abc bind:change="showTab"></abc>
-            // 父级 showTab(e){e.detail}
-            if (this.data.selectIndex !== index) {
-                this.triggerEvent('change', { 'index': index });
-            }
-        },
-    },
     /** [推荐]外面声明生命周期会被这里覆盖 */
     lifetimes: {
         attached() {
@@ -56,6 +47,9 @@ Component({
     methods: {
         btSelectIcon(e: any) {
             if (this.data.selectIndex !== e.currentTarget.dataset.index) {
+                // <abc bind:change="showTab"></abc>
+                // 父级 showTab(e){e.detail}
+                this.triggerEvent('change', { 'index': e.currentTarget.dataset.index });
                 this.setData({
                     selectIndex: e.currentTarget.dataset.index,
                     open: false

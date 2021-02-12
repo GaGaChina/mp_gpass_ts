@@ -62,6 +62,16 @@ App<IAppOption>({
         } else {
             dbLib.storageSaveThis()
         }
+        this.globalData.app.DEBUG = false
+        if (this.globalData.systemInfo.brand === 'devtools') {
+            this.globalData.app.DEBUG = true
+        }
+        if ($g.hasKey(this.globalData.systemInfo, 'enableDebug')) {
+            const s: any = this.globalData.systemInfo
+            if (s.enableDebug) {
+                this.globalData.app.DEBUG = true
+            }
+        }
         // 读取 app 中 除了 appVer 的内容
         $g.s.copyGS('app', '*,!appVer')
         // 获取缓存的用户数据

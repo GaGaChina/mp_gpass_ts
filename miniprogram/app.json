@@ -1,7 +1,6 @@
 {
     "pages": [
-        "pages/index/index",
-        "pages/user/user"
+        "pages/index/index"
     ],
     "subPackages": [
         {
@@ -10,8 +9,14 @@
                 "index/index",
                 "dblist/dblist",
                 "dbedit/dbedit",
-                "entryshow/entryshow",
-                "entryedit/entryedit"
+                "entry/entry",
+                "group/group"
+            ]
+        },
+        {
+            "root": "pages/user/",
+            "pages": [
+                "usercenter/usercenter"
             ]
         },
         {

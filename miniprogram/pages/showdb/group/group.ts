@@ -214,6 +214,8 @@ Page({
     async delGroup() {
         if (db && group) {
             let recycleUUID: string = ''
+            let groupUUID: string = ''
+            if (group.uuid && group.uuid.id) groupUUID = group.uuid.id
             const meta: any = db.meta
             if (meta && meta.recycleBinUuid) recycleUUID = meta.recycleBinUuid.id
             if (recycleUUID && group.parentGroup && group.parentGroup.uuid && group.parentGroup.uuid.id === recycleUUID) {
@@ -221,6 +223,9 @@ Page({
                 _db.move(group, null)
             } else {
                 db.remove(group)
+            }
+            if (groupUUID && dbItem.selectGroup && dbItem.selectGroup.uuid && dbItem.selectGroup.uuid.id === groupUUID) {
+                dbItem.selectGroup = null
             }
             await dbItem.saveFileAddStorage()
             wx.navigateBack();

@@ -557,6 +557,8 @@ Page({
     async delEntry() {
         if (db && entry) {
             let recycleUUID: string = ''
+            let entryUUID: string = ''
+            if (entry.uuid && entry.uuid.id) entryUUID = entry.uuid.id
             const meta: any = db.meta
             if (meta && meta.recycleBinUuid) recycleUUID = meta.recycleBinUuid.id
             if (recycleUUID && entry.parentGroup && entry.parentGroup.uuid && entry.parentGroup.uuid.id === recycleUUID) {
@@ -564,6 +566,9 @@ Page({
                 _db.move(entry, null)
             } else {
                 db.remove(entry)
+            }
+            if (entryUUID && dbItem.selectEntry && dbItem.selectEntry.uuid && dbItem.selectEntry.uuid.id === entryUUID) {
+                dbItem.selectEntry = null
             }
             await dbItem.saveFileAddStorage()
             wx.navigateBack();

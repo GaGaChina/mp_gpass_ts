@@ -88,8 +88,11 @@ Page({
     setKdbx(db: Kdbx) {
         this.data.groupList.length = 0
         this.data.itemList.length = 0
-        const groups: Group[] = db.groups
-        $g.log('添加节点信息 : ', groups[0])
+        if (dbItem.selectGroup === null) {
+            const groups: Group[] = db.groups
+            $g.log('添加节点信息 : ', groups[0])
+            dbItem.selectGroup = groups[0]
+        }
         const meta: any = db.meta
         if (meta && meta.recycleBinUuid) {
             this.data.recycleUUID = meta.recycleBinUuid.id
@@ -97,7 +100,7 @@ Page({
             this.data.recycleUUID = ''
         }
         $g.log('回收站ID:', this.data.recycleUUID)
-        this.setGroup(groups[0], true)
+        this.setGroup(dbItem.selectGroup, true)
         this.setData({
             groupList: this.data.groupList,
             itemList: this.data.itemList,
@@ -121,17 +124,17 @@ Page({
                 if (root.uuid.id === group.uuid.id) {
                     outUUID = this.data.recycleUUID
                 } else {
-                    const rootInfo: any = {
+                    this.data.groupList.push({
                         icon: KdbxIcon.list[0],
                         name: '返回根目录',
                         notes: '',
                         uuid: root.uuid.id
-                    }
-                    this.data.groupList.push(rootInfo)
+                    })
                 }
             }
+            //  查看是否有上级
             const parent: Group = group.parentGroup
-            if (parent && root.uuid.id !== parent.uuid.id) {
+            if (parent && root && root.uuid.id !== parent.uuid.id) {
                 const parentInfo: any = {
                     icon: KdbxIcon.list[0],
                     name: '返回上级目录',
@@ -159,7 +162,7 @@ Page({
                     this.data.groupList.push(groupInfo)
                 }
                 if (groupItem.uuid.id !== this.data.recycleUUID) {
-                    const entryInfo: any = {
+                    this.data.itemList.push({
                         isGroup: true,
                         uuid: groupItem.uuid.id,
                         icon: KdbxIcon.list[groupItem.icon],
@@ -167,8 +170,7 @@ Page({
                         username: '',
                         password: '',
                         showpass: false,
-                    }
-                    this.data.itemList.push(entryInfo)
+                    })
                 }
                 if (outUUID === '' || groupItem.uuid.id !== outUUID) {
                     this.setGroup(groupItem, false)

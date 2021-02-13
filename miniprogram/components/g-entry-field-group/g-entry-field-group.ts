@@ -29,10 +29,14 @@ Component({
         fieldchange(e: any) {
             // $g.log('[组件][Entry-Group]', e)
             const info: any = e.detail
-            this.data.list[info.index] = info
-            // this.setData({ list: this.data.list })
-            // 不能进行触发 , 否则就死循环了
-            this.triggerEvent('change', this.data.list);
+            // $g.log('[组件][Entry-Group]', JSON.stringify(this.data.list[info.index]))
+            // $g.log('[组件][Entry-Group]', JSON.stringify(info))
+            if (JSON.stringify(this.data.list[info.index]) !== JSON.stringify(info)) {
+                this.data.list[info.index] = JSON.parse(JSON.stringify(info))
+                // this.setData({ list: this.data.list })
+                // 不能进行触发 , 否则就死循环了
+                this.triggerEvent('change', this.data.list);
+            }
         }
     },
 })

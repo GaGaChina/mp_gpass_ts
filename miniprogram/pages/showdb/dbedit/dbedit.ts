@@ -33,6 +33,7 @@ Page({
         timeRead: '',
         timeChange: '',
         fileSize: '',
+        isOpen: false,
     },
     onLoad(query: any) {
         // 获取尺寸
@@ -52,26 +53,36 @@ Page({
         }
         this.loadItem(item)
     },
+    onShow() {
+        // 如果时间超过了, 就切换回其他的页面
+        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
+            if (dbItem && dbItem.db) {
+                dbItem.db = null
+                wx.reLaunch({ url: './../../index/index' })
+            }
+        }
+    },
     async loadItem(item: DBItem | null): Promise<any> {
         await WXSoterAuth.checkSupport();
         if (item) {
-            const fileSizeNum: number = await item.fileSize()
-            const fileSize: string = GFileSize.getSize(fileSizeNum, 3)
             $g.log('设置参数')
             dbItem = item
+            const fileSizeNum: number = await dbItem.fileSize()
+            const fileSize: string = GFileSize.getSize(fileSizeNum, 3)
             this.setData({
-                dbLocalId: item.localId,
-                icon: item.icon,
-                name: item.name,
-                path: item.path,
-                timeCreat: TimeFormat.showLang(item.timeCreat),
-                timeRead: TimeFormat.showLang(item.timeRead),
-                timeChange: TimeFormat.showLang(item.timeChange),
+                dbLocalId: dbItem.localId,
+                icon: dbItem.icon,
+                name: dbItem.name,
+                path: dbItem.path,
+                isOpen: dbItem.db ? true : false,
+                timeCreat: TimeFormat.showLang(dbItem.timeCreat),
+                timeRead: TimeFormat.showLang(dbItem.timeRead),
+                timeChange: TimeFormat.showLang(dbItem.timeChange),
                 fileSize: fileSize,
                 fingerPrint: WXSoterAuth.fingerPrint,
                 facial: WXSoterAuth.facial,
-                isFingerPrint: item.pass.fingerPrint.length > 0,
-                isFacial: item.pass.facial.length > 0,
+                isFingerPrint: dbItem.pass.fingerPrint.length > 0,
+                isFacial: dbItem.pass.facial.length > 0,
             })
         } else {
             $g.log('未找到操作库')
@@ -96,6 +107,13 @@ Page({
         wx.reLaunch({
             url: './../../index/index?isCreat=0'
         })
+    },
+    /** 关闭现在打开的库 */
+    btClose(e: any) {
+        if (dbItem) {
+            dbItem.db = null
+            this.setData({ isOpen: false })
+        }
     },
     /** 删除这个库 */
     async btDel(e: any) {
@@ -136,12 +154,10 @@ Page({
         }
     },
     /** 切换人脸 */
-    async btChnageFacial(e: any) {
+    async btChangeFacial(e: any) {
         if (this.data.isFacial) {
             dbItem.pass.facial = ''
-            this.setData({
-                isFacial: dbItem.pass.facial.length > 0
-            })
+            this.setData({ isFacial: dbItem.pass.facial.length > 0 })
             wx.showToast({ title: '已经关闭人脸解锁', icon: 'none', mask: true })
         } else {
             if (dbItem.pass.pv) {
@@ -159,6 +175,38 @@ Page({
                         const dbLib: DBLib = $g.g.dbLib
                         dbLib.storageSaveThis()
                         this.setData({ isFacial: true })
+                    } else {
+                        wx.showToast({ title: '加密失败!', icon: 'none', mask: false })
+                    }
+                }
+                o = ''
+                await AES.setKey('')
+            } else {
+                wx.showToast({ title: '需要输入密码才能进行设置!', icon: 'none', mask: false })
+            }
+        }
+    },
+    async btChangeFingerPrint(e: any) {
+        if (this.data.isFingerPrint) {
+            dbItem.pass.fingerPrint = ''
+            this.setData({ isFingerPrint: dbItem.pass.fingerPrint.length > 0 })
+            wx.showToast({ title: '已经关闭指纹解锁', icon: 'none', mask: true })
+        } else {
+            if (dbItem.pass.pv) {
+                let o: string | null = await WXSoterAuth.start(['fingerPrint'])
+                if (o && o.length) {
+                    let key: string = o + '|dbid:' + dbItem.localId.toString()
+                    await AES.setKey(key)
+                    let pass: string = dbItem.pass.pv.getText()
+                    let passJM: ArrayBuffer | null = await AES.encryptCBC(pass, o)
+                    if (passJM) {
+                        dbItem.pass.fingerPrint = KdbxApi.kdbxweb.ByteUtils.bytesToBase64(passJM)
+                        if (WXSoterAuth.facial === false || dbItem.pass.facial !== '') {
+                            dbItem.pass.pv = null
+                        }
+                        const dbLib: DBLib = $g.g.dbLib
+                        dbLib.storageSaveThis()
+                        this.setData({ isFingerPrint: true })
                     } else {
                         wx.showToast({ title: '加密失败!', icon: 'none', mask: false })
                     }

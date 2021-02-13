@@ -35,11 +35,11 @@
                     class="fa fa-envelope-open-o"></i> 返回</button>
             <button wx:if="{{pagetype === 'show'}}" class="bt_big" bindtap="btEdit"><i
                     class="fa fa-envelope-open-o"></i> 编辑</button>
-                    <button wx:if="{{pagetype === 'edit'}}" class="bt_big" bindtap="btSave"><i
+            <button wx:if="{{pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btSave"><i
                     class="fa fa-envelope-open-o"></i> 保存</button>
-            <button wx:if="{{pagetype === 'edit'}}" class="bt_big" bindtap="btBackShow"><i
+            <button wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btBackShow"><i
                     class="fa fa-envelope-open-o"></i> 取消</button>
-            <button wx:if="{{pagetype === 'edit'}}" class="bt_big red" bindtap="btDel"><i
+            <button wx:if="{{ pagetype === 'edit' }}" class="bt_big red" bindtap="btDel"><i
                     class="fa fa-envelope-open-o"></i> 删除</button>
         </view>
     </scroll-view>

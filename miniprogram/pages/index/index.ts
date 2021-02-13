@@ -33,10 +33,14 @@ Page({
         fingerPrint: WXSoterAuth.fingerPrint,
         /** 是否支持人脸识别 */
         facial: WXSoterAuth.facial,
-        /** 是否开启指纹识别 */
-        isFingerPrint: false,
         /** 是否开启人脸识别 */
         isFacial: false,
+        /** 是否开启指纹识别 */
+        isFingerPrint: false,
+        /** 打开 facial 的时间 */
+        facialTime: 0,
+        /** 正在打开验证 */
+        facialStart: false,
         /** 创建, 导入, 打开的密码 */
         passWord: '',
         /** 选中档案的名称 */
@@ -54,17 +58,12 @@ Page({
         WXSize.getSize($g.g.systemInfo)
     },
     onLoad(query: any) {
-        const dbLib: DBLib = $g.g.dbLib
-        const dbItem: DBItem | null = dbLib.selectItem
+        const dbItem: DBItem | null = $g.g.dbLib.selectItem
         if (dbItem) {
             this.setData({
-                dbName: dbItem.name,
-                dbLength: dbLib.lib.length,
                 isCreatPage: false,
-                fingerPrint: WXSoterAuth.fingerPrint,
                 facial: WXSoterAuth.facial,
-                isFingerPrint: dbItem.pass.fingerPrint.length > 0,
-                isFacial: dbItem.pass.facial.length > 0,
+                fingerPrint: WXSoterAuth.fingerPrint,
             })
         }
         $g.log('onLoad GET : ', query);
@@ -73,15 +72,37 @@ Page({
         }
     },
     onShow() {
+        this.autoOpen()
+    },
+    async autoOpen() {
         const dbLib: DBLib = $g.g.dbLib
         const dbItem: DBItem | null = dbLib.selectItem
         if (dbItem) {
             this.setData({
                 dbName: dbItem.name,
                 dbLength: dbLib.lib.length,
-                isFingerPrint: dbItem.pass.fingerPrint.length > 0,
                 isFacial: dbItem.pass.facial.length > 0,
+                isFingerPrint: dbItem.pass.fingerPrint.length > 0,
             })
+            // 自动解锁进入
+            if (!this.data.isCreatPage) {
+                if (dbItem.db === null) {
+                    this.data.facialStart = true
+                    const newTime: number = new Date().getTime()
+                    if ((this.data.facialTime + 5000) < newTime) {
+                        if (this.data.isFacial) {
+                            await this.btOpenSelectDbFace()
+                        } else if (this.data.isFingerPrint) {
+                            await this.btOpenSelectDbPrint()
+                        }
+                        this.data.facialTime = new Date().getTime()
+                    }
+                    this.data.facialStart = false
+                } else {
+                    $g.g.app.timeMouse = Date.now()
+                    wx.reLaunch({ url: './../showdb/index/index' })
+                }
+            }
         }
     },
     /** 用户选择一个文件 */
@@ -137,12 +158,12 @@ Page({
         return name
     },
     /** 使用 data 的 passWord 打开默认选中的档案 */
-    async btOpenSelectDb(e: any) {
+    async btOpenSelectDb() {
         if (this.checkPassWord() === false) return;
         await this.openDbItem($g.g.dbLib.selectItem)
     },
     /** 使用 FaceID 解锁密码库 */
-    async btOpenSelectDbFace(e: any) {
+    async btOpenSelectDbFace() {
         const dbItem: DBItem | null = $g.g.dbLib.selectItem
         if (dbItem && dbItem.pass.facial) {
             let o: string | null = await WXSoterAuth.start(['facial'])
@@ -165,10 +186,35 @@ Page({
             await AES.setKey('')
         }
     },
+    /** 使用 指纹 解锁密码库 */
+    async btOpenSelectDbPrint() {
+        const dbItem: DBItem | null = $g.g.dbLib.selectItem
+        if (dbItem && dbItem.pass.fingerPrint) {
+            let o: string | null = await WXSoterAuth.start(['fingerPrint'])
+            if (o && o.length) {
+                let key: string = o + '|dbid:' + dbItem.localId.toString()
+                await AES.setKey(key)
+                let passBase64: string = dbItem.pass.fingerPrint
+                let passU8: Uint8Array = KdbxApi.kdbxweb.ByteUtils.base64ToBytes(passBase64)
+                let passJM: ArrayBuffer | null = await AES.decryptCBC(passU8, o)
+                if (passJM) {
+                    let pass: string = EncodingText.decode(new Uint8Array(passJM))
+                    passPV = KdbxApi.getPassPV(pass)
+                    pass = ''
+                    await this.openDbItem(dbItem)
+                } else {
+                    wx.showToast({ title: '解密失败!', icon: 'none', mask: true })
+                }
+            }
+            o = ''
+            await AES.setKey('')
+        }
+    },
     async openDbItem(dbItem: DBItem | null) {
         if (dbItem) {
             if (passPV && passPV.getText().length > 0) {
                 if (dbItem.db) {
+                    $g.g.app.timeMouse = Date.now()
                     wx.reLaunch({ url: './../showdb/index/index' })
                 } else {
                     const dbLib: DBLib = $g.g.dbLib
@@ -183,6 +229,7 @@ Page({
                         wx.showToast({ title: '解密失败!', icon: 'none', mask: false })
                     }
                     if (dbItem.db) {
+                        $g.g.app.timeMouse = Date.now()
                         wx.reLaunch({ url: './../showdb/index/index' })
                     }
                 }
@@ -246,6 +293,7 @@ Page({
                         $g.log('g|time|end')
                         await WXKeepScreen.off()
                         // 切换页面
+                        $g.g.app.timeMouse = Date.now()
                         wx.reLaunch({
                             url: './../showdb/index/index'
                         })

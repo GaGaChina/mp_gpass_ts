@@ -18,8 +18,13 @@
                         <view>使用空间 : {{item.fileSize}}</view>
                     </view>
                     <view class="center_right">
-                        <button data-id="{{ item.id }}" bindtap="btOpen"><i class="fa fa-envelope-open-o"></i> 打
+
+                        <button wx:if="{{ item.isOpen }}" data-id="{{ item.id }}" bindtap="btClose"><i
+                                class="fa fa-envelope-o"></i> 关
+                            闭</button>
+                        <button wx:else data-id="{{ item.id }}" bindtap="btOpen"><i class="fa fa-envelope-open-o"></i> 打
                             开</button>
+
                         <button data-id="{{ item.id }}" bindtap="btEdit"><i class="fa fa-pencil-square-o"></i> 操
                             作</button>
                     </view>

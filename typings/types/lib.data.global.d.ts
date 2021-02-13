@@ -21,7 +21,7 @@ interface DataGlobalApp {
     darktype: number,
     /** 是否开启暗黑模式 */
     darkmode: boolean,
-    /** 用户上一次操作的时间 */
+    /** 用户上一次操作的时间, g-page-bg 组件会更新时间 */
     timeMouse: number,
     /** 用户多久不操作进行锁屏 */
     timeMouseClose: number,

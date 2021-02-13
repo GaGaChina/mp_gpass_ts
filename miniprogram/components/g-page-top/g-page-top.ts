@@ -26,28 +26,29 @@ Component({
     lifetimes: {
         /** 实例进入页面节点树时执行),可以setData */
         attached() {
-            $g.log('[组件][g-page-top]创建');
+            // $g.log('[组件][g-page-top]创建');
             this.setData({
                 topHeight: $g.g.app.scene.topBarHeight + $g.g.app.scene.topBarTop,
-                hasWXUser: WXUser.appHaveInfo(),
-                userHead: $g.g.userWX?.avatarUrl ?? '',
-                nickName: $g.g.userWX?.nickName ?? ''
             })
             if ($g.g.app.darkusable) wx.onThemeChange(this.themeChange.bind(this));
         },
-        /** 视图层布局完成后执行 */
-        ready() { },
-        /** 实例被移动到节点树另一个位置时执行 */
-        moved() { },
         /** 实例被从页面节点树移除时执行 */
         detached() {
             if ($g.g.app.darkusable) wx.offThemeChange(this.themeChange);
         },
-        /** 组件方法抛出错误时执行 */
-        error() { },
     },
     /** 组件所在页面的生命周期函数 */
-    pageLifetimes: {},
+    pageLifetimes: {
+        /** 所在的页面被展示时执行 */
+        show() {
+            // $g.log('[组件][g-page-top]展示')
+            this.setData({
+                hasWXUser: WXUser.appHaveInfo(),
+                userHead: $g.g.userWX?.avatarUrl ?? '',
+                nickName: $g.g.userWX?.nickName ?? ''
+            })
+        },
+    },
     /** 组件的方法列表 */
     methods: {
         themeChange(e) {
@@ -83,13 +84,13 @@ Component({
                 route = cps[cps.length - 1].route;
             }
             switch (route) {
-                case 'pages/question/pages/machine/machine':
-                case 'pages/question/pages/testing/testing':
-                    wx.showModal({
-                        title: '请确认', content: '你确定要退出考试吗?', confirmText: '确定退出', cancelText: '继续作答',
-                        success(res) { if (res.confirm) wx.reLaunch({ url: '/pages/index/index' }); }
-                    });
-                    break;
+                // case 'pages/question/pages/machine/machine':
+                // case 'pages/question/pages/testing/testing':
+                //     wx.showModal({
+                //         title: '请确认', content: '你确定要退出考试吗?', confirmText: '确定退出', cancelText: '继续作答',
+                //         success(res) { if (res.confirm) wx.reLaunch({ url: '/pages/index/index' }); }
+                //     });
+                //     break;
                 default:
                     if (cps.length > 1) {
                         wx.navigateBack();

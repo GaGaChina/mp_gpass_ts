@@ -20,6 +20,7 @@
 .show_icon {
     width: 40rpx;
     height: 40rpx;
+    line-height: 40rpx;
 }
 
 .show_icon>i {
@@ -147,6 +148,7 @@
 .edit_icon {
     width: 60rpx;
     height: 70rpx;
+    line-height: 70rpx;
 }
 
 .edit_icon>i {
@@ -163,7 +165,7 @@
 .edit_key {
     margin-left: 20rpx;
     color: #9af6fd;
-    font-size: 32rpx;
+    font-size: 28rpx;
     line-height: 60rpx;
     width: 590rpx;
     height: 75rpx;
@@ -190,7 +192,7 @@
     line-height: 46rpx;
     margin-left: 40rpx;
     margin-right: 40rpx;
-    font-size: 36rpx;
+    font-size: 32rpx;
     font-weight: bold;
     border: 1px solid #9b9b9d;
     background: #202435;
@@ -205,7 +207,7 @@
     margin-left: 40rpx;
     margin-right: 40rpx;
     color: #fff;
-    font-size: 36rpx;
+    font-size: 32rpx;
     font-weight: bold;
     line-height: 46rpx;
     border: 1px solid #9b9b9d;

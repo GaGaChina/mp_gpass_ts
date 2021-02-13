@@ -434,8 +434,9 @@ export class DBItem extends DBBase {
 
     /** 删除文件夹下全部文件 */
     public async rmDir(): Promise<boolean> {
-        $g.log(`[DBItem]删除 db 文件夹 db/${this.path}`)
-        return await WXFile.rmDir(`db/${this.path}/`, true)
+        const path: string = 'db/' + this.path
+        $g.log(`[DBItem]删除 db 文件夹 ${path}`)
+        return await WXFile.rmDir(path, true)
     }
 
     /** 获取现在可以导出的文件名 */
@@ -515,8 +516,9 @@ export class DBItem extends DBBase {
      */
     public async saveFileAddStorage() {
         if (this.db) {
-            $g.log('[DbItem][saveFileAddStorage] 创建新的DB二进制')
+
             const byte: ArrayBuffer = await this.db.save()
+            $g.log('[DbItem][saveFileAddStorage]', byte.byteLength)
             // const demo: GByteStream = new GByteStream(byte, true)
             // const n1: number = demo.rUint32()
             // const n2: number = demo.rUint32()
@@ -525,6 +527,7 @@ export class DBItem extends DBBase {
                 if ($g.g.systemInfo.brand === 'devtools') {
                     // 如果是开发者工具, 就存Base64, 因为二进制不稳定
                     const base64: string = ToolBytes.ArrayBufferToBase64(byte)
+                    $g.log('[DbItem][saveFileAddStorage]base64:', base64.length)
                     if (this.pathMinIndex === 3) {
                         if (await WXFile.writeFile(`db/${this.path}/db.base64.2.txt`, base64)) {
                             this.pathMinIndex = 4
@@ -558,6 +561,12 @@ export class DBItem extends DBBase {
         if (this.db) {
             const isChange: boolean = await this.getGroupToDisk(this.db.groups)
             if (isChange) {
+                this.db.cleanup({
+                    historyRules: true,// 删除额外的历史记录，它与定义的规则（例如记录编号）不匹配
+                    customIcons: true,// 删除未使用的自定义图标
+                    binaries: true// 删除未使用的二进制文件
+                });
+                this.db.cleanup({ binaries: true });
                 await this.saveFileAddStorage()
             }
         }
@@ -590,15 +599,15 @@ export class DBItem extends DBBase {
         let l: number = entries.length
         if (l > 0) {
             for (let i = 0; i < entries.length; i++) {
-                const entrie: Entry = entries[i]
-                const uuid: string = entrie.uuid.toString()
-                const binaries: any = entrie.binaries
+                const entry: Entry = entries[i]
+                const uuid: string = entry.uuid.toString()
+                const binaries: any = entry.binaries
                 // 获取 二进制文件 键值列表
                 const fileList: Array<string> = Object.keys(binaries)
                 // GKeyValue 的对象
                 let gkv: any = {}
-                if ($g.hasKey(entrie.fields, 'GKeyValue')) {
-                    const gkvJSON: any = entrie.fields['GKeyValue']
+                if ($g.hasKey(entry.fields, 'GKeyValue')) {
+                    const gkvJSON: any = entry.fields['GKeyValue']
                     gkv = JSON.parse(gkvJSON)
                 }
                 let jsonFileList: Array<any> = new Array<any>()
@@ -640,8 +649,9 @@ export class DBItem extends DBBase {
                     }
                 }
                 // 写入新的值
-                entrie.fields['GKeyValue'] = JSON.stringify(gkv)
-                $g.log('调整完毕 Entrie', entrie)
+                entry.fields['GKeyValue'] = JSON.stringify(gkv)
+                entry.removeHistory(0, entry.history.length)
+                // $g.log('调整完毕 Entrie', entry)
             }
         }
         return isChange

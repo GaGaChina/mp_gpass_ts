@@ -47,7 +47,7 @@
 
 .close>i {
     color: #001044;
-    font-size: 38rpx;
+    font-size: 24rpx;
     line-height: 50rpx;
 }
 

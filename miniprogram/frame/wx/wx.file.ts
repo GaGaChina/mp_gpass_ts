@@ -399,8 +399,8 @@ export class WXFile {
                         // resolve(await WXFile.appendFile(filePath, data, encoding))
                     },
                     fail: (e: any) => {
-                        // $g.log('[wx.file][writeFile][fail]', e);
-                        wx.showToast({ title: `文件写入失败, ${e.errMsg}`, icon: 'none', mask: false })
+                        $g.log('[wx.file][writeFile][fail]', e);
+                        wx.showToast({ title: '文件写入失败!', icon: 'none', mask: false })
                         resolve(false)
                     }
                 })

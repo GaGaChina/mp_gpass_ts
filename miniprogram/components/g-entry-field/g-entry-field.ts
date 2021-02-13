@@ -32,7 +32,7 @@ Component({
                 changetype: true,// 是否允许修改类型
                 changeicon: true,// 是否允许修改 Icon 的值
                 candel: true,// 是否允许删除
-                warning: false,// 是否显示出警告
+                warningkey: false,// 是否显示出警告
             },
         },
     },
@@ -46,22 +46,19 @@ Component({
     /** 数据字段监听器，监听 setData 的 properties 和 data 变化 */
     observers: {
         // 设置 this.data.some 或 this.data.some.field 本身或其下任何子数据字段时触发[可以触发]
-        'info.**': function (o) {
-            $g.log('[组件][Entry-Field]触发', o)
-            // <abc bind:showTab="showTab"></abc>
-            // 父级 showTab(e){e.detail}
-            // if (this.data.oldinfo !== JSON.stringify(o)) {
-            //     this.setData({ oldinfo: JSON.stringify(o) })
-            //     // this.triggerEvent('change', o);
-            // }
-            this.triggerEvent('change', o);
+        'info.valuetype': function (o) {
+            if (o === 'pv') {
+                this.setData({ showpass: false })
+            } else {
+                this.setData({ showpass: true })
+            }
         },
     },
     /** [推荐]外面声明生命周期会被这里覆盖 */
     lifetimes: {
         /** 实例进入页面节点树时执行),可以setData */
         attached() {
-            $g.log('[组件][Entry-Field]创建', this.data);
+            // $g.log('[组件][Entry-Field]创建', this.data);
             if (this.data.info.icon === '') {
                 this.data.info.icon = this.data.info.valuetype === 'pv' ? 'lock' : 'unlock'
                 this.setData({ info: this.data.info })
@@ -97,30 +94,38 @@ Component({
         //     return ''
         // },
         btShowPass(e: any) {
+            $g.g.app.timeMouse = Date.now()
             if (this.data.info.valuetype === 'pv') {
                 this.setData({ showpass: !this.data.showpass })
             }
         },
         /** 显示IOCN图标的窗口 */
         btSelectIcon(e: any) {
+            $g.g.app.timeMouse = Date.now()
             this.setData({ openWinIcon: true })
         },
         changeIcon(e: any) {
+            $g.g.app.timeMouse = Date.now()
             // $g.log('[组件][Entry-Field]changeIcon', e)
             this.data.info.icon = String(e.detail.name)
             this.setData({ info: this.data.info })
+            this.triggerEvent('change', this.data.info)
         },
         inputKeyChange(e: any) {
             if (this.data.info.key !== e.detail.value) {
+                $g.g.app.timeMouse = Date.now()
                 this.data.info.key = e.detail.value
                 this.data.info.keyname = e.detail.value
-                this.setData({ info: this.data.info })
+                this.triggerEvent('change', this.data.info)
+                // this.setData({ info: this.data.info })
             }
         },
         inputValChange(e: any) {
             if (this.data.info.value !== e.detail.value) {
+                $g.g.app.timeMouse = Date.now()
                 this.data.info.value = e.detail.value
-                this.setData({ info: this.data.info })
+                this.triggerEvent('change', this.data.info)
+                // this.setData({ info: this.data.info })
             }
         }
     },

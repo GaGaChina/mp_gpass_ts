@@ -41,7 +41,7 @@
     "useExtendedLib": {
         "weui": true
     },
-    "resizable": true,
+    "resizable": false,
     "darkmode": false,
     "themeLocation": "theme.json"
 }

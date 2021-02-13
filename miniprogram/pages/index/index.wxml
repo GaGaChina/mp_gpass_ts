@@ -67,8 +67,10 @@
         <i class="input_icon fa fa-lock"></i>
     </view>
     <button wx:if="{{isFacial}}" class="bt_big fa" bindtap="btOpenSelectDbFace"><i
-            class="input_icon fa fa-file-archive-o"></i> 人脸解锁</button>
-    <button class="bt_big fa" bindtap="btOpenSelectDb"><i class="input_icon fa fa-file-archive-o"></i> 解 锁</button>
+            class="input_icon fa fa-unlock-alt"></i> 人脸解锁</button>
+    <button wx:if="{{isFingerPrint}}" class="bt_big fa" bindtap="btOpenSelectDbPrint"><i
+            class="input_icon fa fa-unlock-alt"></i> 指纹解锁</button>
+    <button class="bt_big fa" bindtap="btOpenSelectDb"><i class="input_icon fa fa-unlock-alt"></i> 解 锁</button>
     <block wx:if="{{dbLength > 1}}">
         <view class="has_db_info">发现 {{dbLength}} 个本地档案, 需要选择打开它们吗?</view>
         <button class="bt_big" bindtap="btShowDBList"><i class="input_icon fa fa-envelope-open-o"></i>

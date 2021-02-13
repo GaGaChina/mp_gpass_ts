@@ -42,6 +42,7 @@ Page({
                 icon: item.icon,
                 name: item.name,
                 id: item.localId,
+                isOpen: item.db ? true : false,
                 timeCreat: TimeFormat.showLang(item.timeCreat),
                 timeRead: TimeFormat.showLang(item.timeRead),
                 timeChange: TimeFormat.showLang(item.timeChange),
@@ -69,11 +70,21 @@ Page({
     /** 打开某一个库 */
     btOpen(e: any) {
         const dbLib: DBLib = $g.g.dbLib
-        dbLib.selectId = e.currentTarget.dataset.id
+        dbLib.selectId = Number(e.currentTarget.dataset.id)
         dbLib.storageSaveThis()
         wx.reLaunch({
             url: './../../index/index?isCreat=0'
         })
+    },
+    /** 关闭现在打开的库 */
+    btClose(e: any) {
+        const dbLib: DBLib = $g.g.dbLib
+        const id: number = Number(e.currentTarget.dataset.id)
+        const dbItem: DBItem | null = dbLib.selectLocalId(id)
+        if (dbItem) {
+            dbItem.db = null
+            this.loadInfo()
+        }
     },
     btEdit(e: any) {
         wx.navigateTo({ url: './../dbedit/dbedit?id=' + e.currentTarget.dataset.id })

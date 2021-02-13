@@ -2,7 +2,7 @@
   "usingComponents": {
     "g-page-bg": "./../../../components/g-page-bg/g-page-bg",
     "g-page-top": "./../../../components/g-page-top/g-page-top",
-    "g-sub-select-type":"./../../../components/g-sub-select-type"
+    "g-sub-select-type":"./../../../components/g-sub-select-type/g-sub-select-type"
   },
   "disableScroll": true
 }

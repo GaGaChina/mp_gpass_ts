@@ -3,7 +3,7 @@ import { TimeFormat } from "../../../frame/time/time.format"
 import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
-import { Entry, Group, Kdbx, ProtectedValue } from "../../../lib/kdbxweb/types"
+import { Entry, Kdbx } from "../../../lib/kdbxweb/types"
 
 /** 整个库 */
 var dbLib: DBLib;
@@ -107,7 +107,7 @@ Page({
                 pagetitle: title
             })
         }
-        // 获取条目的模板样式
+        // 获取条目的模板样式 normal bank web certificate
         if ($g.hasKey(query, 'infotype')) {
             this.data.infotype = String(query.type)
         }
@@ -122,6 +122,13 @@ Page({
         if (!db) wx.navigateBack()
     },
     onShow() {
+        // 如果时间超过了, 就切换回其他的页面
+        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
+            $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
+            if (dbItem && dbItem.db) dbItem.db = null
+            wx.reLaunch({ url: './../../index/index' })
+            return
+        }
         switch (this.data.pagetype) {
             case 'show':
                 const findEntry: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
@@ -359,12 +366,13 @@ Page({
             changetype: changetype,
             changekey: changekey,
             candel: candel,
-            warning: false,
+            warningkey: false,
         }
         return out
     },
     /** 添加一个新的字段 */
     btAddField() {
+        $g.g.app.timeMouse = Date.now()
         let out: Object = {
             index: this.data.otherList.length,
             icon: 'key',
@@ -376,12 +384,13 @@ Page({
             changetype: true,
             changekey: true,
             candel: true,
-            warning: false,
+            warningkey: false,
         }
         this.data.otherList.push(out)
         this.setData({ otherList: this.data.otherList })
     },
     btBack(e: any) {
+        $g.g.app.timeMouse = Date.now()
         if (dbItem.addEntry) {
             db.remove(dbItem.addEntry)
             dbItem.addEntry = null
@@ -390,6 +399,7 @@ Page({
     },
     /** 从编辑模式切换回展示 */
     btBackShow(e: any) {
+        $g.g.app.timeMouse = Date.now()
         this.setInfo()
         this.setData({ pagetype: 'show' })
     },
@@ -405,21 +415,26 @@ Page({
     },
     /** 鉴定 otherList 中的值是否全合法 */
     checkOther(): boolean {
+        $g.g.app.timeMouse = Date.now()
         let haveCheck: boolean = false
-        const firstKey: Array<string> = ['Title', 'UserName', 'Password', 'URL', 'Notes']
+        let changeWarning: boolean = false
+        const firstKey: Array<string> = ['title', 'username', 'password', 'url', 'notes']
         // --------- 查找重命名的
         let keyName: Array<string> = new Array<string>()
         let keyLen: Array<number> = new Array<number>()
         let keyLib: Array<Array<number>> = new Array<Array<number>>()
         for (let i = 0; i < this.data.otherList.length; i++) {
             const info: any = this.data.otherList[i]
-            if (firstKey.indexOf(info.key) !== -1) {
-                info.warning = true
+            if (firstKey.indexOf(info.key.toLocaleLowerCase()) !== -1) {
+                if (!info.warningkey) {
+                    changeWarning = true
+                    info.warningkey = true
+                }
                 haveCheck = true
             } else {
-                let keyIndex: number = keyName.indexOf(info.key)
+                let keyIndex: number = keyName.indexOf(info.key.toLocaleLowerCase())
                 if (keyIndex === -1) {
-                    keyName.push(info.key)
+                    keyName.push(info.key.toLocaleLowerCase())
                     keyLen.push(1)
                     keyLib.push([i])
                 } else {
@@ -432,35 +447,47 @@ Page({
             if (keyLen[i] > 1) {
                 for (let j = 0; j < keyLib[i].length; j++) {
                     const item: any = this.data.otherList[keyLib[i][j]]
-                    item.warning = true
+                    if (!item.warningkey) {
+                        item.warningkey = true
+                        changeWarning = true
+                    }
                     haveCheck = true
+                }
+            } else {
+                const item: any = this.data.otherList[keyLib[i][0]]
+                if (item.warningkey) {
+                    item.warningkey = false
+                    changeWarning = true
                 }
             }
         }
-        if (haveCheck) {
+        if (changeWarning) {
             this.setData({ otherList: this.data.otherList })
         }
         return !haveCheck
     },
     btSave(e: any) {
+        $g.g.app.timeMouse = Date.now()
         $g.log('[entry][Save]', this.data.title)
         this.clearOtherNull()
         // 前5个只允许出现在 defaultList , 并检查 otherList 不允许重名
-        const firstKey: Array<string> = ['Title', 'UserName', 'Password', 'URL', 'Notes']
         // 判断 key 值是否全部合法
-        if(!this.checkOther()){
+        if (!this.checkOther()) {
             wx.showToast({ title: '请修复不合法的键值', icon: 'none', mask: false })
             return
         }
         // 通过判断测试..........
-        if (dbItem.addEntry) dbItem.addEntry = null
-        entry.pushHistory()
+        if (dbItem.addEntry) {
+            dbItem.addEntry = null
+        } else {
+            entry.pushHistory()
+        }
         entry.times.update()
         entry.icon = this.data.icon
         entry.fields.Title = this.data.title
         // 清理老的记录
         const delKey: Array<string> = Object.keys(entry.fields)
-        firstKey.push('GKeyValue')
+        const firstKey: Array<string> = ['Title', 'UserName', 'Password', 'URL', 'Notes', 'GKeyValue']
         for (let i = 0; i < delKey.length; i++) {
             const key = delKey[i];
             if (firstKey.indexOf(key) === -1) {
@@ -500,8 +527,10 @@ Page({
         entry.fields['GKeyValue'] = JSON.stringify(gkv)
         dbItem.saveFileAddStorage()
         this.setData({ pagetype: 'show' })
+        this.onShow()
     },
     btEdit(e: any) {
+        $g.g.app.timeMouse = Date.now()
         this.setData({ pagetype: 'edit' })
     },
     /** 组件, 当台头输入框有变化的时候回调 */
@@ -513,6 +542,7 @@ Page({
         })
     },
     btDel(e: any) {
+        $g.g.app.timeMouse = Date.now()
         const that = this
         wx.showModal({
             title: '提示',
@@ -526,7 +556,15 @@ Page({
     /** 删除现在的这个对象 */
     async delEntry() {
         if (db && entry) {
-            db.remove(entry)
+            let recycleUUID: string = ''
+            const meta: any = db.meta
+            if (meta && meta.recycleBinUuid) recycleUUID = meta.recycleBinUuid.id
+            if (recycleUUID && entry.parentGroup && entry.parentGroup.uuid && entry.parentGroup.uuid.id === recycleUUID) {
+                const _db: any = db
+                _db.move(entry, null)
+            } else {
+                db.remove(entry)
+            }
             await dbItem.saveFileAddStorage()
             wx.navigateBack();
         }

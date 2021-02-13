@@ -1,9 +1,8 @@
 import { $g } from "../../../frame/speed.do"
 import { TimeFormat } from "../../../frame/time/time.format"
-import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
-import { Entry, Group, Kdbx, ProtectedValue } from "../../../lib/kdbxweb/types"
+import { Group, Kdbx } from "../../../lib/kdbxweb/types"
 
 /** 整个库 */
 var dbLib: DBLib;
@@ -13,12 +12,9 @@ var dbItem: DBItem;
 var db: Kdbx;
 /** 现在在操作的 entry */
 var group: Group;
-/** 现在操作的entry内的GKeyValue */
-var gkv: any;
 
 /**
  * 列表
- * 
  * KdbxGroup
  * name 文件夹名称
  * notes 文件夹的备注
@@ -93,6 +89,13 @@ Page({
         if (!db) wx.navigateBack()
     },
     onShow() {
+        // 如果时间超过了, 就切换回其他的页面
+        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
+            $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
+            if (dbItem && dbItem.db) dbItem.db = null
+            wx.reLaunch({ url: './../../index/index' })
+            return
+        }
         switch (this.data.pagetype) {
             case 'show':
                 const findGroup: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
@@ -103,6 +106,16 @@ Page({
                     this.setInfo()
                 } else {
                     wx.navigateBack()
+                }
+                break;
+            case 'add':
+                if (dbItem.selectGroup) {
+                    group = db.createGroup(dbItem.selectGroup, '新建组')
+                    dbItem.addGroup = group
+                    dbItem.selectGroup = group
+                    this.setInfo()
+                } else {
+                    $g.log('缺少选中组')
                 }
                 break;
             default:
@@ -138,15 +151,35 @@ Page({
         })
     },
     btBack(e: any) {
+        $g.g.app.timeMouse = Date.now()
+        if (dbItem.addGroup) {
+            db.remove(dbItem.addGroup)
+            dbItem.addGroup = null
+        }
         wx.navigateBack();
     },
     /** 从编辑模式切换回展示 */
     btBackShow(e: any) {
+        $g.g.app.timeMouse = Date.now()
         this.setInfo()
         this.setData({ pagetype: 'show' })
     },
+    /** 鉴定是否全合法 */
+    checkGroup(): boolean {
+        let haveCheck: boolean = false
+        if (this.data.title.length === 0) {
+            haveCheck = true
+        }
+        return !haveCheck
+    },
     btSave(e: any) {
+        $g.g.app.timeMouse = Date.now()
         $g.log('[group][Save]', this.data.title)
+        if (!this.checkGroup()) {
+            wx.showToast({ title: '请添加标题', icon: 'none', mask: false })
+            return
+        }
+        if (dbItem.addGroup) dbItem.addGroup = null
         group.times.update()
         group.icon = this.data.icon
         group.name = this.data.title
@@ -154,6 +187,7 @@ Page({
         this.setData({ pagetype: 'show' })
     },
     btEdit(e: any) {
+        $g.g.app.timeMouse = Date.now()
         this.setData({ pagetype: 'edit' })
     },
     /** 组件, 当台头输入框有变化的时候回调 */
@@ -165,6 +199,7 @@ Page({
         })
     },
     btDel(e: any) {
+        $g.g.app.timeMouse = Date.now()
         const that = this
         wx.showModal({
             title: '提示',
@@ -178,7 +213,15 @@ Page({
     /** 删除现在的这个对象 */
     async delGroup() {
         if (db && group) {
-            db.remove(group)
+            let recycleUUID: string = ''
+            const meta: any = db.meta
+            if (meta && meta.recycleBinUuid) recycleUUID = meta.recycleBinUuid.id
+            if (recycleUUID && group.parentGroup && group.parentGroup.uuid && group.parentGroup.uuid.id === recycleUUID) {
+                const _db: any = db
+                _db.move(group, null)
+            } else {
+                db.remove(group)
+            }
             await dbItem.saveFileAddStorage()
             wx.navigateBack();
         }

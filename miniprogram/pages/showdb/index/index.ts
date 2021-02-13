@@ -50,6 +50,13 @@ Page({
         }
     },
     onShow() {
+        // 如果时间超过了, 就切换回其他的页面
+        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
+            $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
+            if (dbItem && dbItem.db) dbItem.db = null
+            wx.reLaunch({ url: './../../index/index' })
+            return
+        }
         // 设置数据库
         if (db) {
             // 清理添加的内容
@@ -99,7 +106,7 @@ Page({
     /**
      * 设置 组 的条目, 还有 列表条目 的列表
      * @param groups 
-     * @param addGroupList 
+     * @param addGroupList 是否添加到左侧的菜单中
      */
     setGroup(group: Group, addGroupList: boolean = false) {
         // 要绕过的UUID, 一般用于垃圾桶
@@ -150,7 +157,8 @@ Page({
                         groupInfo['name'] = '回收站'
                     }
                     this.data.groupList.push(groupInfo)
-                } else {
+                }
+                if (groupItem.uuid.id !== this.data.recycleUUID) {
                     const entryInfo: any = {
                         isGroup: true,
                         uuid: groupItem.uuid.id,
@@ -295,22 +303,18 @@ Page({
     },
     /** 添加一条记录 */
     btAddItem(e: any) {
-        $g.log(e)
+        $g.g.app.timeMouse = Date.now()
         let type: string = String(e.currentTarget.dataset.type)
         wx.navigateTo({
-            url: './../entry/entry?type=add&infotype=bank'
+            url: './../entry/entry?type=add&infotype=' + type
         })
     },
     btEndAdd(e: any) {
-        this.setData({ openWinIcon: true })
-        // wx.navigateTo({
-        //     url: './../entry/entry?type=add'
-        // })
+        this.setData({ openWinSelectType: true })
     },
     btShowDbList(e: any) {
-        wx.navigateTo({
-            url: './../dblist/dblist'
-        })
+        $g.g.app.timeMouse = Date.now()
+        wx.navigateTo({ url: './../dblist/dblist' })
     },
     btFinance(e: any) {
         wx.showModal({
@@ -327,6 +331,7 @@ Page({
         })
     },
     btUser(e: any) {
+        $g.g.app.timeMouse = Date.now()
         wx.navigateTo({
             url: "./../../user/usercenter/usercenter"
         })

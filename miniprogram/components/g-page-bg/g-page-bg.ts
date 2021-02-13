@@ -1,4 +1,5 @@
 import { $g } from "../../frame/speed.do"
+import { DBItem, DBLib } from "../../lib/g-data-lib/db";
 
 Component({
     options: {},
@@ -12,22 +13,26 @@ Component({
     lifetimes: {
         /** 实例进入页面节点树时执行),可以setData */
         attached() {
-            $g.log('[组件][g-page-bg]创建');
+            // $g.log('[组件][g-page-bg]创建');
             wx.onThemeChange(this.themeChange.bind(this));
         },
-        /** 视图层布局完成后执行 */
-        ready() { },
-        /** 实例被移动到节点树另一个位置时执行 */
-        moved() { },
         /** 实例被从页面节点树移除时执行 */
         detached() {
             wx.offThemeChange(this.themeChange);
         },
-        /** 组件方法抛出错误时执行 */
-        error() { },
     },
     /** 组件所在页面的生命周期函数 */
-    pageLifetimes: {},
+    pageLifetimes: {
+        hide() {
+            $g.log('[组件][g-page-bg]隐藏', new Date().toLocaleString())
+            if ($g.g.dbLib) {
+                const dbItem: DBItem | null = $g.g.dbLib.selectItem
+                if (dbItem && dbItem.db) {
+                    $g.g.app.timeMouse = Date.now()
+                }
+            }
+        }
+    },
     /** 组件的方法列表 */
     methods: {
         themeChange(e) {

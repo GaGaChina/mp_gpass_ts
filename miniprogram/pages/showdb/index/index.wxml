@@ -1,6 +1,6 @@
 <g-page-bg></g-page-bg>
 <g-page-top canBack="{{false}}" title="{{dbEmpty?'欢迎添加条目':dbName}}"></g-page-top>
-<g-sub-select-type open="{{openWinSelectType}}"></g-sub-select-type>
+<g-sub-select-type open="{{ openWinSelectType }}"></g-sub-select-type>
 <view class="full_page" style="height:{{fullPageHeight}}rpx">
     <!-- 没条目 -->
     <view wx:if="{{dbEmpty}}" style="height:{{centerPageHeight}}rpx" class="first">

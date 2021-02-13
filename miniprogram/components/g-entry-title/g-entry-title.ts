@@ -39,9 +39,11 @@ Component({
     methods: {
         /** 显示IOCN图标的窗口 */
         btSelectIcon(e: any) {
+            $g.g.app.timeMouse = Date.now()
             this.setData({ openWinIcon: true })
         },
         changeIcon(e: any) {
+            $g.g.app.timeMouse = Date.now()
             let index: number = Number(e.detail.index)
             if (this.data.icon !== index) {
                 this.setData({
@@ -53,6 +55,7 @@ Component({
         },
         inputValChange(e: any) {
             if (this.data.title !== e.detail.value) {
+                $g.g.app.timeMouse = Date.now()
                 this.data.title = e.detail.value
                 this.triggerEvent('change', { icon: this.data.icon, title: this.data.title });
             }

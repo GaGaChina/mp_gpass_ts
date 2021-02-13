@@ -18,21 +18,24 @@
                 <view>修改时间 : {{timeChange}}</view>
                 <view>使用空间 : {{fileSize}}</view>
                 <button bindtap="btOpen"><i class="fa fa-envelope-open-o"></i> 打　　开</button>
-                <button bindtap="btChnagePass"><i class="fa fa-envelope-open-o"></i> 修改密码</button>
-                <button wx:if="{{facial}}" bindtap="btChnageFacial"><i class="fa fa-envelope-open-o"></i>
+                <button wx:if="{{ isOpen }}" bindtap="btClose"><i class="fa fa-envelope-o"></i> 注　　销</button>
+                <block wx:if="{{ DEBUG }}">
+                    <button bindtap="btChnagePass"><i class="fa fa-envelope-open-o"></i> 修改密码</button>
+                </block>
+                <button wx:if="{{facial}}" bindtap="btChangeFacial"><i class="fa fa-envelope-open-o"></i>
                     {{isFacial?'关闭':'开启'}}人脸解锁</button>
-                <button wx:if="{{fingerPrint}}" bindtap="btChnageFingerPrint"><i class="fa fa-envelope-open-o"></i>
+                <button wx:if="{{fingerPrint}}" bindtap="btChangeFingerPrint"><i class="fa fa-envelope-open-o"></i>
                     {{isFingerPrint?'关闭':'开启'}}指纹解锁</button>
-                <button bindtap="btSaveKdbx"><i class="fa fa-envelope-open-o"></i> 导出:Kdbx</button>
+                <button bindtap="btSaveKdbx"><i class="fa fa-file-archive-o"></i> 导出:Kdbx</button>
                 <button bindtap="btSaveXML"><i class="fa fa-envelope-open-o"></i> 导出:XML</button>
                 <block wx:if="{{ DEBUG }}">
-                    <button bindtap="btSaveTXT"><i class="fa fa-envelope-open-o"></i> 导出:TXT</button>
+                    <button bindtap="btSaveTXT"><i class="fa fa-file-text-o"></i> 导出:TXT</button>
                     <button bindtap="btSaveCSV"><i class="fa fa-envelope-open-o"></i> 导出:CSV</button>
-                    <button bindtap="btSaveXLS"><i class="fa fa-envelope-open-o"></i> 导出:Excal</button>
+                    <button bindtap="btSaveXLS"><i class="fa fa-file-excel-o"></i> 导出:Excal</button>
                     <button bindtap="btSaveMD"><i class="fa fa-envelope-open-o"></i> 导出:MD</button>
                 </block>
                 <button bindtap="btClearTemp"><i class="fa fa-envelope-open-o"></i> 清理导出临时文件</button>
-                <button class="red" bindtap="btDel"><i class="fa fa-envelope-open-o"></i> 删　　除</button>
+                <button class="red" bindtap="btDel"><i class="fa fa-trash"></i> 删　　除</button>
             </view>
         </view>
     </scroll-view>

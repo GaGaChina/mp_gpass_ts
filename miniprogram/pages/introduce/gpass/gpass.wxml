@@ -8,6 +8,12 @@
         《密码档案》是款依托于 KDBX 开源加密格式的帐号管理小程序, 可导入导出 .kdbx 文件, 这种格式管理软件非常丰富。
     </view>
     <view class="title">
+        注意事项
+    </view>
+    <view class="info">
+        Kdbx 文件第一次导入, 将抽取内部的附件, 然后AES加密另存在文件夹中, 历史记录将被清除, 后面打开文件会更快!
+    </view>
+    <view class="title">
         安全性
     </view>
     <view class="info">

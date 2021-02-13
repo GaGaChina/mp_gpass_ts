@@ -1,7 +1,7 @@
 <g-sub-awesome-icon open="{{openWinIcon}}" selectName="{{info.icon}}" bind:change="changeIcon"></g-sub-awesome-icon>
 <block wx:if="{{type === 'show'}}">
     <!-- 值为密码的时候 -->
-    <block wx:if="{{ valuetype === 'pv' }}">
+    <block wx:if="{{ info.valuetype === 'pv' }}">
         <view class="showpv">
             <view class="showpv_left">
                 <view class="showpv_top">
@@ -24,7 +24,7 @@
                 <view class="show_icon"><i class="fa fa-{{info.icon}}"></i></view>
                 <view class="show_key">{{info.keyname}}</view>
             </view>
-            <button class="show_value bt_clear" selectable="true" bindtap="btCopy">{{info.value}}</button>
+            <button class="show_value bt_clear" selectable="true" bindtap="btCopy"><text>{{info.value}}</text></button>
         </view>
     </block>
     <view wx:if="{{showborder}}" class="show_border"></view>
@@ -41,7 +41,7 @@
             </block>
             <!-- 键值 -->
             <block wx:if="{{ info.changekey }}">
-                <input class="edit_key{{info.warning?' edit_key_warning':''}}" type="text" placeholder="请输入字段名称"
+                <input class="edit_key{{info.warningkey?' edit_key_warning':''}}" type="text" placeholder="请输入字段名称"
                     value="{{info.key}}" bindinput="inputKeyChange" />
             </block>
             <block wx:else>

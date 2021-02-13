@@ -12,7 +12,7 @@ App<IAppOption>({
             urlApi: '',
             urlImg: '',
             id: '',
-            ver: '0.0.1',
+            ver: '1.0.0',
             local: false,
             DEBUG: true,
             test_heart: 100,
@@ -27,7 +27,7 @@ App<IAppOption>({
             darktype: 0,
             darkmode: true,
             timeMouse: Date.now(),
-            timeMouseClose: 60000,
+            timeMouseClose: 300000,
         },
         systemInfo: WXSystemInfo.getSync(),
         user: {

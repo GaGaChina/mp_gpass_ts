@@ -1,15 +1,21 @@
 <g-page-bg></g-page-bg>
 <g-page-top canBack="{{true}}" title="个人中心"></g-page-top>
-<view class="head_view">
-    <image src="{{ avatarUrl }}" mode="cover"></image>
+<view wx:if="{{ hasWXUser }}" class="head_view">
+    <image src="{{ userHead }}" mode="cover"></image>
     <text class="head_txt">{{ nickName }}</text>
 </view>
+<button wx:else class="head_view" open-type="getUserInfo" bindgetuserinfo="btGetUserInfo">
+    <image src="" mode="cover"></image>
+    <text class="head_txt">请登录</text>
+</button>
+
 <view class="bt_list">
     <navigator class="bt_item" url="./../../introduce/study/study">快速入门</navigator>
     <navigator class="bt_item" url="./../../introduce/gpass/gpass">软件介绍</navigator>
     <button class="bt_item" bindtap="btClearClipboard">清空剪切板</button>
     <button class="bt_item" open-type="share">分享APP</button>
-    
+    <button class="bt_item" open-type="contact">联系作者</button>
+    <button class="bt_item">超时加锁:5分钟</button>
     <view class="bt_item">版本 : {{ version }}</view>
     <!-- <view>密码迁移</view>
     <view></view>

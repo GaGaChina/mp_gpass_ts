@@ -72,12 +72,12 @@
 }
 
 .showpv_left {
-    width: 700rpx;
+    width: 670rpx;
 }
 
 .showpv_top {
     display: flex;
-    width: 620rpx;
+    width: 590rpx;
     min-height: 40rpx;
     margin-left: 40rpx;
     margin-right: 40rpx;
@@ -88,7 +88,7 @@
 
 .showpv_value {
     display: block;
-    width: 620rpx;
+    width: 590rpx;
     color: #fff;
     min-height: 46rpx;
     margin-left: 40rpx;
@@ -101,13 +101,13 @@
 }
 
 .showpv_right {
-    width: 50rpx;
+    width: 80rpx;
 }
 
 .showpv_showps {
     display: block;
     position: relative;
-    width: 50rpx;
+    width: 80rpx;
     height: 100%;
 }
 

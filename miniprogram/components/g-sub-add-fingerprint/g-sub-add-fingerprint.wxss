@@ -1,0 +1,107 @@
+@import "./../../fonts/awesome.wxss";
+
+.root {
+    position: fixed;
+    width: 750rpx;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.center {
+    position: relative;
+    width: 690rpx;
+    margin: 0 auto;
+}
+
+.top {
+    position: relative;
+    display: flex;
+    width: 690rpx;
+    height: 75rpx;
+}
+
+.center_bg {
+    width: 690;
+    border-radius: 30rpx;
+    background: linear-gradient(180deg, #0d3376, #010e38);
+}
+
+.bigicon {
+    position: absolute;
+    left: 270rpx;
+    top: -20rpx;
+}
+
+.bigicon>i {
+    width: 150rpx;
+    height: 150rpx;
+    font-size: 72rpx;
+    line-height: 150rpx;
+    background: #9ce72a;
+    border-radius: 50%;
+    text-align: center;
+    color: #001044;
+}
+
+.bt_close {
+    position: absolute;
+    right: 10rpx;
+    top: 25rpx;
+}
+
+.bt_close>i {
+    width: 100rpx;
+    height: 100rpx;
+    font-size: 72rpx;
+    line-height: 100rpx;
+    border-radius: 50%;
+    text-align: center;
+    color: #fff;
+}
+
+.title {
+    font-size: 72rpx;
+    padding-top: 70rpx;
+    text-align: center;
+    color: #9af6fd;
+}
+
+.info {
+    font-size: 42rpx;
+    text-align: center;
+    color: #ccc;
+}
+
+
+.bt_ok {
+    width: 580rpx;
+    height: 75rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 0;
+    border: 1px solid #e9d592;
+    line-height: 75rpx;
+    margin: 0 auto;
+    margin-top: 50rpx;
+    margin-bottom: 20rpx;
+    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+}
+
+.bt_no {
+    width: 580rpx;
+    height: 75rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #fff;
+    line-height: 75rpx;
+    margin: 0 auto;
+}
+
+.close_view {
+    width: 750rpx;
+}

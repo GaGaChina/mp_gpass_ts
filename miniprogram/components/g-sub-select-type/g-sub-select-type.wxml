@@ -6,10 +6,11 @@
             <view class="close">关闭 <i class="fa fa-times"></i></view>
         </view>
     </view>
-    <scroll-view scroll-y enable-flex class="list" style="height:{{listHeight}}rpx;">
+    <scroll-view scroll-y enable-flex class="list" style="height:{{ listHeight }}rpx;">
         <block wx:for="{{typeList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-            <button class="bt_item" bindtap="btSelect" data-index="{{ index }}"><i
-                    class="fa fa-{{item.iconstr}}"></i>{{item.title}}</button>
+            <button class="bt_item" bindtap="btSelect" data-index="{{ index }}"><i class="fa fa-{{ item.iconstr }}"></i>
+                <view>{{ item.title }}</view>
+            </button>
         </block>
     </scroll-view>
     <view class="end" style="height:{{endHeight}}rpx;" bindtap="btClose"></view>

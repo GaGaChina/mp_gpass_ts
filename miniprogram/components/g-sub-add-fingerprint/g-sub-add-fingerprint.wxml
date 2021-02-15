@@ -1,0 +1,17 @@
+<view wx:if="{{open}}" class="root" style="height:{{ sceneHeight }}rpx;">
+    <view class="close_view" style="height:{{ topHeight }}rpx;"></view>
+    <view class="center" style="height:{{ centerHeight }}rpx;">
+        <view class="top">
+            <view class="bigicon"><i class="fa fa-hand-o-up"></i></view>
+            <button class="bt_close" bindtap="btClose"><i class="fa fa-times-circle-o"></i></button>
+        </view>
+        <view class="center_bg">
+            <view class="title">指纹解锁</view>
+            <view class="info">启用指纹自动解锁</view>
+            <view class="info">设置 : 档案 → 操作 → 开启/关闭</view>
+            <button class="bt_ok" bindtap="btOpen">启用指纹解锁</button>
+            <button class="bt_no" bindtap="btClose">暂不启用</button>
+        </view>
+    </view>
+    <view class="close_view" style="height:{{ endHeight }}rpx;"></view>
+</view>

@@ -54,8 +54,8 @@
 .list {
     display: flex;
     box-sizing: border-box;
-    width: 630rpx;
-    margin-left: 60rpx;
+    width: 690rpx;
+    margin-left: 30rpx;
     padding-top: 30rpx;
     padding-bottom: 30rpx;
     flex-wrap: wrap;
@@ -64,32 +64,31 @@
 
 .bt_item {
     display: flex;
-    margin: 10rpx;
-    width: 190rpx;
-    height: 190rpx;
-    border-radius: 50rpx;
+    width: 150rpx;
+    height: 170rpx;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    background: linear-gradient(180deg, #04133c, #010928);
-    color: #fff;
-}
-
-.bt_item>button>i {
-    margin-top: 80rpx;
-    height: 80rpx;
-    font-size: 60rpx;
-    color: #fff;
-}
-
-.bt_item:hover {
-    background: linear-gradient(180deg, #04133c, #010928);
 }
 
 .bt_item>i {
-    font-size: 55rpx;
-    line-height: 90rpx;
+    width: 100rpx;
+    height: 100rpx;
+    margin-top: 15rpx;
+    font-size: 60rpx;
+    line-height: 100rpx;
     text-align: center;
+    color: #001044;
+    border-radius: 50%;
+    background: #9ce72a;
+}
+
+.bt_item>view{
+    width: 150rpx;
+    height: 45rpx;
+    margin-top: 10rpx;
+    font-size: 32rpx;
+    line-height: 45rpx;
     color: #fff;
 }
 

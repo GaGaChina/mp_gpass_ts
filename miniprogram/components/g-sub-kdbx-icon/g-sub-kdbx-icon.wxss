@@ -8,7 +8,7 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
 }
 
 .top {
@@ -16,7 +16,7 @@
     width: 750rpx;
 }
 
-.top_line{
+.top_line {
     position: absolute;
     bottom: 0;
     left: 60rpx;
@@ -72,14 +72,15 @@
     margin: 10rpx;
 }
 
-.bt_icon:hover{
+.bt_icon:hover {
     background: #9ce72a;
 }
 
-.bt_icon_select{
+.bt_icon_select {
     background: #fd720d;
 }
-.bt_icon_select:hover{
+
+.bt_icon_select:hover {
     background: #fd720d;
 }
 
@@ -90,6 +91,6 @@
     color: #001044;
 }
 
-.end{
+.end {
     width: 750rpx;
 }

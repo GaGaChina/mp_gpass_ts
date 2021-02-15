@@ -20,7 +20,7 @@
                 <button bindtap="btOpen"><i class="fa fa-envelope-open-o"></i> 打　　开</button>
                 <button wx:if="{{ isOpen }}" bindtap="btClose"><i class="fa fa-envelope-o"></i> 注　　销</button>
                 <block wx:if="{{ DEBUG }}">
-                    <button bindtap="btChnagePass"><i class="fa fa-envelope-open-o"></i> 修改密码</button>
+                    <button bindtap="btChangePass"><i class="fa fa-envelope-open-o"></i> 修改密码</button>
                 </block>
                 <button wx:if="{{facial}}" bindtap="btChangeFacial"><i class="fa fa-envelope-open-o"></i>
                     {{isFacial?'关闭':'开启'}}人脸解锁</button>

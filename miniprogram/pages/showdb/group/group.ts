@@ -172,6 +172,7 @@ Page({
         }
         return !haveCheck
     },
+    /** 按钮 : 保存修改 */
     btSave(e: any) {
         $g.g.app.timeMouse = Date.now()
         $g.log('[group][Save]', this.data.title)
@@ -184,6 +185,7 @@ Page({
         group.icon = this.data.icon
         group.name = this.data.title
         dbItem.saveFileAddStorage()
+        dbItem.infoRefresh = true
         this.setData({ pagetype: 'show' })
     },
     btEdit(e: any) {
@@ -198,6 +200,7 @@ Page({
             title: info.title
         })
     },
+    /** 按钮 : 删除 组 */
     btDel(e: any) {
         $g.g.app.timeMouse = Date.now()
         const that = this
@@ -228,6 +231,7 @@ Page({
                 dbItem.selectGroup = null
             }
             await dbItem.saveFileAddStorage()
+            dbItem.infoRefresh = true
             wx.navigateBack();
         }
     },

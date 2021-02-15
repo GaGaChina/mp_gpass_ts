@@ -1,4 +1,5 @@
 import { $g } from "../../../frame/speed.do"
+import { WXSoterAuth } from "../../../frame/wx/wx.soter.auth"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
 import { KdbxIcon } from "../../../lib/g-data-lib/kdbx.icon"
@@ -31,25 +32,26 @@ Page({
         itemList: new Array<any>(),
         /** 条目现在选中的索引 index */
         itemIndex: 0,
-        vtabsTitle: [{ title: '标题' }, { title: '标题1' }, { title: '标题3' }]
+        vtabsTitle: [{ title: '标题' }, { title: '标题1' }, { title: '标题3' }],
+        /** 开启人脸识别 */
+        openFacial: false,
+        openFacialPrint: false,
+
     },
     onLoad() {
-        const scene: DataScene = $g.g.app.scene
-        const fullHeight: number = scene.winHeight - scene.topBarHeight - scene.topBarTop
-        const centerHeight: number = fullHeight - 160
-        this.setData({
-            fullPageHeight: fullHeight,
-            centerPageHeight: centerHeight
-        })
+        this.loadScene()
         // 设置默认的
         dbLib = $g.g.dbLib
         const select: any = dbLib.selectItem
         if (select) {
             dbItem = select
             if (dbItem.db) db = dbItem.db
+            dbItem.infoRefresh = true
         }
+
     },
     onShow() {
+        this.loadScene()
         // 如果时间超过了, 就切换回其他的页面
         if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
             $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
@@ -60,13 +62,14 @@ Page({
         // 设置数据库
         if (db) {
             // 清理添加的内容
+            const _db: any = db
             if (dbItem.addEntry) {
-                db.remove(dbItem.addEntry)
+                _db.move(dbItem.addEntry, null)
                 dbItem.addEntry = null
             }
             // 清理添加的内容
             if (dbItem.addGroup) {
-                db.remove(dbItem.addGroup)
+                _db.move(dbItem.addGroup, null)
                 dbItem.addEntry = null
             }
             this.setData({
@@ -74,8 +77,38 @@ Page({
                 dbName: dbItem.name
             })
             // $g.log('操作的库 : ', db)
-            this.setKdbx(db)
+            if (dbItem.infoRefresh) {
+                this.setKdbx(db)
+                dbItem.infoRefresh = false
+            }
+            // 自动开启指纹解锁和人脸解锁
+            if (this.data.dbEmpty === false) {
+                if (WXSoterAuth.facial) {
+                    if (dbItem.pass.facial === '') {
+                        if (--$g.g.app.timesShowFinger < 0) {
+                            $g.g.app.timesShowFinger = 10
+                            this.setData({ openFacial: true })
+                        }
+                    }
+                } else if (WXSoterAuth.fingerPrint) {
+                    if (dbItem.pass.fingerPrint === '') {
+                        if (--$g.g.app.timesShowFinger < 0) {
+                            $g.g.app.timesShowFinger = 10
+                            this.setData({ openFacialPrint: true })
+                        }
+                    }
+                }
+            }
         }
+    },
+    loadScene() {
+        const scene: DataScene = $g.g.app.scene
+        const fullHeight: number = scene.winHeight - scene.topBarHeight - scene.topBarTop
+        const centerHeight: number = fullHeight - 160
+        this.setData({
+            fullPageHeight: fullHeight,
+            centerPageHeight: centerHeight
+        })
     },
     onUnload() {
         $g.log('[page][index]清理')
@@ -88,10 +121,10 @@ Page({
     setKdbx(db: Kdbx) {
         this.data.groupList.length = 0
         this.data.itemList.length = 0
-        if (dbItem.selectGroup === null) {
+        if (dbItem.displayGroup === null) {
             const groups: Group[] = db.groups
             $g.log('添加节点信息 : ', groups[0])
-            dbItem.selectGroup = groups[0]
+            dbItem.displayGroup = groups[0]
         }
         const meta: any = db.meta
         if (meta && meta.recycleBinUuid) {
@@ -100,7 +133,7 @@ Page({
             this.data.recycleUUID = ''
         }
         $g.log('回收站ID:', this.data.recycleUUID)
-        this.setGroup(dbItem.selectGroup, true)
+        this.setGroup(dbItem.displayGroup, true)
         this.setData({
             groupList: this.data.groupList,
             itemList: this.data.itemList,
@@ -116,6 +149,7 @@ Page({
         let outUUID: string = ''
         if (addGroupList) {
             if (group.uuid.id) {
+                dbItem.displayGroup = group
                 dbItem.selectGroup = group
             }
             // 查看是否需要添加 返回上级 返回根目录
@@ -223,6 +257,7 @@ Page({
             wx.showToast({ title: '未找到对应子节点', icon: 'none', mask: false })
         }
     },
+    /** 按钮 : 展示 条目 或 组 */
     btShowUUID(e: any) {
         $g.log(e)
         let uuid: string = String(e.currentTarget.dataset.uuid)
@@ -296,14 +331,12 @@ Page({
         if (l) {
             for (let i = 0; i < l; i++) {
                 const item = this.data.itemList[i]
-                if (item.uuid === uuid) {
-                    return item
-                }
+                if (item.uuid === uuid) return item
             }
         }
         return null
     },
-    /** 添加一条记录 */
+    /** 按钮 : 添加一条记录 */
     btAddItem(e: any) {
         $g.g.app.timeMouse = Date.now()
         let type: string = String(e.currentTarget.dataset.type)
@@ -311,13 +344,16 @@ Page({
             url: './../entry/entry?type=add&infotype=' + type
         })
     },
+    /** 按钮 : 弹出添加类型界面 */
     btEndAdd(e: any) {
         this.setData({ openWinSelectType: true })
     },
+    /** 按钮 : 进入仓库管理 */
     btShowDbList(e: any) {
         $g.g.app.timeMouse = Date.now()
         wx.navigateTo({ url: './../dblist/dblist' })
     },
+    /** 按钮 : 进入财务系统 */
     btFinance(e: any) {
         wx.showModal({
             title: '开发中',
@@ -325,6 +361,7 @@ Page({
             showCancel: false
         })
     },
+    /** 按钮 : 进入待办 */
     btDaily(e: any) {
         wx.showModal({
             title: '开发中',
@@ -332,6 +369,7 @@ Page({
             showCancel: false
         })
     },
+    /** 按钮: 进入用户中心 */
     btUser(e: any) {
         $g.g.app.timeMouse = Date.now()
         wx.navigateTo({

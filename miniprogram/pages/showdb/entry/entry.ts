@@ -333,12 +333,12 @@ Page({
                 break;
             case 'Notes':
                 keyname = '备　注'
-                icon = 'key'
+                icon = 'book'
                 valuetype = 'txt'
                 break;
             case 'URL':
                 keyname = '网　址'
-                icon = 'key'
+                icon = 'globe'
                 break
         }
         if (entry.fields && $g.hasKey(entry.fields, key)) {
@@ -526,6 +526,7 @@ Page({
         }
         entry.fields['GKeyValue'] = JSON.stringify(gkv)
         dbItem.saveFileAddStorage()
+        dbItem.infoRefresh = true
         this.setData({ pagetype: 'show' })
         this.onShow()
     },
@@ -571,6 +572,7 @@ Page({
                 dbItem.selectEntry = null
             }
             await dbItem.saveFileAddStorage()
+            dbItem.infoRefresh = true
             wx.navigateBack();
         }
     },

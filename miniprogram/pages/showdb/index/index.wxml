@@ -1,9 +1,11 @@
 <g-page-bg></g-page-bg>
 <g-page-top canBack="{{false}}" title="{{dbEmpty?'欢迎添加条目':dbName}}"></g-page-top>
 <g-sub-select-type open="{{ openWinSelectType }}"></g-sub-select-type>
-<view class="full_page" style="height:{{fullPageHeight}}rpx">
+<g-sub-add-faceid open="{{ openFacial }}"></g-sub-add-faceid>
+<g-sub-add-fingerprint open="{{ openFacialPrint }}"></g-sub-add-fingerprint>
+<view class="full_page" style="height:{{ fullPageHeight }}rpx">
     <!-- 没条目 -->
-    <view wx:if="{{dbEmpty}}" style="height:{{centerPageHeight}}rpx" class="first">
+    <view wx:if="{{ dbEmpty }}" style="height:{{ centerPageHeight }}rpx" class="first">
         <view class="first_title">添加您的第一个条目</view>
         <view class="first_node">密码、银行卡、文档和私密笔记始终触手可及</view>
         <view class="first_item">
@@ -59,7 +61,7 @@
             </scroll-view>
         </view>
     </view>
-
+    <!-- 下面的菜单 -->
     <view class="end_bar">
         <view wx:if="{{!dbEmpty}}" class="end_bg"></view>
         <view class="end_list">

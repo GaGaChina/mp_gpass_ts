@@ -141,7 +141,7 @@ Page({
             }
         })
     },
-    async btChnagePass(e: any) {
+    async btChangePass(e: any) {
         if (!this.inputPass()) {
             if (dbItem.db) {
                 const db: Kdbx = dbItem.db
@@ -172,8 +172,7 @@ Page({
                         if (WXSoterAuth.fingerPrint === false || dbItem.pass.fingerPrint !== '') {
                             dbItem.pass.pv = null
                         }
-                        const dbLib: DBLib = $g.g.dbLib
-                        dbLib.storageSaveThis()
+                        $g.g.dbLib.storageSaveThis()
                         this.setData({ isFacial: true })
                     } else {
                         wx.showToast({ title: '加密失败!', icon: 'none', mask: false })
@@ -204,8 +203,7 @@ Page({
                         if (WXSoterAuth.facial === false || dbItem.pass.facial !== '') {
                             dbItem.pass.pv = null
                         }
-                        const dbLib: DBLib = $g.g.dbLib
-                        dbLib.storageSaveThis()
+                        $g.g.dbLib.storageSaveThis()
                         this.setData({ isFingerPrint: true })
                     } else {
                         wx.showToast({ title: '加密失败!', icon: 'none', mask: false })

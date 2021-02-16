@@ -198,6 +198,34 @@
     background: #202435;
 }
 
+.edit_pass_list {
+    display: flex;
+}
+
+.edit_pass {
+    display: block;
+    width: 520rpx;
+    height: 75rpx;
+    color: #fff;
+    padding: 20rpx;
+    box-sizing: border-box;
+    line-height: 46rpx;
+    margin-left: 40rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    border: 1px solid #9b9b9d;
+    background: #202435;
+}
+
+.edit_pass_bt {
+    width: 75rpx;
+    height: 75rpx;
+    font-size: 36rpx;
+    line-height: 75rpx;
+    border: 1px solid #9b9b9d;
+    color: #fff;
+}
+
 .edit_txt {
     display: block;
     box-sizing: border-box;

@@ -40,6 +40,8 @@ Component({
     data: {
         /** 是否显示选择ICON的窗口 */
         openWinIcon: false,
+        /** 弹出修改密码窗口 */
+        openWinPass: false,
         /** 现在是否显示出密码 */
         showpass: false,
     },
@@ -104,12 +106,26 @@ Component({
             $g.g.app.timeMouse = Date.now()
             this.setData({ openWinIcon: true })
         },
+        btOpenPass() {
+            $g.g.app.timeMouse = Date.now()
+            this.setData({ openWinPass: true })
+        },
         changeIcon(e: any) {
             $g.g.app.timeMouse = Date.now()
             // $g.log('[组件][Entry-Field]changeIcon', e)
             this.data.info.icon = String(e.detail.name)
             this.setData({ info: this.data.info })
             this.triggerEvent('change', this.data.info)
+        },
+        /** 组件 Creat-Pass 传递密码 */
+        setPass(e: any) {
+            $g.log('设置密码结果 : ', e)
+            $g.g.app.timeMouse = Date.now()
+            if (this.data.info.value !== String(e.detail.pass)) {
+                this.data.info.value = String(e.detail.pass)
+                this.setData({ info: this.data.info })
+                this.triggerEvent('change', this.data.info)
+            }
         },
         inputKeyChange(e: any) {
             if (this.data.info.key !== e.detail.value) {

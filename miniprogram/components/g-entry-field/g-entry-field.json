@@ -1,6 +1,7 @@
 {
     "component": true,
     "usingComponents": {
-        "g-sub-awesome-icon": "./../g-sub-awesome-icon/g-sub-awesome-icon"
+        "g-sub-awesome-icon": "./../g-sub-awesome-icon/g-sub-awesome-icon",
+        "g-sub-creat-pass": "./../g-sub-creat-pass/g-sub-creat-pass"
     }
 }

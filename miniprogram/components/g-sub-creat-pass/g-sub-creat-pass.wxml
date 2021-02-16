@@ -1,0 +1,52 @@
+<view wx:if="{{ open }}" class="root" style="height:{{ sceneHeight }}rpx;">
+    <view class="close_view" style="height:{{ topHeight }}rpx;" bindtap="btClose"></view>
+    <view class="center" style="height:{{ centerHeight }}rpx;">
+        <view class="top">
+            <view class="bigicon"><i class="fa fa-key"></i></view>
+            <button class="bt_close" bindtap="btClose"><i class="fa fa-times-circle-o"></i></button>
+        </view>
+        <view class="center_bg">
+
+            <input class="input_pass" type="text" placeholder="密码展示区" value="{{ pass }}" bindinput="inputValChange" />
+
+            <view class="view_item">
+                <text>密码长度 : {{ passLength }}</text>
+                <slider min="3" max="32" model:value="{{ passLength }}" bindchanging="infoChange" />
+            </view>
+            <checkbox-group class="view_list" bindchange="infoChange">
+                <view class="view_list_item">
+                    <label>
+                        <checkbox model:checked="{{ passABC }}" /> ABC
+                    </label>
+                </view>
+                <view class="view_list_item">
+                    <label>
+                        <checkbox model:checked="{{ passMinABC }}" /> abc
+                    </label>
+                </view>
+                <view class="view_list_item">
+                    <label>
+                        <checkbox model:checked="{{ pass123 }}" /> 123
+                    </label>
+                </view>
+                <view class="view_list_item">
+                    <label>
+                        <checkbox model:checked="{{ passTe }}" /> !@#
+                    </label>
+                </view>
+                <view class="view_list_item">
+                    <label>
+                        <checkbox model:checked="{{ passKuoHao }}" /> ({< </label>
+                </view>
+                <view class="view_list_item">
+                    <label>
+                        <checkbox model:checked="{{ passOo }}" /> 0Oo
+                    </label>
+                </view>
+            </checkbox-group>
+            <button class="bt_ok" bindtap="creatPass">生成密码</button>
+            <button class="bt_ok" bindtap="btUsePass">使用密码</button>
+        </view>
+    </view>
+    <view class="close_view" style="height:{{ endHeight }}rpx;" bindtap="btClose"></view>
+</view>

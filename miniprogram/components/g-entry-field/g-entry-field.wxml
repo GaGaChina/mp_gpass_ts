@@ -1,4 +1,5 @@
 <g-sub-awesome-icon open="{{openWinIcon}}" selectName="{{info.icon}}" bind:change="changeIcon"></g-sub-awesome-icon>
+<g-sub-creat-pass open="{{ openWinPass }}" bind:pass="setPass"></g-sub-creat-pass>
 <block wx:if="{{type === 'show'}}">
     <!-- 值为密码的时候 -->
     <block wx:if="{{ info.valuetype === 'pv' }}">
@@ -55,8 +56,13 @@
         </block>
         <!-- 值 : 密码 -->
         <block wx:elif="{{ info.valuetype === 'pv' }}">
-            <input class="edit_string" password type="text" placeholder="请输入字段内容" value="{{info.value}}"
-                bindinput="inputValChange" />
+            <view class="edit_pass_list">
+                <input class="edit_pass" password="{{ !showpass }}" type="text" placeholder="请输入字段内容"
+                    value="{{info.value}}" bindinput="inputValChange" /><button class="edit_pass_bt"
+                    bindtap="btShowPass"><i class="fa fa-{{ showpass?'eye':'eye-slash' }}"></i></button><button
+                    class="edit_pass_bt" bindtap="btOpenPass"><i class="fa fa-refresh"></i></button>
+            </view>
+
         </block>
         <!-- 值 : 多行文本 -->
         <block wx:elif="{{ info.valuetype === 'txt' }}">

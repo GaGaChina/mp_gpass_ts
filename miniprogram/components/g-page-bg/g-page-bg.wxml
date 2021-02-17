@@ -1,1 +1,2 @@
-<view class="{{ darkmode?'bg_dark':'bg' }}"></view>
+<!-- {{ darkmode?'bg_dark':'bg' }} -->
+<view class="bg_dark"></view>

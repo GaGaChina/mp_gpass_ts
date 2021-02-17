@@ -1,4 +1,4 @@
-@import "./../../fonts/awesome.wxss";
+@import "./../../app.wxss";
 
 .root {
     position: fixed;
@@ -52,23 +52,17 @@
 }
 
 .list {
-    display: flex;
+    width: 680rpx;
     box-sizing: border-box;
-    width: 690rpx;
-    margin-left: 30rpx;
+    margin-left: 35rpx;
     padding-top: 30rpx;
     padding-bottom: 30rpx;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
 }
 
 .bt_item {
-    display: flex;
-    width: 150rpx;
-    height: 170rpx;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+    display: inline-block;
+    width: 170rpx;
+    height: 190rpx;
 }
 
 .bt_item>i {
@@ -94,4 +88,28 @@
 
 .end {
     width: 750rpx;
+}
+
+.end_big {
+    position: absolute;
+    width: 190rpx;
+    height: 190rpx;
+    bottom: 20rpx;
+    left: 280rpx;
+}
+
+.end_big_icon {
+    margin-left: 20rpx;
+    width: 150rpx;
+    height: 150rpx;
+    background: #fd720d;
+    border-radius: 50%;
+}
+
+.end_big_text {
+    width: 150rpx;
+    font-size: 80rpx;
+    line-height: 150rpx;
+    text-align: center;
+    color: #001044;
 }

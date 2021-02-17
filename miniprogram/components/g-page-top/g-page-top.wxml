@@ -1,5 +1,6 @@
 <view class="top" style="height:{{topHeight}}rpx">
-    <view class="title {{darkmode?'title_dark':''}}">{{title}}</view>
+    <!-- darkmode?'title_dark':'' -->
+    <view class="title title_dark">{{title}}</view>
     <button wx:if="{{canBack}}" class="left bt_clear" bindtap="btBack">
         <view class="left_icon"><i class="fa fa-chevron-left"></i></view>
         <view class="left_text">返回</view>

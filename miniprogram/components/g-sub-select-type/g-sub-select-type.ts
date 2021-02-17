@@ -8,7 +8,6 @@ import { DBTemplate } from "./../../lib/g-data-lib/db.template";
  */
 Component({
     options: {
-        multipleSlots: true,
         styleIsolation: 'isolated',
     },
     /** 组件属性列表 properties和data指向同对象, 可定义函数 */
@@ -27,7 +26,7 @@ Component({
         /** 滚动区域高度 */
         listHeight: 0,
         /** 下面的留白 */
-        endHeight: 30,
+        endHeight: 210,
         /** 列表 */
         typeList: DBTemplate.list
     },

@@ -9,7 +9,6 @@ import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
  */
 Component({
     options: {
-        multipleSlots: true,
         styleIsolation: 'isolated',
     },
     /** 组件属性列表 properties和data指向同对象, 可定义函数 */

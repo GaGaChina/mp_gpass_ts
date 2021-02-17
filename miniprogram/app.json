@@ -23,7 +23,8 @@
             "root": "pages/introduce/",
             "pages": [
                 "gpass/gpass",
-                "study/study"
+                "study/study",
+                "version/version"
             ]
         }
     ],

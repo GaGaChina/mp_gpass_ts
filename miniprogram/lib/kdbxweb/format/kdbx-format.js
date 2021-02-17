@@ -35,6 +35,7 @@ KdbxFormat.prototype.load = function (data) {
     that.ctx = new KdbxContext({
         kdbx: kdbx
     });
+    $g.step.inJump('准备档案')
     return kdbx.credentials.ready.then(function () {
         // $g.log('[KdbxFormat]证书准备完毕')
         kdbx.header = KdbxHeader.read(stm, that.ctx);
@@ -60,6 +61,7 @@ KdbxFormat.prototype._loadV3 = function (stm) {
         // $g.log('[KdbxFormat]loadV3 解析XML:', xmlStr);
         kdbx.xml = XmlUtils.parse(xmlStr);
         return that._setProtectedValues().then(function () {
+            $g.step.inJumpSmall('解析档案文件')
             return kdbx._loadFromXml(that.ctx).then(function () {
                 $g.log('[KdbxFormat]XML 载入完毕')
                 return that._checkHeaderHashV3(stm).then(function () {
@@ -92,6 +94,7 @@ KdbxFormat.prototype._loadV4 = function (stm) {
                             $g.log('[KdbxFormat]loadV4 decryptData');
                             if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
                                 // $g.log('[KdbxFormat]loadV4 ungzip', data);
+                                $g.step.inJumpSmall('解压缩信息')
                                 data = pako.ungzip(data);
                             }
                             stm = new BinaryStream(ByteUtils.arrayToBuffer(data));
@@ -239,6 +242,7 @@ KdbxFormat.prototype._decryptXmlV3 = function (kdbx, stm) {
     $g.log('[KdbxFormat]decryptXmlV3');
     return that._getMasterKeyV3().then(function (masterKey) {
         $g.log('[KdbxFormat]decryptXmlV3 decryptData');
+        $g.step.inJumpSmall('解密档案信息')
         return that._decryptData(data, masterKey).then(function (data) {
             $g.log('[KdbxFormat]decryptXmlV3 zeroBuffer');
             ByteUtils.zeroBuffer(masterKey);
@@ -249,6 +253,7 @@ KdbxFormat.prototype._decryptXmlV3 = function (kdbx, stm) {
                 if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
                     // $g.log('[KdbxFormat]decryptXmlV3 ungzip 启动 : ', data);
                     // $g.log('[KdbxFormat]ungzip 启动')
+                    $g.step.inJumpSmall('解压缩档案')
                     data = pako.ungzip(data);
                     // $g.log('[KdbxFormat]ungzip 完毕')
                     // $g.log('[KdbxFormat]decryptXmlV3 ungzip 结束 : ', data);

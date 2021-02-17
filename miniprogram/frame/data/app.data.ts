@@ -138,8 +138,8 @@ export class AppData {
                 }
             }
             return o
-        } else if (keys.indexOf('.') !== -1) {
-            // 不带 . 如有 GD_ key 返回, 无返回 keys 的内容
+        } else if (keys.indexOf('.') === -1) {
+            // 不带 . 如有 GD_key 返回, 无返回 keys 的内容
             const info: WechatMiniprogram.GetStorageInfoSyncOption = wx.getStorageInfoSync();
             if (info.keys.indexOf('GD_' + keys) !== -1) {
                 key = 'GD_' + keys
@@ -148,7 +148,7 @@ export class AppData {
             }
             return this.storageGet(key)
         } else {
-            // 首先得到 第一位 GD_ key 内容 或 key 内容, 然后抽取里面的内容
+            // 首先得到 第一位 GD_key 内容 或 key 内容, 然后抽取里面的内容
             const key_array: Array<string> = keys.split('.')
             key = key_array[0]
             const info: WechatMiniprogram.GetStorageInfoSyncOption = wx.getStorageInfoSync();

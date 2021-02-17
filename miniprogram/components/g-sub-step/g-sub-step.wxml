@@ -1,10 +1,51 @@
-<view wx:if="{{open}}" class="root" style="height:{{sceneHeight}}rpx;" bindtap="btClose">
-    <block wx:for="{{showlist}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-        <view style="top:{{item.top}}rpx">
-            <view><i class="fa fa-{{item.icon}} {{item.icon_class}}"></i></view>
-            <view>{{item.title}}</view>
-            <view wx:if="{{item.note !== ''}}">{{item.note}}</view>
-            <view>{{err}}</view>
+<view wx:if="{{open}}" class="root" style="height:{{ sceneHeight }}rpx;">
+    <!-- 已经完成的条目 -->
+    <view class="finish" style="height:{{ topHeight }}rpx">
+        <block wx:for="{{ itemFinish }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+            <view class="finish_item">
+                <view class="finish_icon"><i class="fa fa-{{item.iconFinish}}"></i></view>
+                <view class="finish_title"><text>{{ item.title }}</text></view>
+            </view>
+        </block>
+    </view>
+    <!-- 进行中的条目 -->
+    <view wx:if="{{ itemRun && itemRun.title }}" class="run" style="height:{{ centerHeight }}rpx">
+        <view wx:if="{{ itemRun.err }}" class="run_close">
+            <button bindtap="btClose"><i class="fa fa-times-circle-o bt_clear"></i></button>
         </view>
-    </block>
+        <view class="run_title">
+            <view><i class="fa fa-{{ itemRun.iconRun }} icon_run"></i></view>
+            <view class="run_title_tx"><text>{{ itemRun.title }}</text></view>
+            <view wx:if="{{ itemRun.startProgress }}" class="run_title_bf">
+                {{ ~~(itemRun.progress / itemRun.total * 100) }}%</view>
+        </view>
+        <view wx:if="{{ itemRun.smallList.length && itemRun.smallIndex !== -1 }}" class="run_small">
+            <block wx:for="{{ itemRun.smallList }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+                <block wx:if="{{ index === itemRun.smallIndex }}">
+                    <view class="run_small_item">
+                        <view class="small_icon"><i class="fa fa-spinner animation_rotate"></i></view>
+                        <view class="small_item_title_run">{{ item.title }}</view>
+                    </view>
+                </block>
+                <block wx:else>
+                    <view class="small_item">
+                        <view class="small_icon"><i class="fa fa-caret-right"></i></view>
+                        <view class="small_item_title">{{ item.title }}</view>
+                    </view>
+                </block>
+            </block>
+        </view>
+    </view>
+    <!-- 未进行的条目 -->
+    <view class="wait" style="height:{{ endHeight }}rpx">
+        <block wx:for="{{ itemWait }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+            <view class="wait_item">
+                <view class="wait_icon"><i class="fa fa-{{ item.iconWait }}"></i></view>
+                <view class="wait_title"><text>{{ item.title }}</text></view>
+            </view>
+        </block>
+    </view>
+    <view class="end_close">
+        <button bindtap="btClose"><i class="fa fa-times-circle-o bt_clear"></i></button>
+    </view>
 </view>

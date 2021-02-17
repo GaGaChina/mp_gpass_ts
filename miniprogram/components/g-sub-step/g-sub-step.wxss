@@ -11,18 +11,257 @@
     background: rgba(0, 0, 0, 0.8);
 }
 
-
-
-
-
-.icon_play {
-    width: 50rpx;
+/* ------------------------------------------完成的队列 */
+.finish {
+    display: flex;
+    width: 750rpx;
+    flex-direction: column;
+    justify-content: flex-end;
 }
 
-.icon_ok {
-    width: 50rpx;
+.finish_item {
+    display: flex;
+    width: 590rpx;
+    height: 60rpx;
+    margin: 0 auto;
 }
 
-.icon_stop {
-    width: 50rpx;
+.finish_icon {
+    width: 60rpx;
+    height: 60rpx;
+}
+
+.finish_icon>i {
+    width: 60rpx;
+    height: 60rpx;
+    line-height: 60rpx;
+    text-align: center;
+    font-size: 50rpx;
+    color: #9ce72a;
+    border-radius: 50%;
+}
+
+.finish_title {
+    width: 530rpx;
+    height: 60rpx;
+    line-height: 60rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    margin-left: 45rpx;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ------------------------------------------执行的队列 */
+.run {
+    position: relative;
+    width: 610rpx;
+    box-sizing: border-box;
+    padding-top: 30rpx;
+    padding-bottom: 30rpx;
+    margin: 0 auto;
+}
+
+.run_close {
+    position: absolute;
+    width: 150rpx;
+    height: 150rpx;
+    top: -200rpx;
+    left: 230rpx;
+}
+
+.run_close>button {
+    width: 150rpx;
+    height: 150rpx;
+}
+
+.run_close>button>i {
+    width: 150rpx;
+    height: 150rpx;
+    color: #9ce72a;
+    font-size: 150rpx;
+    line-height: 150rpx;
+}
+
+.run_title {
+    display: flex;
+    width: 610rpx;
+}
+
+.icon_run {
+    width: 80rpx;
+    height: 80rpx;
+    line-height: 80rpx;
+    text-align: center;
+    font-size: 60rpx;
+    color: #001044;
+    background: #9ce72a;
+    border-radius: 50%;
+}
+
+.run_title_tx {
+    width: 390rpx;
+    line-height: 80rpx;
+    color: #9ce72a;
+    font-size: 36rpx;
+    font-weight: bold;
+    margin-left: 30rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.run_title_bf {
+    width: 110rpx;
+    line-height: 80rpx;
+    color: #fdc60d;
+    font-size: 36rpx;
+    font-weight: bold;
+    text-align: right;
+}
+
+.run_small {
+    width: 610rpx;
+    box-sizing: border-box;
+    padding-left: 50rpx;
+    padding-top: 20rpx;
+    padding-bottom: 20rpx;
+}
+
+.small_item {
+    display: flex;
+    width: 560rpx;
+    height: 60rpx;
+}
+
+.small_item_title {
+    color: #fff;
+    font-size: 32rpx;
+    line-height: 60rpx;
+}
+
+.small_item_title_run {
+    color: #9ce72a;
+    font-size: 32rpx;
+    font-weight: bold;
+    line-height: 60rpx;
+}
+
+.run_small_item {
+    display: flex;
+    width: 560rpx;
+    height: 60rpx;
+}
+
+.small_icon {
+    width: 60rpx;
+    height: 60rpx;
+}
+
+.small_icon>i {
+    width: 60rpx;
+    height: 60rpx;
+    font-size: 40rpx;
+    line-height: 60rpx;
+    text-align: center;
+    color: #fff;
+}
+
+/* 
+    turn : 定义的动画名称
+    1s : 动画时间
+    linear : 动画以何种运行轨迹完成一个周期
+    infinite :规定动画应该无限次播放
+   */
+.animation_rotate {
+    animation: turn 1s linear infinite;
+}
+
+
+@keyframes turn {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    25% {
+        -webkit-transform: rotate(90deg);
+    }
+
+    50% {
+        -webkit-transform: rotate(180deg);
+    }
+
+    75% {
+        -webkit-transform: rotate(270deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+
+/* ------------------------------------------还在等待的队列 */
+.wait {
+    width: 750rpx;
+}
+
+.wait_item {
+    display: flex;
+    width: 590rpx;
+    height: 60rpx;
+    margin: 0 auto;
+}
+
+.wait_icon {
+    width: 60rpx;
+    height: 60rpx;
+}
+
+.wait_icon>i {
+    width: 60rpx;
+    height: 60rpx;
+    line-height: 60rpx;
+    text-align: center;
+    font-size: 50rpx;
+    color: #666;
+    border-radius: 50%;
+}
+
+.wait_title {
+    width: 530rpx;
+    height: 60rpx;
+    line-height: 60rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    margin-left: 45rpx;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ------------------------------------------下面的关闭按钮 */
+.end_close {
+    position: absolute;
+    width: 100rpx;
+    height: 100rpx;
+    bottom: 30rpx;
+    left: 325rpx;
+}
+
+.end_close>button {
+    width: 100rpx;
+    height: 100rpx;
+}
+
+.end_close>button>i {
+    width: 100rpx;
+    height: 100rpx;
+    color: #9ce72a;
+    font-size: 90rpx;
+    text-align: center;
+    line-height: 100rpx;
 }

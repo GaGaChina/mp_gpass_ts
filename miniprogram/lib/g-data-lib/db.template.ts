@@ -27,13 +27,50 @@ export class DBTemplate {
      */
     private static _list: Array<Object> = [
         {
-            title: '组', name: 'group', type: 'group', icon: 0, list: []
+            title: '组', name: 'group', type: 'group', icon: 48, list: []
         },
         {
-            title: '通用', name: 'normal', type: 'entry', icon: 0, list: [
-                { icon: '', key: '', keyname: '别名', type: 'string', def: '' }
-            ]
+            title: '通用', name: 'normal', type: 'entry', icon: 0, list: []
         },
+        // {
+        //     title: '银行卡', name: 'normal', type: 'entry', icon: 0, list: [
+        //         { icon: '', key: '', keyname: '别名', type: 'string', def: '' }
+        //     ]
+        // },
+        // {
+        //     title: '信用卡', name: 'normal', type: 'entry', icon: 0, list: [
+        //         { icon: '', key: '卡号', keyname: '', type: 'string', def: '' },
+        //         /** Visa, MasterCard, China UnionPay银联, Solo */
+        //         { icon: '', key: '卡片类型', keyname: '', type: 'string', def: '' },
+        //         { icon: '', key: 'PIN', keyname: '', type: 'string', def: '' },
+        //         { icon: '', key: '账单日', keyname: '', type: 'string', def: '' },
+        //         { icon: '', key: '年费', keyname: '', type: 'string', def: '' },
+        //         { icon: '', key: '年费结算日', keyname: '', type: 'string', def: '' },
+        //         { icon: '', key: '还款日期', keyname: '', type: 'string', def: '' },
+        //         { icon: '', key: '失效日期', keyname: '', type: 'string', def: '' }
+        //     ]
+        // },
+        // {
+        //     title: '身份证', name: 'normal', type: 'entry', icon: 9, list: [
+        //         { icon: 'user', key: 'UserName', keyname: '姓名', type: 'string', def: '' },
+
+        //     ]
+        // },
+        // {
+        //     title: '通用', name: 'normal', type: 'entry', icon: 0, list: [
+        //         { icon: '', key: '', keyname: '别名', type: 'string', def: '' }
+        //     ]
+        // },
+        // {
+        //     title: '通用', name: 'normal', type: 'entry', icon: 0, list: [
+        //         { icon: '', key: '', keyname: '别名', type: 'string', def: '' }
+        //     ]
+        // },
+        // {
+        //     title: '通用', name: 'normal', type: 'entry', icon: 0, list: [
+        //         { icon: '', key: '', keyname: '别名', type: 'string', def: '' }
+        //     ]
+        // },
     ]
 
     public static get list(): Array<Object> {

@@ -1,5 +1,6 @@
 import { GFileSize } from "../lib/g-byte-file/g.file.size";
 import { AppData } from "./data/app.data";
+import { DataStep } from "./data/data.step";
 
 /**
  * 一个简单的入口
@@ -18,6 +19,8 @@ export class $g {
     public static g: IAppOption["globalData"];
     /** 本地缓存引用 */
     public static s: AppData;
+    /** 步进器 */
+    public static step: DataStep = new DataStep()
 
     /** 初始化 */
     public static init(app: IAppOption): void {

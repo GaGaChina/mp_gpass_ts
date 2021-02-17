@@ -5,7 +5,6 @@ import { Entry, Group, Kdbx, ProtectedValue } from "../kdbxweb/types"
 import { KdbxApi } from "./kdbx.api"
 import { ToolBytes } from "../../frame/tools/tool.bytes"
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
-import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
 
 interface IDB {
     getInfo(): Object;
@@ -132,7 +131,6 @@ export abstract class DBBase implements IDB {
                                     base[k] = json[k]
                             }
                         }
-
                     }
                 }
             }
@@ -372,10 +370,14 @@ export class DBItem extends DBBase {
     public filename: string = ''
     /** 文件存放在 db 文件夹下的 使用 localId */
     public path: string = ''
+    /** 用户选中的展示的组 */
+    public displayGroup: Group | null = null
     /** 现在用户选中的组 */
     public selectGroup: Group | null = null
     /** 现在用户选中的条目 */
     public selectEntry: Entry | null = null
+    /** 在 Entry 或 Group 中 是否有改变, 这样列表需要重新刷新 */
+    public infoRefresh: boolean = false
     /** 正在添加的组 */
     public addGroup: Group | null = null
     /** 正在添加的条目 */
@@ -457,7 +459,8 @@ export class DBItem extends DBBase {
 
     /** 找到本地文件, 并打开 db */
     public async open(passPV: ProtectedValue) {
-        await WXKeepScreen.on()
+        let startStep: boolean = false
+        await $g.step.inJump('读取本地二进制文件')
         // string | ArrayBuffer | null
         let readByte: any = null
         let filePath: string = `db/${this.path}/` + this.getFilePath()
@@ -486,6 +489,7 @@ export class DBItem extends DBBase {
         // }
 
         if (readByte && $g.isTypeM(readByte, 'ArrayBuffer')) {
+            await $g.step.inJump('解密本地档案')
             const byte: any = readByte
             const db: Kdbx | null = await KdbxApi.open(byte, passPV.getText());
             if (db) {
@@ -505,7 +509,7 @@ export class DBItem extends DBBase {
             $g.log('读取文件类型不符 : ', $g.className(readByte))
             wx.showToast({ title: '文件类型不符:' + $g.className(readByte), icon: 'none', mask: false })
         }
-        await WXKeepScreen.off()
+
     }
 
     /** 保存 DbItem 到磁盘, 并且保存 DbLib 到 Storage */
@@ -516,7 +520,7 @@ export class DBItem extends DBBase {
      */
     public async saveFileAddStorage() {
         if (this.db) {
-
+            await $g.step.inJump('加密档案二进制', '保存档案文件', '保存档案列表数据')
             const byte: ArrayBuffer = await this.db.save()
             $g.log('[DbItem][saveFileAddStorage]', byte.byteLength)
             // const demo: GByteStream = new GByteStream(byte, true)
@@ -524,6 +528,7 @@ export class DBItem extends DBBase {
             // const n2: number = demo.rUint32()
             // $g.log(`[DbItem][saveFileAddStorage]保存头部 n1 : ${n1} n2 : ${n2}`)
             if (byte && byte.byteLength > 0) {
+                await $g.step.next()
                 if ($g.g.systemInfo.brand === 'devtools') {
                     // 如果是开发者工具, 就存Base64, 因为二进制不稳定
                     const base64: string = ToolBytes.ArrayBufferToBase64(byte)
@@ -548,6 +553,7 @@ export class DBItem extends DBBase {
                         }
                     }
                 }
+                await $g.step.next()
                 const lib: DBLib = $g.g.dbLib
                 lib.storageSaveThis()
             }
@@ -556,9 +562,15 @@ export class DBItem extends DBBase {
         }
     }
 
+    /** 抽取文件的数量 */
+    private getGroupToDiskTotle: number = 0
+    private getGroupToDiskStr: string = '附件独立加密存储'
+
     /** 将里面的附件抽出, 并转换为文件存在本地 */
     public async getFileToDisk() {
         if (this.db) {
+            this.getGroupToDiskTotle = 0
+            await $g.step.inJump(this.getGroupToDiskStr)
             const isChange: boolean = await this.getGroupToDisk(this.db.groups)
             if (isChange) {
                 this.db.cleanup({
@@ -571,6 +583,8 @@ export class DBItem extends DBBase {
             }
         }
     }
+
+
 
     /** 遍历组内的文件 */
     private async getGroupToDisk(groups: Group[]): Promise<boolean> {
@@ -592,6 +606,7 @@ export class DBItem extends DBBase {
 
     /**
      * 查询出条目内的二进制文件, 并保存到文件夹下, 如果成功返回true,否则false
+     * 1.0.0 版本使用 _ 分割, 并且带 == 号
      * @param entries 
      */
     private async getEntrieToDisk(entries: Entry[]): Promise<boolean> {
@@ -600,7 +615,9 @@ export class DBItem extends DBBase {
         if (l > 0) {
             for (let i = 0; i < entries.length; i++) {
                 const entry: Entry = entries[i]
-                const uuid: string = entry.uuid.toString()
+                let uuid: string = entry.uuid.toString()
+                // 去掉等于号
+                uuid = uuid.split('=').join('')
                 const binaries: any = entry.binaries
                 // 获取 二进制文件 键值列表
                 const fileList: Array<string> = Object.keys(binaries)
@@ -615,6 +632,11 @@ export class DBItem extends DBBase {
                     jsonFileList = gkv.filelist
                 }
                 for (let j = 0; j < fileList.length; j++) {
+                    this.getGroupToDiskTotle++
+                    if ($g.step.index < $g.step.list.length) {
+                        $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',附件:' + this.getGroupToDiskTotle + ' (读取)'
+                        await $g.step.runMethod()
+                    }
                     const fileName: string = fileList[j]
                     const fileInfo: any = binaries[fileName]
                     const ref: string = fileInfo.ref
@@ -622,12 +644,16 @@ export class DBItem extends DBBase {
                     let pass: string = KdbxUuid.random().toString()
                     let byte: ArrayBuffer = fileInfo.value
                     // Aes
+                    if ($g.step.index < $g.step.list.length) {
+                        $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',附件:' + this.getGroupToDiskTotle + ' (加密)'
+                        await $g.step.runMethod()
+                    }
                     await AES.setKey(pass)
                     const aes: ArrayBuffer | null = await AES.encryptCBC(byte)
                     if (aes) {
                         byte = aes
                         // 文件名
-                        const newPath: string = uuid + '_' + ref
+                        const newPath: string = uuid + '.' + ref
                         const fileItem: any = {
                             name: fileName,
                             ref: ref,
@@ -635,6 +661,10 @@ export class DBItem extends DBBase {
                             pass: pass,
                             size: byte.byteLength,
                             savetype: 'byte'
+                        }
+                        if ($g.step.index < $g.step.list.length) {
+                            $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',附件:' + this.getGroupToDiskTotle + ' (存储)'
+                            await $g.step.runMethod()
                         }
                         if ($g.g.systemInfo.brand === 'devtools') {
                             const base64: string = ToolBytes.ArrayBufferToBase64(byte)

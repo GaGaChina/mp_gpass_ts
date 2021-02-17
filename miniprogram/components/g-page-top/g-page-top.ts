@@ -16,7 +16,7 @@ Component({
     },
     // 组件的初始数据
     data: {
-        darkmode: $g.g.app.darkmode,
+        // darkmode: $g.g.app.darkmode,
         topHeight: 0,
         hasWXUser: false,// 是否有微信登录信息
         userHead: '',
@@ -30,12 +30,12 @@ Component({
             this.setData({
                 topHeight: $g.g.app.scene.topBarHeight + $g.g.app.scene.topBarTop,
             })
-            if ($g.g.app.darkusable) wx.onThemeChange(this.themeChange.bind(this));
+            // if ($g.g.app.darkusable) wx.onThemeChange(this.themeChange.bind(this));
         },
         /** 实例被从页面节点树移除时执行 */
-        detached() {
-            if ($g.g.app.darkusable) wx.offThemeChange(this.themeChange);
-        },
+        // detached() {
+        //     if ($g.g.app.darkusable) wx.offThemeChange(this.themeChange);
+        // },
     },
     /** 组件所在页面的生命周期函数 */
     pageLifetimes: {
@@ -51,16 +51,16 @@ Component({
     },
     /** 组件的方法列表 */
     methods: {
-        themeChange(e) {
-            $g.log(e)
-            if ($g.g.app.darkusable) {
-                if (e.theme === 'light') {
-                    this.setData({ darkmode: false })
-                } else {
-                    this.setData({ darkmode: true })
-                }
-            }
-        },
+        // themeChange(e) {
+        //     $g.log(e)
+        //     if ($g.g.app.darkusable) {
+        //         if (e.theme === 'light') {
+        //             this.setData({ darkmode: false })
+        //         } else {
+        //             this.setData({ darkmode: true })
+        //         }
+        //     }
+        // },
         btGetUserInfo(e: any) {
             console.log('点击微信授权 : ', e);
             WXUser.setUserInfo(e.detail);

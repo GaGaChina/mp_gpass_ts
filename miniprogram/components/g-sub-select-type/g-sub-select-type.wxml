@@ -14,4 +14,7 @@
         </block>
     </scroll-view>
     <view class="end" style="height:{{endHeight}}rpx;" bindtap="btClose"></view>
+    <button class="end_big bt_clear" bindtap="btClose">
+        <view class="end_big_icon"><i class="end_big_text fa fa-times"></i></view>
+    </button>
 </view>

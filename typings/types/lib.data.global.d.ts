@@ -25,6 +25,8 @@ interface DataGlobalApp {
     timeMouse: number,
     /** 用户多久不操作进行锁屏 */
     timeMouseClose: number,
+    /** 倒数为 0 的时候弹出 指纹 或 人脸识别解锁 */
+    timesShowFinger:number,
 }
 
 /** 用户数据相关内容 */

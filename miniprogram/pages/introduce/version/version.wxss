@@ -1,0 +1,24 @@
+.scroll {
+    width: 750rpx;
+}
+
+.title{
+    width: 670rpx;
+    margin: 0 auto;
+    margin-top: 30rpx;
+    margin-bottom: 20rpx;
+    color: #9ce72a;
+    font-size: 32rpx;
+    font-weight: bold;
+    line-height: 42rpx;
+}
+
+.info{
+    width: 670rpx;
+    margin: 0 auto;
+    margin-top: 30rpx;
+    margin-bottom: 20rpx;
+    color: #ccc;
+    font-size: 28rpx;
+    line-height: 42rpx;
+}

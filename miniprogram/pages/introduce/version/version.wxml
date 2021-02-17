@@ -1,0 +1,22 @@
+<g-page-bg></g-page-bg>
+<g-page-top canBack="{{true}}" title="软件介绍"></g-page-top>
+<scroll-view scroll-y enable-flex class="scroll" style="height:{{fullPageHeight}}rpx;">
+    <view class="title">
+        1.1.0 发布日期 : 2021-02-18 03:00
+    </view>
+    <view class="info">
+        <text>优化列表展示,组下无组不切菜单
+            添加搜索,密码生成器,进度展示,历史版本页
+            弹出引导用户设置人脸指纹
+            修复导入抽取附件</text>
+    </view>
+    <view class="title">
+        1.0.0 发布日期 : 2021-02-14 02:17
+    </view>
+    <view class="info">
+        <text>导入/导出/创建 Kdbx 文件, 导出 XML
+            创建查看修改 组
+            创建修改查看 条目, 支持自定义字段
+            本地仓库管理, 支持人脸和指纹解锁</text>
+    </view>
+</scroll-view>

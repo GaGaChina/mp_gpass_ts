@@ -78,6 +78,10 @@ view {
     margin-left: 10rpx;
 }
 
+.info_group_no {
+    margin-left: 0rpx;
+}
+
 .info_group_icon {
     width: 40rpx;
     height: 40rpx;
@@ -85,6 +89,10 @@ view {
     margin-left: 10rpx;
     background: #9ce72a;
     border-radius: 50%;
+}
+
+.info_group_icon_no {
+    background: #494949;
 }
 
 .info_group_icon>i {
@@ -105,6 +113,10 @@ view {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.info_group_title_no {
+    color: #666;
 }
 
 /* 530-120 - 60 */
@@ -158,13 +170,86 @@ view {
     color: #FFF;
 }
 
+.info_item_group {
+    position: absolute;
+    width: 60rpx;
+    height: 60rpx;
+    top: -2rpx;
+    right: 2rpx;
+}
+
+.info_item_group>i {
+    width: 60rpx;
+    height: 60rpx;
+    font-size: 60rpx;
+    line-height: 60rpx;
+    text-align: center;
+    color: #fdc60d;
+}
+
+.info_item_group_title {
+    position: absolute;
+    width: 60rpx;
+    height: 60rpx;
+    line-height: 40rpx;
+    top: 0;
+    color: #001044;
+    font-size: 30rpx;
+    font-weight: bold;
+    text-align: center;
+}
+
 /* 右侧搜索区域 */
 .find {
+    display: flex;
+    position: relative;
     width: 530rpx;
     margin-left: 10rpx;
     margin-right: 10rpx;
-    background: linear-gradient(180deg, #0d3376, #010e38);
 }
+
+.find_input {
+    display: block;
+    width: 450rpx;
+    height: 75rpx;
+    color: #fff;
+    padding: 20rpx;
+    box-sizing: border-box;
+    line-height: 46rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    border: 1px solid #fd720d;
+    background: #202435;
+}
+
+.find_icon {
+    position: absolute;
+    width: 75rpx;
+    height: 75rpx;
+    right: 85rpx;
+    top: 15rpx;
+}
+
+.find_icon>i {
+    width: 75rpx;
+    height: 75rpx;
+    color: #fd720d;
+    font-size: 46rpx;
+    line-height: 46rpx;
+    text-align: center;
+}
+
+.find_clear {
+    width: 75rpx;
+    height: 75rpx;
+    font-size: 46rpx;
+    line-height: 70rpx;
+    border: 1px solid #fd720d;
+    color: #fff;
+    background: #fd720d;
+    text-align: center;
+}
+
 
 /* 右侧信息区域 */
 .info_right {
@@ -178,6 +263,7 @@ view {
 
 .info_item {
     display: flex;
+    position: relative;
     width: 530rpx;
     height: 120rpx;
     margin-top: 10rpx;

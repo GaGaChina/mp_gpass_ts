@@ -1,5 +1,5 @@
 <g-page-bg></g-page-bg>
-<g-sub-step open="{{stepOpen}}" list="{{stepList}}"></g-sub-step>
+<g-sub-step></g-sub-step>
 <!-- 新用户 -->
 <view wx:if="{{isCreatPage}}">
     <view class="top">
@@ -26,7 +26,7 @@
                         <i class="input_icon fa fa-lock"></i>
                     </view>
                     <button class="bt_big" bindtap="creatNewFile"><i class="input_icon fa fa-plus"></i> 创 建</button>
-                    <view class="tishi">档案信息不以任何形式在服务器存储及网络形式传送</view>
+                    <view class="tishi">档案信息不已明文形式在服务器存储及网络形式传送</view>
                     <block wx:if="{{dbLength > 0}}">
                         <view class="has_db_info">发现 {{dbLength}} 个本地档案, 需要选择打开它们吗?</view>
                         <button class="bt_big" bindtap="btShowDBList"><i class="input_icon fa fa-envelope-open-o"></i>

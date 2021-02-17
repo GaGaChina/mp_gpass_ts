@@ -77,7 +77,7 @@
 .center>view {
     height: 40rpx;
     color: #fff;
-    font-size: 24rpx;
+    font-size: 28rpx;
     line-height: 40rpx;
 }
 

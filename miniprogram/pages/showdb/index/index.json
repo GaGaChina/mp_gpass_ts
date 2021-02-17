@@ -2,6 +2,7 @@
   "usingComponents": {
     "g-page-bg": "./../../../components/g-page-bg/g-page-bg",
     "g-page-top": "./../../../components/g-page-top/g-page-top",
+    "g-sub-step":"./../../../components/g-sub-step/g-sub-step",
     "g-sub-select-type": "./../../../components/g-sub-select-type/g-sub-select-type",
     "g-sub-add-faceid": "./../../../components/g-sub-add-faceid/g-sub-add-faceid",
     "g-sub-add-fingerprint": "./../../../components/g-sub-add-fingerprint/g-sub-add-fingerprint"

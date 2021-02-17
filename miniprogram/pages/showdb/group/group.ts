@@ -89,6 +89,7 @@ Page({
         if (!db) wx.navigateBack()
     },
     onShow() {
+        $g.step.clear()
         // 如果时间超过了, 就切换回其他的页面
         if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
             $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
@@ -173,7 +174,7 @@ Page({
         return !haveCheck
     },
     /** 按钮 : 保存修改 */
-    btSave(e: any) {
+    async btSave(e: any) {
         $g.g.app.timeMouse = Date.now()
         $g.log('[group][Save]', this.data.title)
         if (!this.checkGroup()) {
@@ -184,7 +185,8 @@ Page({
         group.times.update()
         group.icon = this.data.icon
         group.name = this.data.title
-        dbItem.saveFileAddStorage()
+        await dbItem.saveFileAddStorage()
+        await $g.step.clear()
         dbItem.infoRefresh = true
         this.setData({ pagetype: 'show' })
     },
@@ -231,6 +233,7 @@ Page({
                 dbItem.selectGroup = null
             }
             await dbItem.saveFileAddStorage()
+            await $g.step.clear()
             dbItem.infoRefresh = true
             wx.navigateBack();
         }

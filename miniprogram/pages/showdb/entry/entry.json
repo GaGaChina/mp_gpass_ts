@@ -2,6 +2,7 @@
   "usingComponents": {
     "g-page-bg": "./../../../components/g-page-bg/g-page-bg",
     "g-page-top": "./../../../components/g-page-top/g-page-top",
+    "g-sub-step":"./../../../components/g-sub-step/g-sub-step",
     "g-entry-title":"./../../../components/g-entry-title/g-entry-title",
     "g-entry-field-group":"./../../../components/g-entry-field-group/g-entry-field-group"
   },

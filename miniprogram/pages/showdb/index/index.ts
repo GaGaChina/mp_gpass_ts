@@ -1,5 +1,7 @@
 import { $g } from "../../../frame/speed.do"
+import { WXSize } from "../../../frame/wx/wx.resize"
 import { WXSoterAuth } from "../../../frame/wx/wx.soter.auth"
+import { WXSystemInfo } from "../../../frame/wx/wx.system.info"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
 import { KdbxIcon } from "../../../lib/g-data-lib/kdbx.icon"
@@ -19,7 +21,7 @@ Page({
         openWinSelectType: false,
         fullPageHeight: 0,
         centerPageHeight: 0,
-        findPageHeight: 0,
+        findPageHeight: 75,
         dbEmpty: true,
         dbName: '',
         /** 垃圾桶的UUID */
@@ -30,13 +32,14 @@ Page({
         groupIndex: 0,
         /** 条目内容 uuid, icon, title, username, password, isGroup, showpass  */
         itemList: new Array<any>(),
+        itemListFind: new Array<any>(),
         /** 条目现在选中的索引 index */
         itemIndex: 0,
         vtabsTitle: [{ title: '标题' }, { title: '标题1' }, { title: '标题3' }],
         /** 开启人脸识别 */
         openFacial: false,
         openFacialPrint: false,
-
+        findText: '',
     },
     onLoad() {
         this.loadScene()
@@ -48,9 +51,9 @@ Page({
             if (dbItem.db) db = dbItem.db
             dbItem.infoRefresh = true
         }
-
     },
     onShow() {
+        $g.step.clear()
         this.loadScene()
         // 如果时间超过了, 就切换回其他的页面
         if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
@@ -103,6 +106,10 @@ Page({
     },
     loadScene() {
         const scene: DataScene = $g.g.app.scene
+        if (scene.endBarHeight > 0) {
+            $g.g.systemInfo = WXSystemInfo.getSync()
+            WXSize.getSize($g.g.systemInfo)
+        }
         const fullHeight: number = scene.winHeight - scene.topBarHeight - scene.topBarTop
         const centerHeight: number = fullHeight - 160
         this.setData({
@@ -126,6 +133,7 @@ Page({
             $g.log('添加节点信息 : ', groups[0])
             dbItem.displayGroup = groups[0]
         }
+        dbItem.selectGroup = dbItem.displayGroup
         const meta: any = db.meta
         if (meta && meta.recycleBinUuid) {
             this.data.recycleUUID = meta.recycleBinUuid.id
@@ -133,25 +141,24 @@ Page({
             this.data.recycleUUID = ''
         }
         $g.log('回收站ID:', this.data.recycleUUID)
-        this.setGroup(dbItem.displayGroup, true)
-        this.setData({
-            groupList: this.data.groupList,
-            itemList: this.data.itemList,
-        })
+        // 如果 dbItem.displayGroup 没有下级目录 , 就展示上级菜单
+        if (dbItem.displayGroup.groups.length) {
+            this.setGroup(dbItem.displayGroup, true)
+        } else {
+            this.setGroup(dbItem.displayGroup.parentGroup, true, true)
+        }
+        this.findRun()
     },
     /**
      * 设置 组 的条目, 还有 列表条目 的列表
      * @param groups 
      * @param addGroupList 是否添加到左侧的菜单中
+     * @param isParent 是否在展示父级目录
      */
-    setGroup(group: Group, addGroupList: boolean = false) {
+    setGroup(group: Group, addGroupList: boolean = false, isParent: boolean = false) {
         // 要绕过的UUID, 一般用于垃圾桶
         let outUUID: string = ''
         if (addGroupList) {
-            if (group.uuid.id) {
-                dbItem.displayGroup = group
-                dbItem.selectGroup = group
-            }
             // 查看是否需要添加 返回上级 返回根目录
             const root: Group = $g.g.dbLib.selectItem.db.groups[0]
             if (root) {
@@ -162,7 +169,8 @@ Page({
                         icon: KdbxIcon.list[0],
                         name: '返回根目录',
                         notes: '',
-                        uuid: root.uuid.id
+                        uuid: root.uuid.id,
+                        select: true
                     })
                 }
             }
@@ -173,21 +181,43 @@ Page({
                     icon: KdbxIcon.list[0],
                     name: '返回上级目录',
                     notes: '',
-                    uuid: parent.uuid.id
+                    uuid: parent.uuid.id,
+                    select: true
+                }
+                this.data.groupList.push(parentInfo)
+            }
+            // 查看全部内容菜单
+            if (isParent) {
+                const parentInfo: any = {
+                    icon: KdbxIcon.list[0],
+                    name: '查看本级全部',
+                    notes: '',
+                    uuid: group.uuid.id,
+                    select: true
                 }
                 this.data.groupList.push(parentInfo)
             }
         }
+        // 获取下级目录结构内容
         let l: number = group.groups.length
         if (l) {
             for (let i = 0; i < l; i++) {
                 const groupItem: Group = group.groups[i]
                 if (addGroupList) {
+                    let select: boolean = true
+                    if (isParent) {
+                        if (groupItem.uuid.id === dbItem.displayGroup?.uuid.id) {
+                            select = true
+                        } else {
+                            select = false
+                        }
+                    }
                     const groupInfo: any = {
                         icon: KdbxIcon.list[groupItem.icon],
                         name: groupItem.name,
                         notes: groupItem.notes,
-                        uuid: groupItem.uuid.id
+                        uuid: groupItem.uuid.id,
+                        select: select
                     }
                     // 给回收站更名
                     if (groupItem.uuid.id === this.data.recycleUUID) {
@@ -195,46 +225,59 @@ Page({
                     }
                     this.data.groupList.push(groupInfo)
                 }
-                if (groupItem.uuid.id !== this.data.recycleUUID) {
-                    this.data.itemList.push({
-                        isGroup: true,
-                        uuid: groupItem.uuid.id,
-                        icon: KdbxIcon.list[groupItem.icon],
-                        title: groupItem.name,
-                        username: '',
-                        password: '',
+                if (!isParent) {
+                    if (groupItem.uuid.id !== this.data.recycleUUID) {
+                        this.data.itemList.push({
+                            isGroup: true,
+                            uuid: groupItem.uuid.id,
+                            icon: KdbxIcon.list[groupItem.icon],
+                            title: groupItem.name,
+                            username: '',
+                            password: '',
+                            showpass: false,
+                        })
+                    }
+                }
+                if (isParent) {
+                    if (groupItem.uuid.id === dbItem.displayGroup?.uuid.id) {
+                        this.setGroup(groupItem, false)
+                    }
+                } else {
+                    if (outUUID === '' || groupItem.uuid.id !== outUUID) {
+                        this.setGroup(groupItem, false)
+                    }
+                }
+
+            }
+        }
+        // 获取子目录内容
+        if (!isParent) {
+            l = group.entries.length
+            if (l) {
+                for (let i = 0; i < l; i++) {
+                    const entry: any = group.entries[i];
+                    // 检测密码
+                    let pass: any = entry.fields?.Password
+                    if ($g.isClass(pass, 'ProtectedValue')) {
+                        pass = '******'
+                    }
+                    const entryInfo: any = {
+                        isGroup: false,
+                        uuid: entry.uuid.id,
+                        icon: KdbxIcon.list[entry.icon],
+                        title: entry.fields?.Title ?? '',
+                        username: entry.fields?.UserName ?? '',
+                        password: pass,
                         showpass: false,
-                    })
-                }
-                if (outUUID === '' || groupItem.uuid.id !== outUUID) {
-                    this.setGroup(groupItem, false)
+                        notes: entry.fields?.Notes ?? '',
+                    }
+                    this.data.itemList.push(entryInfo)
                 }
             }
         }
-        l = group.entries.length
-        if (l) {
-            for (let i = 0; i < l; i++) {
-                const entry: any = group.entries[i];
-                // 检测密码
-                let pass: any = entry.fields?.Password
-                if ($g.isClass(pass, 'ProtectedValue')) {
-                    pass = '******'
-                }
-                const entryInfo: any = {
-                    isGroup: false,
-                    uuid: entry.uuid.id,
-                    icon: KdbxIcon.list[entry.icon],
-                    title: entry.fields?.Title ?? '',
-                    username: entry.fields?.UserName ?? '',
-                    password: pass,
-                    showpass: false,
-                }
-                this.data.itemList.push(entryInfo)
-            }
-        }
+
     },
     btChangeUUID(e: any) {
-        $g.log(e)
         let uuid: string = String(e.currentTarget.dataset.uuid)
         const root: Group = $g.g.dbLib.selectItem.db.groups[0]
         const findItem: Group | Entry | null = KdbxApi.findUUID(root, uuid);
@@ -243,11 +286,15 @@ Page({
             if ($g.isClass(findItem, 'KdbxGroup')) {
                 this.data.groupList.length = 0
                 this.data.itemList.length = 0
-                this.setGroup(findObj, true)
-                this.setData({
-                    groupList: this.data.groupList,
-                    itemList: this.data.itemList,
-                })
+                dbItem.displayGroup = findObj
+                dbItem.selectGroup = findObj
+                // 如果 findObj 没有下级目录 , 就展示上级菜单
+                if (findObj.groups.length) {
+                    this.setGroup(findObj, true)
+                } else {
+                    this.setGroup(findObj.parentGroup, true, true)
+                }
+                this.findRun()
             } else {
                 $g.log('未找到类型, 请赶紧处理 : ' + $g.className(findItem))
                 throw new Error()
@@ -259,7 +306,6 @@ Page({
     },
     /** 按钮 : 展示 条目 或 组 */
     btShowUUID(e: any) {
-        $g.log(e)
         let uuid: string = String(e.currentTarget.dataset.uuid)
         const root: Group = $g.g.dbLib.selectItem.db.groups[0]
         const findItem: Group | Entry | null = KdbxApi.findUUID(root, uuid);
@@ -285,6 +331,7 @@ Page({
         }
     },
     btShowPass(e: any) {
+        // $g.log('btShowPass')
         let uuid: string = String(e.currentTarget.dataset.uuid)
         const objItem: any = this.getItemList(uuid)
         if (objItem) {
@@ -292,7 +339,7 @@ Page({
                 objItem.password = '******'
                 objItem.showpass = false
                 this.setData({
-                    itemList: this.data.itemList
+                    itemListFind: this.data.itemListFind
                 })
             } else {
                 const root: Group = $g.g.dbLib.selectItem.db.groups[0]
@@ -306,7 +353,7 @@ Page({
                         objItem.password = pv.getText()
                         objItem.showpass = true
                         this.setData({
-                            itemList: this.data.itemList
+                            itemListFind: this.data.itemListFind
                         })
                     }
                 }
@@ -327,10 +374,10 @@ Page({
         }
     },
     getItemList(uuid: string): object | null {
-        const l: number = this.data.itemList.length
+        const l: number = this.data.itemListFind.length
         if (l) {
             for (let i = 0; i < l; i++) {
-                const item = this.data.itemList[i]
+                const item = this.data.itemListFind[i]
                 if (item.uuid === uuid) return item
             }
         }
@@ -376,4 +423,49 @@ Page({
             url: "./../../user/usercenter/usercenter"
         })
     },
+    btClearFind() {
+        this.setData({ findText: '' })
+        this.findRun()
+    },
+    inputFindChange(e: any) {
+        let findstr: string = e.detail.value.trim()
+        if (this.data.findText !== findstr) {
+            $g.g.app.timeMouse = Date.now()
+            this.setData({ findText: findstr })
+            this.findRun()
+        }
+    },
+    /** 执行搜索条件 */
+    findRun() {
+        if (this.data.findText === '') {
+            this.setData({
+                groupList: this.data.groupList,
+                itemListFind: this.data.itemList,
+            })
+        } else {
+            const l: number = this.data.itemList.length
+            if (l) {
+                this.data.itemListFind = new Array<any>()
+                for (let i = 0; i < l; i++) {
+                    const item = this.data.itemList[i]
+                    if (item.title && item.title.indexOf(this.data.findText) !== -1) {
+                        this.data.itemListFind.push(item)
+                        continue;
+                    }
+                    if (item.username && item.username.indexOf(this.data.findText) !== -1) {
+                        this.data.itemListFind.push(item)
+                        continue;
+                    }
+                    if (item.notes && item.notes.indexOf(this.data.findText) !== -1) {
+                        this.data.itemListFind.push(item)
+                        continue;
+                    }
+                }
+            }
+            this.setData({
+                groupList: this.data.groupList,
+                itemListFind: this.data.itemListFind,
+            })
+        }
+    }
 })

@@ -1,5 +1,6 @@
 <g-page-bg></g-page-bg>
 <g-page-top title="{{pagetitle}}"></g-page-top>
+<g-sub-step></g-sub-step>
 <view class="info" style="height:{{fullPageHeight}}rpx;">
     <scroll-view scroll-y enable-flex class="scroll" style="height:{{fullPageHeight}}rpx;">
         <g-entry-title icon="{{icon}}" title="{{title}}" type="{{pagetype}}" bind:change="titleChange"></g-entry-title>

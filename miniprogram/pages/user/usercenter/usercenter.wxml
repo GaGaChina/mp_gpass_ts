@@ -16,7 +16,7 @@
     <button class="bt_item" open-type="share">分享APP</button>
     <button class="bt_item" open-type="contact">联系作者</button>
     <button class="bt_item">超时加锁:5分钟</button>
-    <view class="bt_item">版本 : {{ version }}</view>
+    <navigator class="bt_item" url="./../../introduce/version/version">版本 : {{ version }}</navigator>
     <!-- <view>密码迁移</view>
     <view></view>
     <view>历史登录信息</view>

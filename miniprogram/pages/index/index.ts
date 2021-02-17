@@ -2,7 +2,6 @@ import { $g } from "../../frame/speed.do"
 import { WXFile } from "./../../frame/wx/wx.file"
 import { WXSize } from "../../frame/wx/wx.resize"
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
-import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
 import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
 import { Kdbx, ProtectedValue } from "../../lib/kdbxweb/types/index"
 import { GFileSize } from "../../lib/g-byte-file/g.file.size"
@@ -10,6 +9,7 @@ import { DBItem, DBLib } from "../../lib/g-data-lib/db"
 import { EncodingText } from "../../lib/text-encoding/EncodingText"
 import { AES } from "../../frame/crypto/AES"
 import { WXSystemInfo } from "../../frame/wx/wx.system.info"
+import { DataStep } from "../../frame/data/data.step"
 
 var passPV: ProtectedValue;
 
@@ -29,10 +29,10 @@ Page({
     data: {
         isCreatPage: true,
         creatSwiperIndex: 0,
-        /** 是否支持指纹识别 */
-        fingerPrint: WXSoterAuth.fingerPrint,
         /** 是否支持人脸识别 */
         facial: WXSoterAuth.facial,
+        /** 是否支持指纹识别 */
+        fingerPrint: WXSoterAuth.fingerPrint,
         /** 是否开启人脸识别 */
         isFacial: false,
         /** 是否开启指纹识别 */
@@ -48,16 +48,17 @@ Page({
         dbName: '查询出要进入的库',
         /** 本地档案库的数量 */
         dbLength: 0,
-        /** 步进器 是否打开 */
-        stepOpen: false,
-        /** 步进器 内容 {icon:string, title:string, note:string} */
-        stepList: []
     },
     onResize() {
         $g.g.systemInfo = WXSystemInfo.getSync()
         WXSize.getSize($g.g.systemInfo)
     },
     onLoad(query: any) {
+        const scene: DataScene = $g.g.app.scene
+        if(scene.endBarHeight > 0){
+            $g.g.systemInfo = WXSystemInfo.getSync()
+            WXSize.getSize($g.g.systemInfo)
+        }
         const dbItem: DBItem | null = $g.g.dbLib.selectItem
         if (dbItem) {
             this.setData({
@@ -72,6 +73,7 @@ Page({
         }
     },
     onShow() {
+        $g.step.clear()
         this.autoOpen()
     },
     async autoOpen() {
@@ -107,13 +109,23 @@ Page({
     },
     /** 用户选择一个文件 */
     async btUploadFile(e: any) {
-        $g.log('选择文件');
+        // $g.log('选择文件');
+        $g.step.clear()
+        $g.step.add('选择导入文件')
+        $g.step.add('检查本地剩余空间是否满足')
+        $g.step.add('创建本地档案信息')
+        $g.step.add('保存选择文件到本地')
+        $g.step.add('删除临时文件')
+        $g.step.add('保存档案信息到本地')
+        await $g.step.jump(0)
         const dbLib: DBLib = $g.g.dbLib
         const fileFree: number = dbLib.fileSizeMax - dbLib.fileSizeAll
         const chooseList: WechatMiniprogram.ChooseFile[] = await WXFile.chooseFile(1);
         if (chooseList.length) {
             const chooseFile: WechatMiniprogram.ChooseFile = chooseList[0]
+            await $g.step.next()
             if ((chooseFile.size * 2) < dbLib.fileSizeMax - dbLib.fileSizeAll) {
+                await $g.step.next()
                 let name: string = this.clearFileName(chooseFile.name)
                 const dbItem: DBItem = new DBItem()
                 dbItem.name = name
@@ -122,20 +134,27 @@ Page({
                 dbItem.timeChange = new Date()
                 dbItem.filename = chooseFile.name
                 dbItem.fileSizeAll = chooseFile.size
+                await $g.step.next()
                 if (await WXFile.saveFile(chooseFile.path, `db/${dbItem.path}/db.kdbx`)) {
+                    await $g.step.next()
                     await WXFile.clearTempFile(chooseFile.path)
                     dbLib.lib.push(dbItem)
                     dbLib.selectId = dbItem.localId
+                    await $g.step.next()
                     dbLib.storageSaveThis()
                     this.setData({ selectName: dbItem.name })
+                    await $g.step.clear()
                 } else {
+                    await $g.step.clear()
                     const allFileSize: number = await WXFile.getFileSize('', true)
                     $g.log('本地文件尺寸 : ' + GFileSize.getSize(allFileSize))
                 }
             } else {
+                await $g.step.clear()
                 wx.showToast({ title: `本地空间不足, 剩余空间 ${GFileSize.getSize(fileFree)}, 文件大小 ${GFileSize.getSize(chooseFile.size)}, 文件周转空间 ${GFileSize.getSize(chooseFile.size)}`, icon: 'none', mask: true })
             }
         } else {
+            await $g.step.clear()
             wx.showToast({ title: '请先选择一个本地文件', icon: 'none', mask: false })
         }
     },
@@ -159,15 +178,23 @@ Page({
     },
     /** 使用 data 的 passWord 打开默认选中的档案 */
     async btOpenSelectDb() {
-        if (this.checkPassWord() === false) return;
+        if (this.checkPassWord() === false) {
+            return;
+        }
         await this.openDbItem($g.g.dbLib.selectItem)
     },
     /** 使用 FaceID 解锁密码库 */
     async btOpenSelectDbFace() {
         const dbItem: DBItem | null = $g.g.dbLib.selectItem
         if (dbItem && dbItem.pass.facial) {
+            $g.step.clear()
+            $g.step.add('获取人脸信息')
+            $g.step.add('获取加密指令')
+            $g.step.add('打开本地档案')
+            await $g.step.jump(0)
             let o: string | null = await WXSoterAuth.start(['facial'])
             if (o && o.length) {
+                await $g.step.next()
                 let key: string = o + '|dbid:' + dbItem.localId.toString()
                 await AES.setKey(key)
                 let passBase64: string = dbItem.pass.facial
@@ -177,6 +204,7 @@ Page({
                     let pass: string = EncodingText.decode(new Uint8Array(passJM))
                     passPV = KdbxApi.getPassPV(pass)
                     pass = ''
+                    await $g.step.next()
                     await this.openDbItem(dbItem)
                 } else {
                     wx.showToast({ title: '解密失败!', icon: 'none', mask: true })
@@ -184,14 +212,21 @@ Page({
             }
             o = ''
             await AES.setKey('')
+            $g.step.clear()
         }
     },
     /** 使用 指纹 解锁密码库 */
     async btOpenSelectDbPrint() {
         const dbItem: DBItem | null = $g.g.dbLib.selectItem
         if (dbItem && dbItem.pass.fingerPrint) {
+            $g.step.clear()
+            $g.step.add('获取指纹信息')
+            $g.step.add('获取加密指令')
+            $g.step.add('打开本地档案')
+            await $g.step.jump(0)
             let o: string | null = await WXSoterAuth.start(['fingerPrint'])
             if (o && o.length) {
+                await $g.step.next()
                 let key: string = o + '|dbid:' + dbItem.localId.toString()
                 await AES.setKey(key)
                 let passBase64: string = dbItem.pass.fingerPrint
@@ -201,6 +236,7 @@ Page({
                     let pass: string = EncodingText.decode(new Uint8Array(passJM))
                     passPV = KdbxApi.getPassPV(pass)
                     pass = ''
+                    await $g.step.next()
                     await this.openDbItem(dbItem)
                 } else {
                     wx.showToast({ title: '解密失败!', icon: 'none', mask: true })
@@ -208,6 +244,7 @@ Page({
             }
             o = ''
             await AES.setKey('')
+            $g.step.clear()
         }
     },
     async openDbItem(dbItem: DBItem | null) {
@@ -217,8 +254,7 @@ Page({
                     $g.g.app.timeMouse = Date.now()
                     wx.reLaunch({ url: './../showdb/index/index' })
                 } else {
-                    const dbLib: DBLib = $g.g.dbLib
-                    const findOpen: DBItem | null = dbLib.selectItem
+                    const findOpen: DBItem | null = $g.g.dbLib.selectItem
                     // 关闭已经打开的库
                     if (findOpen && findOpen.localId !== dbItem.localId) {
                         findOpen.db = null
@@ -226,7 +262,7 @@ Page({
                     try {
                         await dbItem.open(passPV)
                     } catch (e) {
-                        wx.showToast({ title: '解密失败!', icon: 'none', mask: false })
+                        wx.showModal({ title: '错误', content: '解密仓库失败,请确认密码!', showCancel: false })
                     }
                     if (dbItem.db) {
                         $g.g.app.timeMouse = Date.now()
@@ -237,8 +273,9 @@ Page({
                 wx.showToast({ title: '请输入文件密码!', icon: 'none', mask: false })
             }
         } else {
-            wx.showToast({ title: '未找到选择的档案!', icon: 'none', mask: false })
+            wx.showModal({ title: '错误', content: '未找到选择的档案!', showCancel: false })
         }
+        await $g.step.clear()
     },
     /** 创建一个新库 */
     creatNewFile(e: any) {
@@ -251,11 +288,19 @@ Page({
             async success(e) {
                 if (e.confirm) {
                     $g.log('g|time|start')
-                    await WXKeepScreen.on()
+                    $g.step.clear()
+                    $g.step.add('创建档案')
+                    $g.step.add('获取档案二进制并加密')
+                    $g.step.add('创建本地档案信息')
+                    $g.step.add('保存档案加密文件')
+                    $g.step.add('保存档案信息')
+                    await $g.step.jump(0)
                     const db: Kdbx = KdbxApi.create('我的密码档案', passPV.getText())
                     const pv: ProtectedValue = KdbxApi.getPassPV(passPV.getText())
                     $g.log('获取 db 二进制')
+                    await $g.step.next()
                     const fileByte: ArrayBuffer = await KdbxApi.save(db)
+                    await $g.step.next()
                     $g.log('创建 db 信息')
                     const dbItem: DBItem = new DBItem()
                     dbItem.localId = new Date().getTime()
@@ -272,8 +317,8 @@ Page({
                     // const n1: number = demo.rUint32()
                     // const n2: number = demo.rUint32()
                     // $g.log(`写入的脑袋头 n1 : ${n1} n2 : ${n2} 长度: ${fileByte.byteLength}`)
+                    await $g.step.next()
                     if (await WXFile.writeFile(`db/${dbItem.path}/db.kdbx`, fileByte, 0, 'binary')) {
-
                         // $g.log('检查文件')
                         // const info = await WXFile.getFileStat(`db/${dbItem.path}/db.kdbx`)
                         // const a: any = await WXFile.readFile(`db/${dbItem.path}/db.kdbx`)
@@ -281,7 +326,7 @@ Page({
                         // const n3: number = demo2.rUint32()
                         // const n4: number = demo2.rUint32()
                         // $g.log(`读出的脑袋头 n1 : ${n1} n2 : ${n2} 长度${a.byteLength} 文件信息`, info)
-
+                        await $g.step.next()
                         $g.log('获取文件夹大小')
                         await dbItem.fileSize()
                         const dbLib: DBLib = $g.g.dbLib
@@ -291,17 +336,15 @@ Page({
                         $g.log('保存缓存')
                         dbLib.storageSaveThis()
                         $g.log('g|time|end')
-                        await WXKeepScreen.off()
                         // 切换页面
+                        await $g.step.clear()
                         $g.g.app.timeMouse = Date.now()
-                        wx.reLaunch({
-                            url: './../showdb/index/index'
-                        })
+                        wx.reLaunch({ url: './../showdb/index/index' })
                         return
                     } else {
-                        wx.showToast({ title: '写入文件失败!', icon: 'none', mask: false })
+                        wx.showModal({ title: '错误', content: '写入档案信息失败!', showCancel: false })
                     }
-                    await WXKeepScreen.off()
+                    await $g.step.clear()
                 } else {
                     that.setData({ passWord: '' })
                 }
@@ -351,8 +394,6 @@ Page({
     },
     /** 打开本地数据库列表 */
     btShowDBList() {
-        wx.navigateTo({
-            url: './../showdb/dblist/dblist'
-        })
+        wx.navigateTo({ url: './../showdb/dblist/dblist' })
     }
 })

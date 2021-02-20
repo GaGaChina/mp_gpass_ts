@@ -1,17 +1,3 @@
-<wxs module="pagefun">
-    module.exports = {
-        run: function (o) {
-            var w = 590
-            if (o.candel) {
-                w = w - 75
-            }
-            if (o.canmove) {
-                w = w - 75
-            }
-            return w
-        }
-    }
-</wxs>
 <g-sub-awesome-icon open="{{openWinIcon}}" selectName="{{info.icon}}" bind:change="changeIcon"></g-sub-awesome-icon>
 <g-sub-creat-pass open="{{ openWinPass }}" bind:pass="setPass"></g-sub-creat-pass>
 <block wx:if="{{ type === 'show' || type === 'history' }}">
@@ -37,7 +23,7 @@
         <view class="show">
             <view class="show_top">
                 <view class="show_icon"><i class="fa fa-{{info.icon}}"></i></view>
-                <view class="show_key">{{ info.keyname }}</view>
+                <view class="show_key">{{info.keyname}}</view>
             </view>
             <button class="show_value bt_clear" selectable="true" bindtap="btCopy"><text>{{info.value}}</text></button>
         </view>
@@ -49,23 +35,18 @@
         <view class="edit_top">
             <!-- 图标 -->
             <block wx:if="{{ info.changeicon }}">
-                <button class="edit_icon" bindtap="btSelectIcon"><i class="fa fa-{{info.icon}}"></i></button>
+                <button class="edit_icon" bindtap="btSelectIcon"><i class="fa fa-{{ info.icon }}"></i></button>
             </block>
             <block wx:else>
-                <view class="edit_icon"><i class="fa fa-{{info.icon}}"></i></view>
+                <view class="edit_icon"><i class="fa fa-{{ info.icon }}"></i></view>
             </block>
             <!-- 键值 -->
             <block wx:if="{{ info.changekey }}">
-                <input class="edit_key{{ warningkey?' edit_key_warning':'' }}"
-                    style="width:{{ pagefun.run(info) }}rpx;" type="text" placeholder="请输入字段名称"
-                    value="{{ info.keyname }}" bindinput="inputKeyChange" />
-                <button wx:if="{{ info.candel }}" class="small_bt" bindtap="btDel"><i
-                        class="fa fa-trash-o"></i></button>
-                <button wx:if="{{ info.canmove }}" class="small_bt" bindtap="btMove"><i class="fa fa-bars"></i></button>
+                <input class="edit_key{{ info.warningkey?' edit_key_warning':'' }}" type="text" placeholder="请输入字段名称"
+                    value="{{ info.key }}" bindinput="inputKeyChange" />
             </block>
             <block wx:else>
-                <input class="edit_key edit_key_disabled" style="width:590rpx" type="text" disabled
-                    value="{{ info.keyname }}" />
+                <input class="edit_key edit_key_disabled" type="text" disabled value="{{ info.key }}" />
             </block>
         </view>
         <!-- 值 : 字符串形式 -->
@@ -77,9 +58,9 @@
         <block wx:elif="{{ info.valuetype === 'pv' }}">
             <view class="edit_pass_list">
                 <input class="edit_pass" password="{{ !showpass }}" type="text" placeholder="请输入字段内容"
-                    value="{{info.value}}" bindinput="inputValChange" /><button class="small_bt" bindtap="btShowPass"><i
-                        class="fa fa-{{ showpass?'eye':'eye-slash' }}"></i></button><button class="small_bt"
-                    bindtap="btOpenPass"><i class="fa fa-refresh"></i></button>
+                    value="{{info.value}}" bindinput="inputValChange" /><button class="edit_pass_bt"
+                    bindtap="btShowPass"><i class="fa fa-{{ showpass?'eye':'eye-slash' }}"></i></button><button
+                    class="edit_pass_bt" bindtap="btOpenPass"><i class="fa fa-refresh"></i></button>
             </view>
 
         </block>

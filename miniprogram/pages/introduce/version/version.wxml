@@ -1,6 +1,14 @@
 <g-page-bg></g-page-bg>
 <g-page-top canBack="{{true}}" title="软件介绍"></g-page-top>
-<scroll-view scroll-y enable-flex class="scroll" style="height:{{fullPageHeight}}rpx;">
+<scroll-view scroll-y enable-flex class="scroll" style="height:{{ fullPageHeight }}rpx;">
+    <view class="title">
+        1.2.0 发布日期 : 2021-02-20 04:10
+    </view>
+    <view class="info">
+        <text>历史记录查看、还原、删除
+            优化自定义字段,增加自定义自动排序功能
+            导入文件只清理日志的附件</text>
+    </view>
     <view class="title">
         1.1.0 发布日期 : 2021-02-18 03:00
     </view>

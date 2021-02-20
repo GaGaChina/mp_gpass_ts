@@ -108,10 +108,10 @@ export class $g {
      * @param o 对象
      * @param c 初始化类名
      */
-    public static isType1111<T>(o: any, c: { new(): T; }): boolean {
-        if (Object.prototype.toString.call(o) === Object.prototype.toString.call(new c())) return true;
-        return false;
-    }
+    // public static isType1111<T>(o: any, c: { new(): T; }): boolean {
+    //     if (Object.prototype.toString.call(o) === Object.prototype.toString.call(new c())) return true;
+    //     return false;
+    // }
 
     /**
      * 将对象 a → b 内容对象路径为 keys 部分内容复制到b的内容里, 返回获得的b

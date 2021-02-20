@@ -1,0 +1,18 @@
+<view wx:if="{{ open }}" class="root" style="height:{{ sceneHeight }}rpx;">
+    <scroll-view scroll-y enable-flex class="scroll" style="height:{{ centerHeight }}rpx;top:{{ topHeight }}rpx;">
+        <block wx:for="{{ list }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+            <button class="item" data-index="{{ index }}" catchtouchstart="dragStart" catchtouchmove="dragMove"
+                catchtouchend="dragEnd">
+                <view class="icon"><i class="fa fa-{{ item.icon }} icon_i"></i></view>
+                <input class="title" type="text" disabled value="{{ item.key }}" />
+                <view class="bt_move"><i class="fa fa-bars"></i></view>
+            </button>
+        </block>
+        <view wx:if="{{ dragBegin }}" class="item item_move" style="top:{{ dragStartY }}rpx;">
+            <view class="icon"><i class="fa fa-{{ selectIcon }} icon_move"></i></view>
+            <input class="title_move" type="text" disabled value="{{ selectKey }}" />
+            <view class="bt_move"><i class="fa fa-bars"></i></view>
+        </view>
+    </scroll-view>
+    <button class="bt_ok" bindtap="btClose">完成移动</button>
+</view>

@@ -56,7 +56,7 @@
                         <view class="info_item_icon"><i class="fa fa-{{ item.icon }}"></i></view>
                         <button data-uuid="{{item.uuid}}" class="info_item_center bt_clear" bindtap="btShowUUID">
                             <text class="info_item_title">{{item.title}}</text>
-                            <text wx:if="{{ item.password }}" class="info_item_other">用户名 : {{item.username}}</text>
+                            <text wx:if="{{ item.username }}" class="info_item_other">用户名 : {{item.username}}</text>
                             <text wx:if="{{ item.password }}" class="info_item_other">密　码 : {{item.password}}</text>
                         </button>
                         <view wx:if="{{ item.isGroup }}" class="info_item_group"><i class="fa fa-bookmark"></i>

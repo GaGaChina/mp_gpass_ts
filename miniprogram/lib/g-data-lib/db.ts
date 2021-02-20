@@ -680,7 +680,18 @@ export class DBItem extends DBBase {
                 }
                 // 写入新的值
                 entry.fields['GKeyValue'] = JSON.stringify(gkv)
-                entry.removeHistory(0, entry.history.length)
+                // 去除历史中的二进制内容
+                for (let i = 0; i < entry.history.length; i++) {
+                    const history: Entry = entry.history[i]
+                    const history_binaries: any = history.binaries
+                    const history_fileList: Array<string> = Object.keys(history_binaries)
+                    for (let j = 0; j < history_fileList.length; j++) {
+                        const history_fileName: string = history_fileList[j]
+                        delete history_binaries[history_fileName]
+                        isChange = true
+                    }
+                }
+                // entry.removeHistory(0, entry.history.length)
                 // $g.log('调整完毕 Entrie', entry)
             }
         }

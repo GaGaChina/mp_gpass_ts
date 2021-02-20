@@ -1,7 +1,10 @@
+<g-entry-field-move open="{{ openWinMove }}" list="{{ movelist }}" bind:change="indexChange"></g-entry-field-move>
 <!-- <block wx:if="{{type==='show'}}"> -->
 <view class="show">
-    <block wx:for="{{list}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-        <g-entry-field info="{{item}}" type="{{type}}" showborder="{{index!==(list.length-1)}}" bind:change="fieldchange"></g-entry-field>
+    <block wx:for="{{ list }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+        <g-entry-field source="{{ item }}" type="{{ type }}" showborder="{{ index!==(list.length-1) }}"
+            warningkey="{{ warningkey.length>index?warningkey[index]:false }}" bind:change="fieldchange"
+            bind:move="fieldMove" bind:del="fieldDel"></g-entry-field>
     </block>
 </view>
 <!-- </block>

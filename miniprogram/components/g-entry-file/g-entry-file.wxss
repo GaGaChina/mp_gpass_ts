@@ -167,6 +167,7 @@
     color: #9af6fd;
     font-size: 28rpx;
     line-height: 60rpx;
+    width: 590rpx;
     height: 75rpx;
     padding: 20rpx;
     box-sizing: border-box;
@@ -216,7 +217,7 @@
     background: #202435;
 }
 
-.small_bt {
+.edit_pass_bt {
     width: 75rpx;
     height: 75rpx;
     font-size: 36rpx;

@@ -1,0 +1,137 @@
+@import "./../../fonts/awesome.wxss";
+
+.root {
+    position: fixed;
+    width: 750rpx;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 3000;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.scroll {
+    width: 750rpx;
+    position: relative;
+}
+
+.item {
+    display: flex;
+    position: relative;
+    box-sizing: border-box;
+    text-align: left;
+    height: 100rpx;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 40rpx;
+    margin-right: 40rpx;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 10rpx;
+    padding-bottom: 10rpx;
+    border-bottom: 1px dotted #ccc;
+    background: none;
+}
+
+/* 获取焦点时的样式 */
+.item:focus {
+    background: none;
+}
+
+/* 你光标经过某一元素时的样式 */
+.item:hover {
+    background: none;
+}
+
+/* 按钮按下去的样式 */
+.item.button-hover {
+    background: none;
+}
+
+.item_move {
+    display: flex;
+    position: absolute;
+    background: rgba(0, 12, 54, 0.5);
+    border: 1px solid #9ce72a;
+}
+
+.icon {
+    width: 80rpx;
+    height: 80rpx;
+    box-sizing: border-box;
+    padding-left: 20rpx;
+    line-height: 80rpx;
+}
+
+.icon_move {
+    width: 60rpx;
+    height: 60rpx;
+    text-align: center;
+    font-size: 42rpx;
+    line-height: 60rpx;
+    color: #000c36;
+    border-radius: 50%;
+    background-color: #9ce72a;
+}
+
+.icon_i {
+    width: 60rpx;
+    height: 60rpx;
+    text-align: center;
+    font-size: 42rpx;
+    line-height: 60rpx;
+    color: #000c36;
+    border-radius: 50%;
+    background-color: #9af6fd;
+}
+
+.title {
+    margin-left: 20rpx;
+    color: #9af6fd;
+    font-size: 28rpx;
+    line-height: 80rpx;
+    width: 495rpx;
+    height: 80rpx;
+    padding: 20rpx;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.title_move {
+    margin-left: 20rpx;
+    color: #9ce72a;
+    font-size: 28rpx;
+    font-weight: bold;
+    line-height: 80rpx;
+    width: 495rpx;
+    height: 80rpx;
+    padding: 20rpx;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.bt_move {
+    width: 75rpx;
+    height: 75rpx;
+    font-size: 36rpx;
+    text-align: center;
+    line-height: 75rpx;
+    border: 1px solid #9b9b9d;
+    color: #fff;
+}
+
+.bt_ok {
+    width: 580rpx;
+    height: 75rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 0;
+    border: 1px solid #e9d592;
+    line-height: 75rpx;
+    margin: 0 auto;
+    margin-top: 30rpx;
+    margin-bottom: 30rpx;
+    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+}

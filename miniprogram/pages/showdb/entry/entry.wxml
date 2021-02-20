@@ -1,39 +1,54 @@
 <g-page-bg></g-page-bg>
 <g-page-top title="{{pagetitle}}"></g-page-top>
 <g-sub-step></g-sub-step>
-<view class="info" style="height:{{fullPageHeight}}rpx;">
-    <scroll-view scroll-y enable-flex class="scroll" style="height:{{fullPageHeight}}rpx;">
-        <g-entry-title icon="{{icon}}" title="{{title}}" type="{{pagetype}}" bind:change="titleChange"></g-entry-title>
-        <g-entry-field-group list="{{defaultList}}" type="{{pagetype}}" bind:change="defaultListChange">
+<view class="info" style="height:{{ fullPageHeight }}rpx;">
+    <scroll-view scroll-y enable-flex class="scroll" style="height:{{ fullPageHeight }}rpx;">
+        <g-entry-title icon="{{ icon }}" title="{{ title }}" type="{{ pagetype }}" bind:change="titleChange">
+        </g-entry-title>
+        <g-entry-field-group list="{{ defaultList }}" type="{{ pagetype }}" bind:change="defaultListChange">
         </g-entry-field-group>
-        <block wx:if="{{otherList.length}}">
+        <block wx:if="{{ otherList.length }}">
             <view class="group">
                 <view class="group_icon"><i class="fa fa-key"></i></view>
                 <view class="group_title">其他内容</view>
             </view>
-            <g-entry-field-group list="{{otherList}}" type="{{pagetype}}" bind:change="otherListChange">
+            <g-entry-field-group list="{{ otherList }}" type="{{ pagetype }}" checkkey="{{ true }}"
+                bind:change="otherListChange">
             </g-entry-field-group>
         </block>
 
 
-        <block wx:if="{{fileList.length}}">
+        <block wx:if="{{ fileList.length && false }}">
 
             <view class="group">
                 <view class="group_icon"><i class="fa fa-key"></i></view>
                 <view class="group_title">附件</view>
             </view>
-            <block wx:for="{{fileList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
+            <block wx:for="{{ fileList }}" wx:key="key" wx:for-index="index" wx:for-item="item">
                 <view class="item">
-                    <view wx:if="{{item.icon}}"><i class="fa fa-{{item.icon}}"></i></view>
-                    <view>{{item.type}}　：</view>
+                    <view wx:if="{{ item.icon }}"><i class="fa fa-{{ item.icon }}"></i></view>
+                    <view>{{ item.type }}　：</view>
                     <view class="item_info">{{item.name}}</view>
                 </view>
             </block>
+            <view class="file_item">
+                <view class="file_img">
+                    <image src=""></image>
+                </view>
+                <view class="file_right">
+                    <view class="file_title">
+                        <i class="fa fa-file-photo-o"></i><text>图片名称</text>
+                    </view>
+                    <view class="file_info">文件大小:3M</view>
+                    <button>查看文件</button>
+                </view>
+
+            </view>
 
         </block>
-        <block wx:if="{{pagetype === 'show'}}">
+        <block wx:if="{{ pagetype === 'show' || pagetype === 'history' }}">
             <view class="group">
-                <view class="group_icon"><i class="fa fa-key"></i></view>
+                <view class="group_icon"><i class="fa fa-clock-o"></i></view>
                 <view class="group_title">条目状态</view>
             </view>
             <view class="time">
@@ -43,25 +58,28 @@
             </view>
         </block>
 
-        <block wx:if="{{historyList.length || true}}">
-
+        <block wx:if="{{ historyList.length && pagetype === 'show' }}">
             <view class="group">
                 <view class="group_icon"><i class="fa fa-history"></i></view>
                 <view class="group_title">历史记录</view>
             </view>
-            <block wx:for="{{historyList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-                <view class="item">
-                    <view wx:if="{{item.icon}}"><i class="fa fa-{{item.icon}}"></i></view>
-                    <view>{{item.type}}　：</view>
-                    <view class="item_info">{{item.name}}</view>
-                </view>
-            </block>
-
+            <view class="history">
+                <block wx:for="{{ historyList }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+                    <view class="history_item">
+                        <view class="history_title">{{ item.title }}</view>
+                        <button data-index="{{ index }}" bindtap="btShowHistory"><i
+                                class="fa fa-search-plus"></i>查看</button>
+                        <button data-index="{{ index }}" bindtap="btReHistory"><i class="fa fa-repeat"></i>恢复</button>
+                        <button data-index="{{ index }}" bindtap="btDelHistory"><i class="fa fa-trash-o"></i>删除</button>
+                    </view>
+                </block>
+            </view>
         </block>
+
         <view class="end_bt">
-            <button wx:if="{{pagetype === 'show'}}" class="bt_big" bindtap="btBack"><i
+            <button wx:if="{{ pagetype === 'show' || pagetype === 'history' }}" class="bt_big" bindtap="btBack"><i
                     class="fa fa-envelope-open-o"></i> 返回</button>
-            <button wx:if="{{pagetype === 'show'}}" class="bt_big" bindtap="btEdit"><i
+            <button wx:if="{{ pagetype === 'show' }}" class="bt_big" bindtap="btEdit"><i
                     class="fa fa-envelope-open-o"></i> 编辑</button>
             <button wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btAddField"><i
                     class="fa fa-envelope-open-o"></i> 添加自定义字段</button>

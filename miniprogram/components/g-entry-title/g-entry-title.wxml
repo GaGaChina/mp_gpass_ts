@@ -1,4 +1,4 @@
-<block wx:if="{{ type==='show' }}">
+<block wx:if="{{ type==='show' || type === 'history' }}">
     <view class="show">
         <view class="show_icon"><i class="fa fa-{{iconstr}}"></i></view>
         <view class="show_right">

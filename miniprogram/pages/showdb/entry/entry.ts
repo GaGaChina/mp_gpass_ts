@@ -57,6 +57,8 @@ Page({
         infotype: '',
         /** 本页展示的UUID对象 */
         uuid: '',
+        /** 展示的历史索引 */
+        historyIndex: 0,
         icon: 0,
         title: '',
         /** 条目的创建时间 */
@@ -76,9 +78,7 @@ Page({
     onLoad(query: any) {
         const scene: DataScene = $g.g.app.scene
         const fullHeight: number = scene.winHeight - scene.topBarHeight - scene.topBarTop
-        this.setData({
-            fullPageHeight: fullHeight,
-        })
+        this.setData({ fullPageHeight: fullHeight })
         $g.log('onLoad GET : ', query);
         if ($g.hasKey(query, 'uuid')) {
             this.data.uuid = String(query.uuid)
@@ -106,6 +106,10 @@ Page({
                 pagetype: type,
                 pagetitle: title
             })
+        }
+        // 历史索引的位置
+        if ($g.hasKey(query, 'history')) {
+            this.setData({ historyIndex: Number(query.history) })
         }
         // 获取条目的模板样式 normal bank web certificate
         if ($g.hasKey(query, 'infotype')) {
@@ -152,6 +156,22 @@ Page({
                     $g.log('缺少选中组')
                 }
                 break;
+            case 'history':
+                const historyEntry: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
+                if (historyEntry && $g.isClass(historyEntry, 'KdbxEntry')) {
+                    if (historyEntry.history.length > this.data.historyIndex) {
+                        entry = historyEntry.history[this.data.historyIndex]
+                        dbItem.selectEntry = entry
+                        this.setInfo()
+                    } else {
+                        wx.navigateBack()
+                    }
+                } else {
+                    wx.navigateBack()
+                }
+                break;
+
+
             default:
                 $g.log('未找到类型 : ' + this.data.pagetype)
         }
@@ -177,24 +197,38 @@ Page({
             title = String(entry.fields?.Title)
         }
         // --------------------------特殊意义对象
-        gkv = {}
         if ($g.hasKey(entry.fields, 'GKeyValue')) {
             const gkvJSON: any = entry.fields['GKeyValue']
             gkv = JSON.parse(gkvJSON)
+        } else {
+            gkv = {}
         }
         // --------------------------其他字段为特殊字段
         const defaultList: Array<Object> = new Array<Object>()
         const firstKey: Array<string> = ['UserName', 'Password', 'URL', 'Notes']
         for (let i = 0; i < firstKey.length; i++) {
-            defaultList.push(this.getFieldKey(firstKey[i], defaultList.length, true, false, false, false))
+            defaultList.push(this.getFieldKey(firstKey[i], defaultList.length, true, false, false, false, false))
         }
         // --------------------------添加其他的字段
         const otherList: Array<Object> = new Array<Object>()
         const otherKey: Array<string> = Object.keys(entry.fields)
+        if ($g.hasKey(gkv, 'keystep')) {
+            // 按顺序先排有循序的
+            const keystep: Array<string> = gkv['keystep']
+            for (let i = 0; i < keystep.length; i++) {
+                const key = keystep[i]
+                const keyindex: number = otherKey.indexOf(key)
+                if (keyindex !== -1) {
+                    otherKey.splice(keyindex, 1)
+                    otherList.push(this.getFieldKey(key, otherList.length, true, true, true, true, true))
+                }
+            }
+        }
+        // 添加剩余没有循序的
         for (let i = 0; i < otherKey.length; i++) {
-            const key = otherKey[i];
+            const key = otherKey[i]
             if (key !== 'GKeyValue' && key !== 'Title' && firstKey.indexOf(key) === -1) {
-                otherList.push(this.getFieldKey(key, otherList.length, true, true, true, true))
+                otherList.push(this.getFieldKey(key, otherList.length, true, true, true, true, true))
             }
         }
         // --------------------------添加附件
@@ -232,7 +266,13 @@ Page({
         // --------------------------添加历史记录
         const historyList: Array<Object> = new Array<Object>()
         if (entry.history.length) {
-
+            for (let i = 0; i < entry.history.length; i++) {
+                const item: Entry = entry.history[i]
+                const historyItem: object = {
+                    title: TimeFormat.showLang(item.times.lastModTime),
+                }
+                historyList.push(historyItem)
+            }
         }
         this.setData({
             icon: entry.icon,
@@ -307,7 +347,6 @@ Page({
     },
     otherListChange(e: any): void {
         this.data.otherList = e.detail
-        this.checkOther()
     },
     /**
      * 添加一些默认值
@@ -318,7 +357,7 @@ Page({
      * @param changekey 是否可以修改键名
      * @param candel 是否可以删除这一条
      */
-    getFieldKey(key: string, index: number, changeicon: boolean = true, changetype: boolean = true, changekey: boolean = true, candel: boolean = true): Object {
+    getFieldKey(key: string, index: number, changeicon: boolean = true, changetype: boolean = true, changekey: boolean = true, candel: boolean = true, canmove: boolean = true): Object {
         let keyname: string = key
         let value: string = ''
         let valuetype: string = 'string'
@@ -361,13 +400,14 @@ Page({
             icon: icon,
             key: key,
             keyname: keyname,
+            keydiff: true,
             value: value,
             valuetype: valuetype,
             changeicon: changeicon,
             changetype: changetype,
             changekey: changekey,
             candel: candel,
-            warningkey: false,
+            canmove: canmove,
         }
         return out
     },
@@ -377,15 +417,16 @@ Page({
         let out: Object = {
             index: this.data.otherList.length,
             icon: 'key',
-            key: '',
-            keyname: '',
+            key: '自定义字段' + this.data.otherList.length,
+            keyname: '自定义字段' + this.data.otherList.length,
+            keydiff: false,
             value: '',
             valuetype: 'string',
             changeicon: true,
             changetype: true,
             changekey: true,
             candel: true,
-            warningkey: false,
+            canmove: true,
         }
         this.data.otherList.push(out)
         this.setData({ otherList: this.data.otherList })
@@ -414,58 +455,28 @@ Page({
             }
         }
     },
-    /** 鉴定 otherList 中的值是否全合法 */
+    /** 鉴定 otherList 中的值是否全合法, false 未检测通过 */
     checkOther(): boolean {
-        $g.g.app.timeMouse = Date.now()
-        let haveCheck: boolean = false
-        let changeWarning: boolean = false
         const firstKey: Array<string> = ['title', 'username', 'password', 'url', 'notes']
         // --------- 查找重命名的
         let keyName: Array<string> = new Array<string>()
-        let keyLen: Array<number> = new Array<number>()
-        let keyLib: Array<Array<number>> = new Array<Array<number>>()
         for (let i = 0; i < this.data.otherList.length; i++) {
             const info: any = this.data.otherList[i]
-            if (firstKey.indexOf(info.key.toLocaleLowerCase()) !== -1) {
-                if (!info.warningkey) {
-                    changeWarning = true
-                    info.warningkey = true
-                }
-                haveCheck = true
+            const key: string = info.key.toLocaleLowerCase()
+            if (key === '') {
+                return false
+            } else if (firstKey.indexOf(key) !== -1) {
+                return false
             } else {
-                let keyIndex: number = keyName.indexOf(info.key.toLocaleLowerCase())
+                let keyIndex: number = keyName.indexOf(key)
                 if (keyIndex === -1) {
-                    keyName.push(info.key.toLocaleLowerCase())
-                    keyLen.push(1)
-                    keyLib.push([i])
+                    keyName.push(key)
                 } else {
-                    keyLen[keyIndex] = keyLen[keyIndex] + 1
-                    keyLib[keyIndex].push(i)
+                    return false
                 }
             }
         }
-        for (let i = 0; i < keyName.length; i++) {
-            if (keyLen[i] > 1) {
-                for (let j = 0; j < keyLib[i].length; j++) {
-                    const item: any = this.data.otherList[keyLib[i][j]]
-                    if (!item.warningkey) {
-                        item.warningkey = true
-                        changeWarning = true
-                    }
-                    haveCheck = true
-                }
-            } else {
-                const item: any = this.data.otherList[keyLib[i][0]]
-                if (item.warningkey) {
-                    item.warningkey = false
-                    changeWarning = true
-                }
-            }
-        }
-        if (changeWarning) {
-            this.setData({ otherList: this.data.otherList })
-        }
-        return !haveCheck
+        return true
     },
     async btSave(e: any) {
         $g.g.app.timeMouse = Date.now()
@@ -482,6 +493,10 @@ Page({
             dbItem.addEntry = null
         } else {
             entry.pushHistory()
+            // 最多5条, 否则很乱
+            if (entry.history.length > 5) {
+                entry.removeHistory(0, entry.history.length - 5)
+            }
         }
         entry.times.update()
         entry.icon = this.data.icon
@@ -510,11 +525,13 @@ Page({
                     break;
             }
         }
-        // 设置自定义字段
+        // 设置自定义字段 / 设置自定义字段的循序
+        gkv['keystep'] = []
         for (let i = 0; i < this.data.otherList.length; i++) {
             const info: any = this.data.otherList[i];
             if (!$g.hasKey(gkv, 'icon')) gkv['icon'] = {}
             gkv['icon'][info.key] = info.icon
+            gkv['keystep'].push(info.key)
             switch (info.valuetype) {
                 case 'string':
                 case 'txt':
@@ -525,6 +542,7 @@ Page({
                     break;
             }
         }
+        // 
         entry.fields['GKeyValue'] = JSON.stringify(gkv)
         await dbItem.saveFileAddStorage()
         await $g.step.clear()
@@ -538,10 +556,9 @@ Page({
     },
     /** 组件, 当台头输入框有变化的时候回调 */
     titleChange(e: any) {
-        const info: any = e.detail
         this.setData({
-            icon: info.icon,
-            title: info.title
+            icon: e.detail.icon,
+            title: e.detail.title
         })
     },
     btDel(e: any) {
@@ -555,6 +572,26 @@ Page({
                 await that.delEntry()
             }
         })
+    },
+    /** 点击查看历史的时候 */
+    btShowHistory(e: any) {
+        wx.navigateTo({
+            url: `./entry?type=history&uuid=${this.data.uuid}&history=${e.currentTarget.dataset.index}`
+        })
+    },
+    /** 恢复某一个历史数据 */
+    btReHistory(e: any) {
+        const copy: Entry = entry.history[Number(e.currentTarget.dataset.index)]
+        entry.copyFrom(copy)
+        this.setInfo()
+    },
+    /** 删除历史记录 */
+    async btDelHistory(e: any) {
+        entry.removeHistory(Number(e.currentTarget.dataset.index), 1)
+        this.data.historyList.splice(Number(e.currentTarget.dataset.index), 1)
+        this.setData({ historyList: this.data.historyList })
+        await dbItem.saveFileAddStorage()
+        await $g.step.clear()
     },
     /** 删除现在的这个对象 */
     async delEntry() {

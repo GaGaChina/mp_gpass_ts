@@ -12,7 +12,7 @@ App<IAppOption>({
             urlApi: '',
             urlImg: '',
             id: 'wx98e663f2bb3467bd',
-            ver: '1.1.0',
+            ver: '1.2.0',
             local: false,
             DEBUG: true,
             test_heart: 100,

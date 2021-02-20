@@ -1,6 +1,7 @@
 {
     "component": true,
     "usingComponents": {
-        "g-entry-field": "./../g-entry-field/g-entry-field"
+        "g-entry-field": "./../g-entry-field/g-entry-field",
+        "g-entry-field-move": "./../g-entry-field-move/g-entry-field-move"
     }
 }

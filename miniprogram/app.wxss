@@ -1,5 +1,17 @@
 @import "./fonts/awesome.wxss";
 
+/**app.wxss**/
+/* .flex{display: flex;justify-content: space-between;align-items: center;}
+.flex1{flex: 1;}
+.relative{position: relative;}
+page{box-sizing: border-box;color: #333;font-size: 28rpx;}
+view{box-sizing: border-box;}
+input{box-sizing: border-box;line-height: 2;font-size: 28rpx;height: 56rpx;border-radius: 10rpx;padding: 0 10rpx;width: 100%;}
+button{font-size: 28rpx;white-space: nowrap;border-radius: 10rpx;overflow: unset;line-height: 2;height: 56rpx;padding: 0 1rem;color: #333;margin: 0;}
+button::after{border: none;}
+image{display: block;} */
+
+
 button {
     margin: 0;
     padding: 0;
@@ -45,14 +57,17 @@ button::before{
 .bt_clear:focus {
     background: none;
 }
+
 /* 你光标经过某一元素时的样式 */
 .bt_clear:hover {
     background: none;
 }
+
 /* 按钮按下去的样式 */
 .bt_clear.button-hover {
     background: none;
 }
+
 /* 点击状态 */
 .bt_clear:active {
     background: none;

@@ -1,9 +1,10 @@
 import { $g } from "../../../frame/speed.do"
 import { TimeFormat } from "../../../frame/time/time.format"
+import { WXFile } from "../../../frame/wx/wx.file"
 import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
-import { Entry, Kdbx } from "../../../lib/kdbxweb/types"
+import { Entry, Group, Kdbx } from "../../../lib/kdbxweb/types"
 
 /** 整个库 */
 var dbLib: DBLib;
@@ -122,58 +123,64 @@ Page({
             dbItem = select
             if (dbItem.db) db = dbItem.db
         }
-        // 没有设置会返回
-        if (!db) wx.navigateBack()
+        this.reLoadInfo()
     },
     onShow() {
         $g.step.clear()
         // 如果时间超过了, 就切换回其他的页面
-        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
+        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now() || dbItem === null || dbItem.db === null) {
             $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
-            if (dbItem && dbItem.db) dbItem.db = null
+            if (dbItem && dbItem.db) {
+                dbItem.db = null
+                WXFile.rmDir('temp', true)
+            }
             wx.reLaunch({ url: './../../index/index' })
-            return
         }
-        switch (this.data.pagetype) {
-            case 'show':
-                const findEntry: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
-                if (findEntry && $g.isClass(findEntry, 'KdbxEntry')) {
-                    entry = findEntry
-                    entry.times.lastAccessTime = new Date()
-                    dbItem.selectEntry = entry
-                    this.setInfo()
-                } else {
-                    wx.navigateBack()
-                }
-                break;
-            case 'add':
-                if (dbItem.selectGroup) {
-                    entry = db.createEntry(dbItem.selectGroup)
-                    dbItem.addEntry = entry
-                    dbItem.selectEntry = entry
-                    this.setInfo()
-                } else {
-                    $g.log('缺少选中组')
-                }
-                break;
-            case 'history':
-                const historyEntry: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
-                if (historyEntry && $g.isClass(historyEntry, 'KdbxEntry')) {
-                    if (historyEntry.history.length > this.data.historyIndex) {
-                        entry = historyEntry.history[this.data.historyIndex]
+    },
+    reLoadInfo(){
+        // 没有设置会返回
+        if (db) {
+            switch (this.data.pagetype) {
+                case 'show':
+                    const findEntry: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
+                    if (findEntry && $g.isClass(findEntry, 'KdbxEntry')) {
+                        entry = findEntry
+                        entry.times.lastAccessTime = new Date()
                         dbItem.selectEntry = entry
                         this.setInfo()
                     } else {
                         wx.navigateBack()
                     }
-                } else {
-                    wx.navigateBack()
-                }
-                break;
-
-
-            default:
-                $g.log('未找到类型 : ' + this.data.pagetype)
+                    break;
+                case 'add':
+                    if (dbItem.selectGroup === null) {
+                        const groups: Group[] = db.groups
+                        dbItem.selectGroup = groups[0]
+                    }
+                    entry = db.createEntry(dbItem.selectGroup)
+                    dbItem.addEntry = entry
+                    dbItem.selectEntry = entry
+                    this.setInfo()
+                    break;
+                case 'history':
+                    const historyEntry: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
+                    if (historyEntry && $g.isClass(historyEntry, 'KdbxEntry')) {
+                        if (historyEntry.history.length > this.data.historyIndex) {
+                            entry = historyEntry.history[this.data.historyIndex]
+                            dbItem.selectEntry = entry
+                            this.setInfo()
+                        } else {
+                            wx.navigateBack()
+                        }
+                    } else {
+                        wx.navigateBack()
+                    }
+                    break;
+                default:
+                    $g.log('[entry]未找到类型 : ' + this.data.pagetype)
+            }
+        } else {
+            wx.navigateBack()
         }
     },
     onUnload() {
@@ -233,34 +240,20 @@ Page({
         }
         // --------------------------添加附件
         const fileList: Array<Object> = new Array<Object>()
-        const binaries: any = entry.binaries
-        const fileKeyList: Array<string> = Object.keys(binaries)
-        for (let i = 0; i < fileKeyList.length; i++) {
-            const fileName: string = fileKeyList[i]
-            const fileInfo: any = binaries[fileName]
-            let byte: ArrayBuffer = fileInfo.value
-            const fileItem: object = {
-                nameall: fileName,
-                ref: fileInfo.ref,
-                isbyte: true,
-                path: '',
-                size: GFileSize.getSize(byte.byteLength, 3),
-            }
-            this.checkFileItem(fileList, fileItem)
-        }
         // --------------------------添加 GKeyValue 的文件
-        if ($g.hasKey(gkv, 'file')) {
-            const gkvFileList: [] = gkv['file']
+        if ($g.hasKey(gkv, 'filelist')) {
+            const gkvFileList: [] = gkv['filelist']
             for (let i = 0; i < gkvFileList.length; i++) {
                 const gkvFileItem: any = gkvFileList[i];
                 const fileItem: object = {
-                    nameall: gkvFileItem.name,
-                    ref: gkvFileItem.ref,
-                    isbyte: false,
-                    path: gkvFileItem.path,
-                    size: GFileSize.getSize(gkvFileItem.size, 3),
+                    index: i,
+                    name: gkvFileItem.name,// 文件添加的时候的名称
+                    ref: gkvFileItem.ref,// 整个路径 uuid + '.' + ref
+                    pass: gkvFileItem.pass,// AES 加密的密码
+                    size: gkvFileItem.size,// 解压后的长度
+                    savetype: gkvFileItem.savetype,// base64
                 }
-                this.checkFileItem(fileList, fileItem)
+                fileList.push(fileItem)
             }
         }
         // --------------------------添加历史记录
@@ -286,67 +279,14 @@ Page({
             historyList: historyList,
         })
     },
-    /** 对文件信息进行进一步的加工 */
-    checkFileItem(fileList: any, item: any) {
-        const fileName: string = item.nameall
-        const fileNameArr: Array<string> = fileName.split('.')
-        // 文件扩展名
-        let fileTypeName: string = ''
-        if (fileNameArr.length > 1) {
-            fileTypeName = fileNameArr[fileNameArr.length - 1]
-            fileNameArr.pop()
-        }
-        let fileNameClear: string = fileNameArr.join('.')
-        let fileIcon: string = ''
-        let fileType: string = ''
-        fileTypeName = fileTypeName.toLocaleLowerCase()
-        switch (fileTypeName) {
-            case 'jpg':
-            case 'jpeg':
-            case 'png':
-            case 'bmp':
-            case 'gif':
-                fileType = 'image'
-                fileIcon = 'file-photo-o'
-                break;
-            case 'txt':
-                fileType = 'txt'
-                fileIcon = 'file-text-o'
-                break;
-            case 'mp3':
-                fileType = 'sound'
-                fileIcon = 'file-sound-o'
-                break;
-            case 'mp4':
-                fileType = 'movie'
-                fileIcon = 'file-movie-o'
-                break;
-            case 'doc':
-            case 'docx':
-                fileType = 'word'
-                fileIcon = 'file-word-o'
-                break;
-            case 'xlsx':
-                fileType = 'excel'
-                fileIcon = 'file-excel-o'
-                break;
-            case 'pdf':
-                fileType = 'pdf'
-                fileIcon = 'file-pdf-o'
-                break;
-            default:
-                break;
-        }
-        item['name'] = fileNameClear
-        item['icon'] = fileIcon
-        item['type'] = fileType
-        fileList.push(item)
-    },
     defaultListChange(e: any): void {
         this.data.defaultList = e.detail
     },
     otherListChange(e: any): void {
         this.data.otherList = e.detail
+    },
+    fileListChange(e: any): void {
+        this.data.fileList = e.detail
     },
     /**
      * 添加一些默认值
@@ -478,6 +418,26 @@ Page({
         }
         return true
     },
+    /** 查看文件有没有重复的值, false 未检测通过 */
+    checkFile(): boolean {
+        // --------- 查找重命名的
+        let NameList: Array<string> = new Array<string>()
+        for (let i = 0; i < this.data.fileList.length; i++) {
+            const info: any = this.data.fileList[i]
+            const key: string = info.name.toLocaleLowerCase()
+            if (key === '') {
+                return false
+            } else {
+                let nameIndex: number = NameList.indexOf(key)
+                if (nameIndex === -1) {
+                    NameList.push(key)
+                } else {
+                    return false
+                }
+            }
+        }
+        return true
+    },
     async btSave(e: any) {
         $g.g.app.timeMouse = Date.now()
         $g.log('[entry][Save]', this.data.title)
@@ -485,7 +445,11 @@ Page({
         // 前5个只允许出现在 defaultList , 并检查 otherList 不允许重名
         // 判断 key 值是否全部合法
         if (!this.checkOther()) {
-            wx.showToast({ title: '请修复不合法的键值', icon: 'none', mask: false })
+            wx.showModal({ title: '标签错误', content: '请修复不合法的自定义标签名称', showCancel: false })
+            return
+        }
+        if (!this.checkFile()) {
+            wx.showModal({ title: '文件名错误', content: '请修复不合法的文件名', showCancel: false })
             return
         }
         // 通过判断测试..........
@@ -528,7 +492,7 @@ Page({
         // 设置自定义字段 / 设置自定义字段的循序
         gkv['keystep'] = []
         for (let i = 0; i < this.data.otherList.length; i++) {
-            const info: any = this.data.otherList[i];
+            const info: any = this.data.otherList[i]
             if (!$g.hasKey(gkv, 'icon')) gkv['icon'] = {}
             gkv['icon'][info.key] = info.icon
             gkv['keystep'].push(info.key)
@@ -542,13 +506,23 @@ Page({
                     break;
             }
         }
-        // 
+        // 设置文件内容
+        gkv['filelist'] = []
+        for (let i = 0; i < this.data.fileList.length; i++) {
+            const info: any = this.data.fileList[i]
+            gkv['filelist'].push(info)
+        }
+        // 清理文件夹下不属于现在记录的内容以及历史记录中的文件
+
+
+
+
         entry.fields['GKeyValue'] = JSON.stringify(gkv)
         await dbItem.saveFileAddStorage()
         await $g.step.clear()
         dbItem.infoRefresh = true
         this.setData({ pagetype: 'show' })
-        this.onShow()
+        this.reLoadInfo()
     },
     btEdit(e: any) {
         $g.g.app.timeMouse = Date.now()

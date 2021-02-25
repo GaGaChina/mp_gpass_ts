@@ -1,4 +1,5 @@
 import { $g } from "../../../frame/speed.do"
+import { WXFile } from "../../../frame/wx/wx.file"
 import { WXSize } from "../../../frame/wx/wx.resize"
 import { WXSoterAuth } from "../../../frame/wx/wx.soter.auth"
 import { WXSystemInfo } from "../../../frame/wx/wx.system.info"
@@ -56,9 +57,15 @@ Page({
         $g.step.clear()
         this.loadScene()
         // 如果时间超过了, 就切换回其他的页面
-        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
+        if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now() || dbItem === null || dbItem.db === null) {
             $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
-            if (dbItem && dbItem.db) dbItem.db = null
+            const nullAny: any = null
+            if (dbItem) {
+                if (dbItem.db) dbItem.db = null
+                dbItem = nullAny
+            }
+            db = nullAny
+            WXFile.rmDir('temp', true)
             wx.reLaunch({ url: './../../index/index' })
             return
         }

@@ -138,6 +138,7 @@ export class WXSoterAuth {
                 },
                 fail(e) {
                     console.log('[WX生物认证][认证失败]', e);
+                    wx.showToast({ title: e.errMsg, icon: 'none', mask: false })
                     resolve(null)
                 }
             })

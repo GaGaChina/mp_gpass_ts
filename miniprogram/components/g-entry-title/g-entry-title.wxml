@@ -13,7 +13,7 @@
         <button class="edit_icon" bindtap="btSelectIcon"><i class="fa fa-{{iconstr}}"></i></button>
         <view class="edit_right">
             <view class="edit_small_title">条目标题</view>
-            <input class="edit_title" type="text" placeholder="请输入标题" value="{{title}}" bindinput="inputValChange"/>
+            <input class="edit_title" type="text" placeholder="请输入标题" value="{{title}}" always-embed bindinput="inputValChange"/>
         </view>
     </view>
 </block>

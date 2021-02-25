@@ -1,132 +1,131 @@
 @import "./../../app.wxss";
 
 .show {
-    width: 750rpx;
-    background-color: rgba(0, 0, 0, 0.4);
-    padding-top: 10rpx;
-    padding-bottom: 10rpx;
-}
-
-.show_top {
     display: flex;
-    width: 670rpx;
-    min-height: 40rpx;
-    margin-left: 40rpx;
-    margin-right: 40rpx;
-    padding-top: 10rpx;
-    padding-bottom: 20rpx;
-}
-
-.show_icon {
-    width: 40rpx;
-    height: 40rpx;
-    line-height: 40rpx;
-}
-
-.show_icon>i {
-    width: 40rpx;
-    height: 40rpx;
-    text-align: center;
-    font-size: 32rpx;
-    line-height: 40rpx;
-    color: #000c36;
-    border-radius: 50%;
-    background-color: #9af6fd;
-}
-
-.show_key {
-    margin-left: 20rpx;
-    color: #9af6fd;
-    font-size: 32rpx;
-    line-height: 40rpx;
-}
-
-.show_value {
-    display: block;
-    width: 670rpx;
-    color: #fff;
-    min-height: 46rpx;
-    margin-left: 40rpx;
-    margin-right: 40rpx;
-    font-size: 36rpx;
-    line-height: 46rpx;
-    font-weight: bold;
-    word-break: break-all;
-    text-align: left;
+    width: 650rpx;
+    height: 160rpx;
+    box-sizing: border-box;
+    margin: 0 auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 10rpx;
 }
 
 .show_border {
-    width: 690rpx;
+    width: 650rpx;
     margin: 0 auto;
     border-bottom: 1px solid #031034;
 }
 
-/* ---------------------------------------------------- */
-
-.showpv {
-    width: 750rpx;
-    background-color: rgba(0, 0, 0, 0.4);
-    display: flex;
-    padding-top: 10rpx;
-    padding-bottom: 10rpx;
+.file_img {
+    width: 140rpx;
+    height: 140rpx;
+    box-sizing: border-box;
+    padding: 10rpx;
+    border: 1px solid #031034;
+    background: #ccc;
 }
 
-.showpv_left {
-    width: 670rpx;
+.file_img_bg {
+    width: 120rpx;
+    height: 120rpx;
+    background: #fff;
 }
 
-.showpv_top {
-    display: flex;
-    width: 590rpx;
-    min-height: 40rpx;
-    margin-left: 40rpx;
-    margin-right: 40rpx;
-    padding-top: 10rpx;
-    padding-bottom: 20rpx;
-}
-
-
-.showpv_value {
-    display: block;
-    width: 590rpx;
-    color: #fff;
-    min-height: 46rpx;
-    margin-left: 40rpx;
-    margin-right: 40rpx;
-    font-size: 36rpx;
-    line-height: 46rpx;
-    font-weight: bold;
-    word-break: break-all;
-    text-align: left;
-}
-
-.showpv_right {
-    width: 80rpx;
-}
-
-.showpv_showps {
-    display: block;
-    position: relative;
-    width: 80rpx;
-    height: 100%;
-}
-
-.showpv_showps>i {
-    display: block;
-    color: #fff;
-    font-size: 40rpx;
+.file_img_image {
     position: relative;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
 }
 
+.file_right {
+    width: 490rpx;
+    padding-left: 30rpx;
+    box-sizing: border-box;
+}
+
+.file_name {
+    width: 460rpx;
+    height: 50rpx;
+    line-height: 50rpx;
+    color: #fff;
+    font-size: 36rpx;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file_info {
+    display: flex;
+    width: 460rpx;
+    height: 90rpx;
+}
+
+.file_info_left{
+    width: 260rpx;
+    height: 90rpx;
+}
+
+.file_info_left_edit{
+    width: 210rpx;
+    height: 90rpx;
+}
+
+.file_text {
+    width: 100%;
+    height: 45rpx;
+    line-height: 45rpx;
+    color: #fff;
+    font-size: 24rpx;
+}
+
+.file_info_right_bt{
+    width: 100rpx;
+    height: 90rpx;
+    box-sizing: border-box;
+    line-height: 40rpx;
+    font-size: 28rpx;
+    color: #97adca;
+    border: 1px solid #031034;
+    background: linear-gradient(180deg, #04133c, #010928);
+}
+
+/* 你光标经过某一元素时的样式 */
+.file_info_right_bt>button:hover {
+    border: 1px solid #031034;
+    background: linear-gradient(180deg, #04133c, #010928);
+}
+
+/* 按钮按下去的样式 */
+.file_info_right_bt>button.button-hover {
+    border: 1px solid #031034;
+    background: linear-gradient(180deg, #04133c, #010928);
+}
+
+/* 点击状态 */
+.file_info_right_bt>button:active {
+    border: 1px solid #031034;
+    background: linear-gradient(180deg, #04133c, #010928);
+}
+
+.file_info_right_bt>i{
+    width: 50rpx;
+    height: 50rpx;
+    line-height: 50rpx;
+    font-size: 45rpx;
+    color: #97adca;
+}
+
 /* ---------------------------------------------------- */
 .edit {
-    width: 750rpx;
+    display: flex;
+    width: 650rpx;
+    height: 160rpx;
+    box-sizing: border-box;
+    margin: 0 auto;
     background-color: rgba(0, 0, 0, 0.4);
-    padding-top: 10rpx;
-    padding-bottom: 10rpx;
+    padding: 10rpx;
 }
 
 .edit_border {
@@ -135,109 +134,20 @@
     border-bottom: 1px dotted #ccc;
 }
 
-.edit_top {
-    display: flex;
-    width: 670rpx;
-    min-height: 60rpx;
-    margin-left: 40rpx;
-    margin-right: 40rpx;
-    padding-top: 10rpx;
-    padding-bottom: 20rpx;
-}
-
-.edit_icon {
-    width: 60rpx;
-    height: 70rpx;
-    line-height: 70rpx;
-}
-
-.edit_icon>i {
-    width: 60rpx;
-    height: 60rpx;
-    text-align: center;
-    font-size: 42rpx;
-    line-height: 60rpx;
-    color: #000c36;
-    border-radius: 50%;
-    background-color: #9af6fd;
-}
-
-.edit_key {
-    margin-left: 20rpx;
-    color: #9af6fd;
+.edit_name {
+    display: block;
+    width: 460rpx;
+    height: 50rpx;
+    color: #fff;
+    padding: 5rpx;
+    box-sizing: border-box;
+    line-height: 46rpx;
     font-size: 28rpx;
-    line-height: 60rpx;
-    width: 590rpx;
-    height: 75rpx;
-    padding: 20rpx;
-    box-sizing: border-box;
-    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: bold;
+    border: 1px solid #9b9b9d;
+    background: #202435;
 }
 
-.edit_key_disabled {
-    color: #ccc;
-}
-
-.edit_key_warning {
+.edit_name_warning {
     border: 1px solid #FF0000;
-}
-
-.edit_string {
-    display: block;
-    width: 670rpx;
-    height: 75rpx;
-    color: #fff;
-    padding: 20rpx;
-    box-sizing: border-box;
-    line-height: 46rpx;
-    margin-left: 40rpx;
-    margin-right: 40rpx;
-    font-size: 32rpx;
-    font-weight: bold;
-    border: 1px solid #9b9b9d;
-    background: #202435;
-}
-
-.edit_pass_list {
-    display: flex;
-}
-
-.edit_pass {
-    display: block;
-    width: 520rpx;
-    height: 75rpx;
-    color: #fff;
-    padding: 20rpx;
-    box-sizing: border-box;
-    line-height: 46rpx;
-    margin-left: 40rpx;
-    font-size: 32rpx;
-    font-weight: bold;
-    border: 1px solid #9b9b9d;
-    background: #202435;
-}
-
-.edit_pass_bt {
-    width: 75rpx;
-    height: 75rpx;
-    font-size: 36rpx;
-    line-height: 75rpx;
-    border: 1px solid #9b9b9d;
-    color: #fff;
-}
-
-.edit_txt {
-    display: block;
-    box-sizing: border-box;
-    width: 670rpx;
-    min-height: 225rpx;
-    padding: 20rpx;
-    margin-left: 40rpx;
-    margin-right: 40rpx;
-    color: #fff;
-    font-size: 32rpx;
-    font-weight: bold;
-    line-height: 46rpx;
-    border: 1px solid #9b9b9d;
-    background: #202435;
 }

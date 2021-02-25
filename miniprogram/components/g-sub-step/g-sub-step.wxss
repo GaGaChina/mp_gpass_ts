@@ -102,7 +102,6 @@
 }
 
 .run_title_tx {
-    width: 390rpx;
     line-height: 80rpx;
     color: #9ce72a;
     font-size: 36rpx;

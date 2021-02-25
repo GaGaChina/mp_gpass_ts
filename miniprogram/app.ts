@@ -12,7 +12,7 @@ App<IAppOption>({
             urlApi: '',
             urlImg: '',
             id: 'wx98e663f2bb3467bd',
-            ver: '1.2.0',
+            ver: '1.3.0',
             local: false,
             DEBUG: true,
             test_heart: 100,
@@ -44,6 +44,7 @@ App<IAppOption>({
         // 获取 Storage 档案数据来设置内存
         const dbLib: DBLib = this.globalData.dbLib
         dbLib.storageSetThis()
+        await WXFile.rmDir('temp', true)
         await dbLib.checkFile()
         //dbLib.fileSizeRun()
         // 版本升级需要维护本地缓存数据

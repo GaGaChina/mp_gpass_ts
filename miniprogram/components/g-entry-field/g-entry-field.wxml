@@ -12,7 +12,7 @@
         }
     }
 </wxs>
-<g-sub-awesome-icon open="{{openWinIcon}}" selectName="{{info.icon}}" bind:change="changeIcon"></g-sub-awesome-icon>
+<g-sub-awesome-icon open="{{ openWinIcon }}" selectName="{{info.icon}}" bind:change="changeIcon"></g-sub-awesome-icon>
 <g-sub-creat-pass open="{{ openWinPass }}" bind:pass="setPass"></g-sub-creat-pass>
 <block wx:if="{{ type === 'show' || type === 'history' }}">
     <!-- 值为密码的时候 -->
@@ -34,12 +34,12 @@
     </block>
     <!-- 值不为密码的时候 -->
     <block wx:else>
-        <view class="show">
+        <view wx:if="{{ info.value }}" class="show">
             <view class="show_top">
                 <view class="show_icon"><i class="fa fa-{{info.icon}}"></i></view>
                 <view class="show_key">{{ info.keyname }}</view>
             </view>
-            <button class="show_value bt_clear" selectable="true" bindtap="btCopy"><text>{{info.value}}</text></button>
+            <button class="show_value bt_clear" selectable="true" bindtap="btCopy"><text>{{ info.value }}</text></button>
         </view>
     </block>
     <view wx:if="{{showborder}}" class="show_border"></view>
@@ -56,9 +56,9 @@
             </block>
             <!-- 键值 -->
             <block wx:if="{{ info.changekey }}">
-                <input class="edit_key{{ warningkey?' edit_key_warning':'' }}"
-                    style="width:{{ pagefun.run(info) }}rpx;" type="text" placeholder="请输入字段名称"
-                    value="{{ info.keyname }}" bindinput="inputKeyChange" />
+                <input class="edit_key{{ warningkey?' edit_key_warning':'' }}" style="width:{{ pagefun.run(info) }}rpx;"
+                    type="text" placeholder="请输入字段名称" value="{{ info.keyname }}" always-embed
+                    bindinput="inputKeyChange" />
                 <button wx:if="{{ info.candel }}" class="small_bt" bindtap="btDel"><i
                         class="fa fa-trash-o"></i></button>
                 <button wx:if="{{ info.canmove }}" class="small_bt" bindtap="btMove"><i class="fa fa-bars"></i></button>
@@ -70,16 +70,16 @@
         </view>
         <!-- 值 : 字符串形式 -->
         <block wx:if="{{ info.valuetype === 'string' }}">
-            <input class="edit_string" type="text" placeholder="请输入字段内容" value="{{info.value}}"
+            <input class="edit_string" type="text" placeholder="请输入字段内容" value="{{info.value}}" always-embed
                 bindinput="inputValChange" />
         </block>
         <!-- 值 : 密码 -->
         <block wx:elif="{{ info.valuetype === 'pv' }}">
             <view class="edit_pass_list">
                 <input class="edit_pass" password="{{ !showpass }}" type="text" placeholder="请输入字段内容"
-                    value="{{info.value}}" bindinput="inputValChange" /><button class="small_bt" bindtap="btShowPass"><i
-                        class="fa fa-{{ showpass?'eye':'eye-slash' }}"></i></button><button class="small_bt"
-                    bindtap="btOpenPass"><i class="fa fa-refresh"></i></button>
+                    value="{{info.value}}" always-embed bindinput="inputValChange" /><button class="small_bt"
+                    bindtap="btShowPass"><i class="fa fa-{{ showpass?'eye':'eye-slash' }}"></i></button><button
+                    class="small_bt" bindtap="btOpenPass"><i class="fa fa-refresh"></i></button>
             </view>
 
         </block>

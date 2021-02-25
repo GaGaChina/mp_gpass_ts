@@ -1,7 +1,9 @@
 import { $g } from "../../frame/speed.do"
-import { WXClipboard } from "../../frame/wx/wx.clipboard";
+import { WXFile } from "../../frame/wx/wx.file";
+import { WXImage } from "../../frame/wx/wx.image";
+import { GFileSize } from "../../lib/g-byte-file/g.file.size";
 import { DBItem, DBLib } from "../../lib/g-data-lib/db";
-import { ProtectedValue } from "../../lib/kdbxweb/types";
+import { KdbxApi } from "../../lib/g-data-lib/kdbx.api";
 
 /**
  * 组件, 单条的编辑对象
@@ -18,41 +20,40 @@ Component({
         showborder: { type: Boolean, value: true },
         /** add:添加条目, edit:编辑条目, show:展示条目 */
         type: { type: String, value: 'show' },
-        /** 直接将对象进行引用 */
-        info: {
-            type: Object,
-            optionalTypes: [String],
-            value: {
-                icon: '', // 默认的icon图标
-                key: '', // 键的名称
-                keyname: '', // 键的显示名称
-                value: '', // 值
-                valuetype: '',// 值的类型, string 文本, txt 文本区域, pv 密码
-                changekey: true,// 是否允许修改 key 的值
-                changetype: true,// 是否允许修改类型
-                changeicon: true,// 是否允许修改 Icon 的值
-                candel: true,// 是否允许删除
-                warningkey: false,// 是否显示出警告
-            },
-        },
+        /** 原始内容的引用 */
+        source: { type: Object, value: {} },
+        /** 在列表中的位置 */
+        index: { type: Number, value: 0 },
+        warningkey: { type: Boolean, value: false },
     },
     /** 组件的内部数据 */
     data: {
-        /** 是否显示选择ICON的窗口 */
-        openWinIcon: false,
-        /** 弹出修改密码窗口 */
-        openWinPass: false,
-        /** 现在是否显示出密码 */
-        showpass: false,
+        /** 直接将对象进行引用 */
+        info: {
+            index: 0,// 值在列表中的序列
+            name: '', // 文件添加的时候的名称, 包含扩展名
+            ref: '', // 整个路径 uuid + '.' + ref
+            pass: '', // AES 加密的密码
+            size: '', // byte.byteLength,// 解压后的长度
+            savetype: '',// base64 byte binaries
+            // width: 0,// 如果是图片就有宽高
+            // height: 0,// 如果是图片就有宽高
+        },
+        imgPath: '',
+        showName: '',
+        sizeStr: '',
+        fileIcon: '',
+        fileType: '',
+        fileExtend: '',
+        iconWidth: 120,
+        iconHeight: 120,
     },
     /** 数据字段监听器，监听 setData 的 properties 和 data 变化 */
     observers: {
-        // 设置 this.data.some 或 this.data.some.field 本身或其下任何子数据字段时触发[可以触发]
-        'info.valuetype': function (o) {
-            if (o === 'pv') {
-                this.setData({ showpass: false })
-            } else {
-                this.setData({ showpass: true })
+        'source': function () {
+            if (this.handleSource(true)) {
+                this.setData({ info: this.data.info })
+                this.checkFileItem()
             }
         },
     },
@@ -60,89 +61,178 @@ Component({
     lifetimes: {
         /** 实例进入页面节点树时执行),可以setData */
         attached() {
-            // $g.log('[组件][Entry-Field]创建', this.data);
-            if (this.data.info.icon === '') {
-                this.data.info.icon = this.data.info.valuetype === 'pv' ? 'lock' : 'unlock'
+            // $g.log('[组件][g-entry-file]创建', this.data)
+            if (this.handleSource(true)) {
                 this.setData({ info: this.data.info })
+                this.checkFileItem()
             }
-            this.setData({ openWinIcon: false })
         }
     },
     /** 组件的方法列表 */
     methods: {
-        /** 拷贝值到剪切板 */
-        btCopy(e: any) {
-            // if (this.data.info.valuetype === 'pv') {
-            //     WXClipboard.setDate(this.getPVText())
-            // } else if (this.data.info.value.length > 0) {
-            //     WXClipboard.setDate(this.data.info.value)
-            // }
-            WXClipboard.setDate(this.data.info.value)
-        },
-        /** 获取 pv 内的值 */
-        // getPVText(): string {
-        //     if (this.data.info.valuetype === 'pv') {
-        //         const dbItem: DBItem | null = $g.g.dbLib.selectItem
-        //         if (dbItem && dbItem.selectEntry) {
-        //             if ($g.hasKey(dbItem.selectEntry.fields, this.data.info.key)) {
-        //                 const pv: any = dbItem.selectEntry.fields[this.data.info.key]
-        //                 if ($g.isClass(pv, 'ProtectedValue')) {
-        //                     return pv.getText()
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     $g.log('[组件][Entry-Field]getPVText 失败')
-        //     return ''
-        // },
-        btShowPass(e: any) {
-            $g.g.app.timeMouse = Date.now()
-            if (this.data.info.valuetype === 'pv') {
-                this.setData({ showpass: !this.data.showpass })
+        /**
+         * 拷贝值
+         * @param isGet 是否是获取 Source 到本地
+         */
+        handleSource(isGet: boolean): boolean {
+            const list: Array<string> = Object.keys(this.data.info)
+            let isChange: boolean = false
+            const datainfo: any = this.data.info
+            for (let i = 0; i < list.length; i++) {
+                const key = list[i]
+                if ($g.hasKey(this.data.source, key)) {
+                    if (datainfo[key] !== this.data.source[key]) {
+                        if (isGet) {
+                            datainfo[key] = this.data.source[key]
+                        } else {
+                            this.data.source[key] = datainfo[key]
+                        }
+                        isChange = true
+                    }
+                }
             }
+            return isChange
         },
-        /** 显示IOCN图标的窗口 */
-        btSelectIcon(e: any) {
-            $g.g.app.timeMouse = Date.now()
-            this.setData({ openWinIcon: true })
-        },
-        btOpenPass() {
-            $g.g.app.timeMouse = Date.now()
-            this.setData({ openWinPass: true })
-        },
-        changeIcon(e: any) {
-            $g.g.app.timeMouse = Date.now()
-            // $g.log('[组件][Entry-Field]changeIcon', e)
-            this.data.info.icon = String(e.detail.name)
-            this.setData({ info: this.data.info })
-            this.triggerEvent('change', this.data.info)
-        },
-        /** 组件 Creat-Pass 传递密码 */
-        setPass(e: any) {
-            $g.log('设置密码结果 : ', e)
-            $g.g.app.timeMouse = Date.now()
-            if (this.data.info.value !== String(e.detail.pass)) {
-                this.data.info.value = String(e.detail.pass)
-                this.setData({ info: this.data.info })
-                this.triggerEvent('change', this.data.info)
-            }
-        },
-        inputKeyChange(e: any) {
-            if (this.data.info.key !== e.detail.value) {
+        inputNameChange(e: any) {
+            $g.log('[g-entry-file]修改名称:', e.detail.value, this.data)
+            const s: string = e.detail.value.trim()
+            if (this.data.showName !== s) {
                 $g.g.app.timeMouse = Date.now()
-                this.data.info.key = e.detail.value
-                this.data.info.keyname = e.detail.value
-                this.triggerEvent('change', this.data.info)
-                // this.setData({ info: this.data.info })
+                this.data.showName = s
+                if (s) {
+                    this.data.info.name = s + '.' + this.data.fileExtend
+                } else {
+                    this.data.info.name = ''
+                }
+                this.data.source.name = this.data.info.name
+                this.triggerEvent('change', this.data.source)
             }
         },
-        inputValChange(e: any) {
-            if (this.data.info.value !== e.detail.value) {
-                $g.g.app.timeMouse = Date.now()
-                this.data.info.value = e.detail.value
-                this.triggerEvent('change', this.data.info)
-                // this.setData({ info: this.data.info })
+        /** 对文件信息进行进一步的加工 */
+        async checkFileItem() {
+            const info: any = this.data.info
+            // 文件扩展名
+            let extend: string = ''
+            let showName: string = info.name
+            const nameArr: Array<string> = info.name.split('.')
+            if (nameArr.length > 1) {
+                extend = nameArr[nameArr.length - 1].toLocaleLowerCase()
+                nameArr.pop()
+                showName = nameArr.join('.')
             }
+            let icon: string = 'file-o'
+            let type: string = ''
+            let iconWidth: number = 120
+            let iconHeight: number = 120
+            const dbItem: DBItem = $g.g.dbLib.selectItem
+            switch (extend) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'bmp':
+                case 'gif':
+                    type = 'image'
+                    icon = 'file-photo-o'
+                    const entry: any = dbItem.selectEntry
+                    this.data.imgPath = await dbItem.getEntryFileTemp(entry, info.ref + '.icon', info.pass, 'png')
+                    if (this.data.imgPath) {
+                        const imgInfo: WechatMiniprogram.GetImageInfoSuccessCallbackResult | null = await WXImage.getImageInfo(this.data.imgPath)
+                        if (imgInfo) {
+                            iconWidth = imgInfo.width
+                            iconHeight = imgInfo.height
+                        }
+                    } else {
+                        this.data.imgPath = await dbItem.getEntryFileTemp(entry, info.ref, info.pass, extend)
+                        if (this.data.imgPath) {
+                            // 检查文件大小, 如果文件
+                            const imgInfo: WechatMiniprogram.GetImageInfoSuccessCallbackResult | null = await WXImage.getImageInfo(this.data.imgPath)
+                            if (imgInfo) {
+                                if (imgInfo.width > 120 || imgInfo.height > 120) {
+                                    const byte: any = await WXFile.readFile(this.data.imgPath, undefined, undefined, undefined, false)
+                                    if (byte) {
+                                        const uuidPath: string = KdbxApi.uuidPath(entry.uuid)
+                                        const newPath: string = `db/${dbItem.path}/${uuidPath}/${info.ref}`
+                                        await dbItem.mackEntryIcon(info.name, newPath, info.ref, byte, info.pass, null)
+                                        // --- 在读取一次
+                                        const imgPath2: string = await dbItem.getEntryFileTemp(entry, info.ref + '.icon', info.pass, 'png')
+                                        if (imgPath2) {
+                                            $g.log('补全缩略图成功')
+                                            this.data.imgPath = imgPath2
+                                            const imgInfo: WechatMiniprogram.GetImageInfoSuccessCallbackResult | null = await WXImage.getImageInfo(imgPath2)
+                                            if (imgInfo) {
+                                                iconWidth = imgInfo.width
+                                                iconHeight = imgInfo.height
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    iconWidth = imgInfo.width
+                                    iconHeight = imgInfo.height
+                                }
+                            }
+                        }
+                        $g.log('原始路径', this.data.imgPath)
+
+                    }
+                    // $g.log('图标文件:', await WXFile.getFileStat(this.data.imgPath, false))
+                    // $g.log('图标信息:', await WXImage.getImageInfo(this.data.imgPath))
+                    break;
+                case 'txt':
+                    type = 'txt'
+                    icon = 'file-text-o'
+                    break;
+                case 'mp3':
+                    type = 'sound'
+                    icon = 'file-sound-o'
+                    break;
+                case 'mp4':
+                    type = 'movie'
+                    icon = 'file-movie-o'
+                    break;
+                case 'doc':
+                case 'docx':
+                    type = 'word'
+                    icon = 'file-word-o'
+                    break;
+                case 'xlsx':
+                    type = 'excel'
+                    icon = 'file-excel-o'
+                    break;
+                case 'pdf':
+                    type = 'pdf'
+                    icon = 'file-pdf-o'
+                    break;
+                default:
+                    break;
+            }
+            this.setData({
+                sizeStr: GFileSize.getSize(info.size, 3),
+                imgPath: this.data.imgPath,
+                showName: showName,
+                fileIcon: icon,
+                fileType: type,
+                fileExtend: extend,
+                iconWidth: iconWidth,
+                iconHeight: iconHeight
+            })
+        },
+        btDel(e: any) {
+            this.triggerEvent('del', this.data.source)
+        },
+        btShow(e: any) {
+            // wx.navigateTo({ url: '/pages/showdb/fileshow/fileshow?size=1&index=' + this.data.index })
+            this.viewImage(true)
+        },
+        btShowSource(e: any) {
+            // wx.navigateTo({ url: '/pages/showdb/fileshow/fileshow?index=' + this.data.index })
+            this.viewImage()
+        },
+        async viewImage(imgSize: boolean = false) {
+            this.triggerEvent('show', { min: imgSize, index: this.data.info.index })
+        },
+        btSelectFile(e: any) {
+            this.triggerEvent('changefile', { index: this.data.info.index })
         }
     },
+
 })

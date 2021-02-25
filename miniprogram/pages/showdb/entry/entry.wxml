@@ -1,6 +1,7 @@
 <g-page-bg></g-page-bg>
 <g-page-top title="{{pagetitle}}"></g-page-top>
 <g-sub-step></g-sub-step>
+<g-canvas-image-temp></g-canvas-image-temp>
 <view class="info" style="height:{{ fullPageHeight }}rpx;">
     <scroll-view scroll-y enable-flex class="scroll" style="height:{{ fullPageHeight }}rpx;">
         <g-entry-title icon="{{ icon }}" title="{{ title }}" type="{{ pagetype }}" bind:change="titleChange">
@@ -16,35 +17,13 @@
                 bind:change="otherListChange">
             </g-entry-field-group>
         </block>
-
-
-        <block wx:if="{{ fileList.length && false }}">
-
+        <block wx:if="{{ fileList.length || pagetype === 'edit' || pagetype === 'add' }}">
             <view class="group">
-                <view class="group_icon"><i class="fa fa-key"></i></view>
+                <view class="group_icon"><i class="fa fa-paperclip"></i></view>
                 <view class="group_title">附件</view>
             </view>
-            <block wx:for="{{ fileList }}" wx:key="key" wx:for-index="index" wx:for-item="item">
-                <view class="item">
-                    <view wx:if="{{ item.icon }}"><i class="fa fa-{{ item.icon }}"></i></view>
-                    <view>{{ item.type }}　：</view>
-                    <view class="item_info">{{item.name}}</view>
-                </view>
-            </block>
-            <view class="file_item">
-                <view class="file_img">
-                    <image src=""></image>
-                </view>
-                <view class="file_right">
-                    <view class="file_title">
-                        <i class="fa fa-file-photo-o"></i><text>图片名称</text>
-                    </view>
-                    <view class="file_info">文件大小:3M</view>
-                    <button>查看文件</button>
-                </view>
-
-            </view>
-
+            <g-entry-file-group list="{{ fileList }}" type="{{ pagetype }}" bind:change="fileListChange">
+            </g-entry-file-group>
         </block>
         <block wx:if="{{ pagetype === 'show' || pagetype === 'history' }}">
             <view class="group">
@@ -52,9 +31,9 @@
                 <view class="group_title">条目状态</view>
             </view>
             <view class="time">
-                <view>条目创建时间 : {{timeCreat}}</view>
-                <view>最近访问时间 : {{timeLastAccess}}</view>
-                <view>最近修改时间 : {{timeLastMod}}</view>
+                <view>创建时间 : {{timeCreat}}</view>
+                <view>最近访问 : {{timeLastAccess}}</view>
+                <view>最近修改 : {{timeLastMod}}</view>
             </view>
         </block>
 
@@ -90,5 +69,7 @@
             <button wx:if="{{ pagetype === 'edit' }}" class="bt_big red" bindtap="btDel"><i
                     class="fa fa-envelope-open-o"></i> 删除</button>
         </view>
+        <!-- 把页面顶上去, 方便输入内容 -->
+        <view wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="end_edit_add"></view>
     </scroll-view>
 </view>

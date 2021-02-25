@@ -33,8 +33,8 @@
         </block>
     </scroll-view>
     <view class="end">
-        <view class="info">本地最大容量 {{fileSizeMax}} , 已用 {{fileSizeAll}} , 预留 {{fileSizeMore}} 周转, 剩余可用空间
-            {{fileSizeUsable}}</view>
+        <view class="info">本地最大容量 {{ fileSizeMax }} , 已用 {{ fileSizeAll }} , 预留 {{ fileSizeMore }} 周转, 剩余可用空间
+            {{ fileSizeUsable }}</view>
         <view class="end_bt">
             <button class="bt_big" bindtap="btCreat"><i class="input_icon fa fa-plus"></i> 创建新档案</button>
         </view>

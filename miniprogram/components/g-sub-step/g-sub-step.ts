@@ -1,6 +1,5 @@
 import { $g } from "../../frame/speed.do"
 import { DataStep, DataStepItem } from "../../frame/data/data.step"
-import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
 
 /**
  * 组件 : g-sub-step
@@ -43,7 +42,7 @@ Component({
     lifetimes: {
         /** 实例进入页面节点树时执行),可以setData */
         attached() {
-            $g.log('[组件][g-sub-step]attached')
+            // $g.log('[组件][g-sub-step]')
             const scene: DataScene = $g.g.app.scene
             this.setData({ sceneHeight: scene.winHeight })
         },
@@ -58,13 +57,6 @@ Component({
     },
     /** 组件的方法列表 */
     methods: {
-        async keepChange(start: boolean) {
-            if (start) {
-                await WXKeepScreen.on()
-            } else {
-                await WXKeepScreen.off()
-            }
-        },
         /** 设置步进器 */
         setInfo(): Promise<any> {
             return new Promise(resolve => {
@@ -74,7 +66,6 @@ Component({
                 this.data.itemRun = {}
                 const list: any = $g.step.list
                 if (list && list.length) {
-                    this.keepChange(true)
                     for (let i = 0; i < list.length; i++) {
                         const item: any = list[i]
                         if (i === $g.step.index) {
@@ -93,6 +84,7 @@ Component({
                     }
                     let itemRun: DataStepItem = $g.step.list[$g.step.index]
                     if (itemRun.smallList.length && itemRun.smallIndex !== -1) {
+                        itemRun.smallIndex = $g.step.indexMin
                         centerHeight += itemRun.smallList.length * 60 + 40
                     }
                     let sx: number = (scene.winHeight - centerHeight) / 2
@@ -106,20 +98,18 @@ Component({
                         endHeight: sx,
                     }, () => {
                         // $g.log('[组件][g-sub-step]setData 完成')
-                        resolve()
+                        return resolve()
                     })
                 } else {
-                    this.keepChange(false)
                     this.setData({
                         open: false
                     }, () => {
-                        resolve()
+                        return resolve()
                     })
                 }
             })
         },
         btClose(e: any) {
-            this.keepChange(false)
             this.setData({ open: false })
         },
     },

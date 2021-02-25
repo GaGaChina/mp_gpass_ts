@@ -44,9 +44,11 @@ Component({
                 let o: string | null = await WXSoterAuth.start(['fingerPrint'])
                 if (o && o.length) {
                     let key: string = o + '|dbid:' + dbItem.localId.toString()
-                    await AES.setKey(key)
+                    const aesObj:AES = new AES()
+                    await aesObj.setKey(key)
                     let pass: string = dbItem.pass.pv.getText()
-                    let passJM: ArrayBuffer | null = await AES.encryptCBC(pass, o)
+                    let passJM: ArrayBuffer | null = await aesObj.encryptCBC(pass, o)
+                    await aesObj.setKey('')
                     if (passJM) {
                         dbItem.pass.fingerPrint = KdbxApi.kdbxweb.ByteUtils.bytesToBase64(passJM)
                         if (WXSoterAuth.facial === false || dbItem.pass.facial !== '') {
@@ -56,7 +58,6 @@ Component({
                     }
                 }
                 o = ''
-                await AES.setKey('')
             }
             this.setData({ open: false })
         },

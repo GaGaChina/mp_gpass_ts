@@ -70,6 +70,7 @@ export class DataStep {
     /** 切换到特定的条目 */
     public async jump(index: number): Promise<any> {
         this.index = index
+        this.indexMin = 0
         return await this.runMethod()
     }
 
@@ -82,6 +83,7 @@ export class DataStep {
     /** 切入下一个步进器 */
     public async next(): Promise<any> {
         this.index++
+        this.indexMin = 0
         return await this.runMethod()
     }
 

@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "g-page-bg": "./../../../components/g-page-bg/g-page-bg",
+    "g-page-top": "./../../../components/g-page-top/g-page-top",
+    "g-sub-step":"./../../../components/g-sub-step/g-sub-step",
+    "g-canvas-image-temp": "./../../../components/g-canvas-image-temp/g-canvas-image-temp"
+  },
+  "disableScroll": true
+}

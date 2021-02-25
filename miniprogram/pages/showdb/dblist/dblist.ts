@@ -1,5 +1,6 @@
 import { $g } from "../../../frame/speed.do"
 import { TimeFormat } from "../../../frame/time/time.format"
+import { WXFile } from "../../../frame/wx/wx.file"
 import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 
@@ -36,8 +37,16 @@ Page({
         const dbLib: DBLib = $g.g.dbLib
         // await dbLib.fileSizeRun()
         const dbList: Array<Object> = new Array<Object>();
+        dbLib.fileSizeAll = 0
         for (let i = 0, l: number = dbLib.lib.length; i < l; i++) {
-            const item: DBItem = dbLib.lib[i];
+            const item: DBItem = dbLib.lib[i]
+            if (item.path) {
+                await item.fileClear()
+                const newSize: number = await WXFile.getFileSize(`db/${item.path}`, true)
+                item.fileSizeAll = newSize
+                dbLib.fileSizeAll += newSize
+            }
+            await item.fileSize()
             const dbItem: Object = {
                 icon: item.icon,
                 name: item.name,
@@ -59,6 +68,7 @@ Page({
             fileSizeMore: GFileSize.getSize(1024 * 1024 * 10, 3),
             fileSizeUsable: GFileSize.getSize(dbLib.fileSizeMax - dbLib.fileSizeAll - (1024 * 1024 * 10), 3),
         })
+        dbLib.storageSaveThis()
         $g.log('[Page/dblist]', this.data)
     },
     /** 添加一条记录 */
@@ -83,6 +93,7 @@ Page({
         const dbItem: DBItem | null = dbLib.selectLocalId(id)
         if (dbItem) {
             dbItem.db = null
+            WXFile.rmDir('temp', true)
             this.loadInfo()
         }
     },

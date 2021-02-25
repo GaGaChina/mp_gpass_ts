@@ -13,7 +13,7 @@ Component({
     },
     /** 组件属性列表 properties和data指向同对象, 可定义函数 */
     properties: {
-        open: { type: Boolean, value: true },// 默认是否为关闭
+        open: { type: Boolean, value: false },// 默认是否为关闭
     },
     /** 组件的内部数据 */
     data: {
@@ -52,9 +52,11 @@ Component({
                 let o: string | null = await WXSoterAuth.start(['facial'])
                 if (o && o.length) {
                     let key: string = o + '|dbid:' + dbItem.localId.toString()
-                    await AES.setKey(key)
+                    const aesObj:AES = new AES()
+                    await aesObj.setKey(key)
                     let pass: string = dbItem.pass.pv.getText()
-                    let passJM: ArrayBuffer | null = await AES.encryptCBC(pass, o)
+                    let passJM: ArrayBuffer | null = await aesObj.encryptCBC(pass, o)
+                    await aesObj.setKey('')
                     if (passJM) {
                         dbItem.pass.facial = KdbxApi.kdbxweb.ByteUtils.bytesToBase64(passJM)
                         if (WXSoterAuth.fingerPrint === false || dbItem.pass.fingerPrint !== '') {
@@ -64,7 +66,6 @@ Component({
                     }
                 }
                 o = ''
-                await AES.setKey('')
             }
             this.setData({ open: false })
         },

@@ -11,9 +11,9 @@ var CryptoJS = require('./../../lib/crypto-js/crypto-js')
 export class AES {
 
     /** 设置加密key */
-    private static key: any = null
+    private key: any = null
 
-    private static getBuffer(data: ArrayBuffer | Uint8Array | string): ArrayBuffer {
+    private getBuffer(data: ArrayBuffer | Uint8Array | string): ArrayBuffer {
         const v: any = data
         let b: ArrayBuffer;
         if ($g.isString(data)) {
@@ -35,10 +35,10 @@ export class AES {
      * string : EncodingText.encode 转二进制设置
      * @param key 
      */
-    public static async setKey(key: ArrayBuffer | Uint8Array | string): Promise<void> {
-        let byte: ArrayBuffer = AES.getBuffer(key);
+    public async setKey(key: ArrayBuffer | Uint8Array | string): Promise<void> {
+        let byte: ArrayBuffer = this.getBuffer(key);
         byte = await SHA256.sha256(byte)
-        AES.key = CryptoJS.lib.WordArray.create(byte)
+        this.key = CryptoJS.lib.WordArray.create(byte)
         return Promise.resolve();
     }
 
@@ -48,9 +48,9 @@ export class AES {
      * @param data 二进制正常走, 如果是字符串(将 EncodingText → Byte)
      * @param iv 16位向量, 字符串(将 EncodingText → Byte → SHA256 → 16位)
      */
-    public static async encryptCBC(data: ArrayBuffer | Uint8Array | string, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
+    public async encryptCBC(data: ArrayBuffer | Uint8Array | string, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
         if (iv === null || iv === undefined) iv = new ArrayBuffer(16)
-        let byte: ArrayBuffer = AES.getBuffer(data);
+        let byte: ArrayBuffer = this.getBuffer(data);
         // 处理 iv 为字符串
         const v: any = iv
         if ($g.isString(iv)) {
@@ -62,7 +62,7 @@ export class AES {
         const wordIV = CryptoJS.lib.WordArray.create(iv)
         // $g.log('[CryptoJS][Aes]加密 wordIn:', wordIn);
         // $g.log('[CryptoJS][Aes]加密 wordIV:', wordIV);
-        const wordOut = CryptoJS.AES.encrypt(wordIn, AES.key, {
+        const wordOut = CryptoJS.AES.encrypt(wordIn, this.key, {
             iv: wordIV,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
@@ -83,9 +83,9 @@ export class AES {
      * @param data 
      * @param iv 16位向量, 字符串(将 EncodingText → Byte → SHA256 → 16位), 空 → 全0的16位
      */
-    public static async decryptCBC(data: ArrayBuffer | Uint8Array, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
+    public async decryptCBC(data: ArrayBuffer | Uint8Array, iv: ArrayBuffer | string | null | undefined = null): Promise<ArrayBuffer | null> {
         if (iv === null || iv === undefined) iv = new ArrayBuffer(16)
-        let byte: ArrayBuffer = AES.getBuffer(data);
+        let byte: ArrayBuffer = this.getBuffer(data);
         // 处理 iv 为字符串
         const v: any = iv
         if ($g.isString(iv)) {
@@ -99,7 +99,7 @@ export class AES {
         // $g.log('[CryptoJS][Aes]解密 wordData:',wordData);
         // $g.log('[CryptoJS][Aes]解密 ciphertext:', ciphertext);
         // $g.log('[CryptoJS][Aes]解密 wordIV:', wordIV);
-        const wordOut: any = CryptoJS.AES.decrypt(ciphertext, AES.key, {
+        const wordOut: any = CryptoJS.AES.decrypt(ciphertext, this.key, {
             iv: wordIV,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7

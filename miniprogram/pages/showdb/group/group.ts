@@ -1,5 +1,6 @@
 import { $g } from "../../../frame/speed.do"
 import { TimeFormat } from "../../../frame/time/time.format"
+import { WXFile } from "../../../frame/wx/wx.file"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
 import { Group, Kdbx } from "../../../lib/kdbxweb/types"
@@ -85,42 +86,52 @@ Page({
             dbItem = select
             if (dbItem.db) db = dbItem.db
         }
-        // 没有设置会返回
-        if (!db) wx.navigateBack()
+        this.reLoadInfo()
     },
     onShow() {
         $g.step.clear()
         // 如果时间超过了, 就切换回其他的页面
         if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
             $g.log('[index]超时,退回登录页:', Date.now() - $g.g.app.timeMouse)
-            if (dbItem && dbItem.db) dbItem.db = null
+            if (dbItem && dbItem.db) {
+                dbItem.db = null
+                WXFile.rmDir('temp', true)
+            }
             wx.reLaunch({ url: './../../index/index' })
             return
         }
-        switch (this.data.pagetype) {
-            case 'show':
-                const findGroup: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
-                if (findGroup && $g.isClass(findGroup, 'KdbxGroup')) {
-                    group = findGroup
-                    group.times.lastAccessTime = new Date()
-                    dbItem.selectGroup = group
-                    this.setInfo()
-                } else {
-                    wx.navigateBack()
-                }
-                break;
-            case 'add':
-                if (dbItem.selectGroup) {
-                    group = db.createGroup(dbItem.selectGroup, '新建组')
-                    dbItem.addGroup = group
-                    dbItem.selectGroup = group
-                    this.setInfo()
-                } else {
-                    $g.log('缺少选中组')
-                }
-                break;
-            default:
-                $g.log('未找到类型 : ' + this.data.pagetype)
+
+    },
+    reLoadInfo() {
+        // 没有设置会返回
+        if (db) {
+            switch (this.data.pagetype) {
+                case 'show':
+                    const findGroup: any = KdbxApi.findUUID(db.groups[0], this.data.uuid)
+                    if (findGroup && $g.isClass(findGroup, 'KdbxGroup')) {
+                        group = findGroup
+                        group.times.lastAccessTime = new Date()
+                        dbItem.selectGroup = group
+                        this.setInfo()
+                    } else {
+                        wx.navigateBack()
+                    }
+                    break;
+                case 'add':
+                    if (dbItem.selectGroup) {
+                        group = db.createGroup(dbItem.selectGroup, '新建组')
+                        dbItem.addGroup = group
+                        dbItem.selectGroup = group
+                        this.setInfo()
+                    } else {
+                        $g.log('缺少选中组')
+                    }
+                    break;
+                default:
+                    $g.log('未找到类型 : ' + this.data.pagetype)
+            }
+        } else {
+            wx.navigateBack()
         }
     },
     onUnload() {
@@ -189,6 +200,7 @@ Page({
         await $g.step.clear()
         dbItem.infoRefresh = true
         this.setData({ pagetype: 'show' })
+        this.reLoadInfo()
     },
     btEdit(e: any) {
         $g.g.app.timeMouse = Date.now()

@@ -1,5 +1,6 @@
 <g-page-bg></g-page-bg>
 <g-sub-step></g-sub-step>
+<g-canvas-image-temp></g-canvas-image-temp>
 <!-- 新用户 -->
 <view wx:if="{{isCreatPage}}">
     <view class="top">

@@ -19,6 +19,7 @@ Component({
         showborder: { type: Boolean, value: true },
         /** add:添加条目, edit:编辑条目, show:展示条目 */
         type: { type: String, value: 'show' },
+        /** 文件的原始内容 */
         source: { type: Object, value: {} },
         warningkey: { type: Boolean, value: false },
     },
@@ -44,7 +45,6 @@ Component({
             changeicon: true,// 是否允许修改 Icon 的值
             candel: true,// 是否允许删除
             canmove: true,// 是否可以移动位置
-            warningkey: false,// 是否显示出警告 
         },
     },
     /** 数据字段监听器，监听 setData 的 properties 和 data 变化 */
@@ -182,7 +182,7 @@ Component({
                 this.data.info.value = e.detail.value
                 this.data.source.value = e.detail.value
                 this.triggerEvent('change', this.data.source)
-                // this.setData({ info: this.data.info })
+                this.setData({ info: this.data.info })
             }
         }
     },

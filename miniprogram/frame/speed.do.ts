@@ -1,5 +1,6 @@
 import { GFileSize } from "../lib/g-byte-file/g.file.size";
 import { AppData } from "./data/app.data";
+import { DataCanvas } from "./data/data.canvas";
 import { DataStep } from "./data/data.step";
 
 /**
@@ -21,6 +22,8 @@ export class $g {
     public static s: AppData;
     /** 步进器 */
     public static step: DataStep = new DataStep()
+    /** DataCanvas 操作对象 */
+    public static canvas: DataCanvas = new DataCanvas()
 
     /** 初始化 */
     public static init(app: IAppOption): void {

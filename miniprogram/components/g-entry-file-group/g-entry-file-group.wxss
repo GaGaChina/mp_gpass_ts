@@ -1,0 +1,28 @@
+.show {
+    width: 750rpx;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+}
+
+.end_bt {
+    width: 580rpx;
+    margin: 0 auto;
+}
+
+.bt_big {
+    width: 580rpx;
+    height: 75rpx;
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 0;
+    border: 1px solid #e9d592;
+    line-height: 75rpx;
+    margin-top: 20rpx;
+    margin-bottom: 20rpx;
+    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+}
+
+.bt_big:hover {
+    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
+}

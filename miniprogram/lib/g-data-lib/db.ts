@@ -5,6 +5,9 @@ import { Entry, Group, Kdbx, ProtectedValue } from "../kdbxweb/types"
 import { KdbxApi } from "./kdbx.api"
 import { ToolBytes } from "../../frame/tools/tool.bytes"
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
+import { WXImage } from "../../frame/wx/wx.image"
+import { WXSize } from "../../frame/wx/wx.resize"
+import { SHA256 } from "../../frame/crypto/SHA256"
 
 interface IDB {
     getInfo(): Object;
@@ -416,6 +419,19 @@ export class DBItem extends DBBase {
         return Promise.resolve(this.fileSizeAll)
     }
 
+    /** 清理目录下的文件 */
+    public async fileClear(): Promise<any> {
+        const path: string = `db/${this.path}`
+        // 先清理 db.kdbx
+        if (this.pathMinIndex !== 0) {
+            await WXFile.delFile(path + '/db.kdbx')
+        }
+        // 合法文件 'db.min.1.kdbx', 'db.min.2.kdbx', 'db.base64.1.txt', 'db.base64.2.txt' , 有附件的对象
+        // 目录下 除了 'db.min.1.kdbx', 'db.min.2.kdbx', 'db.base64.1.txt', 'db.base64.2.txt' 全部清理
+        // const list:WechatMiniprogram.Stats | null = await WXFile.checkFileList(path, true)
+        return Promise.resolve()
+    }
+
     /**
      * 检查目录下是否有这个文件, 并不为0
      */
@@ -459,7 +475,6 @@ export class DBItem extends DBBase {
 
     /** 找到本地文件, 并打开 db */
     public async open(passPV: ProtectedValue) {
-        let startStep: boolean = false
         await $g.step.inJump('读取本地二进制文件')
         // string | ArrayBuffer | null
         let readByte: any = null
@@ -487,8 +502,9 @@ export class DBItem extends DBBase {
         //     readByte = ToolBytes.Base64ToArrayBuffer(temp)
         //     $g.log('转换后 : ', readByte)
         // }
-
-        if (readByte && $g.isTypeM(readByte, 'ArrayBuffer')) {
+        if (readByte === null) {
+            wx.showToast({ title: '未获取到文件', icon: 'none', mask: false })
+        } else if ($g.isTypeM(readByte, 'ArrayBuffer')) {
             await $g.step.inJump('解密本地档案')
             const byte: any = readByte
             const db: Kdbx | null = await KdbxApi.open(byte, passPV.getText());
@@ -506,10 +522,8 @@ export class DBItem extends DBBase {
                 wx.showToast({ title: '打开文件失败, 请检查密码!', icon: 'none', mask: false })
             }
         } else {
-            $g.log('读取文件类型不符 : ', $g.className(readByte))
             wx.showToast({ title: '文件类型不符:' + $g.className(readByte), icon: 'none', mask: false })
         }
-
     }
 
     /** 保存 DbItem 到磁盘, 并且保存 DbLib 到 Storage */
@@ -520,37 +534,24 @@ export class DBItem extends DBBase {
      */
     public async saveFileAddStorage() {
         if (this.db) {
-            await $g.step.inJump('加密档案二进制', '保存档案文件', '保存档案列表数据')
+            await $g.step.inJump('加密档案内容', '保存档案文件', '更新档案记录')
             const byte: ArrayBuffer = await this.db.save()
             $g.log('[DbItem][saveFileAddStorage]', byte.byteLength)
-            // const demo: GByteStream = new GByteStream(byte, true)
-            // const n1: number = demo.rUint32()
-            // const n2: number = demo.rUint32()
-            // $g.log(`[DbItem][saveFileAddStorage]保存头部 n1 : ${n1} n2 : ${n2}`)
             if (byte && byte.byteLength > 0) {
                 await $g.step.next()
                 if ($g.g.systemInfo.brand === 'devtools') {
-                    // 如果是开发者工具, 就存Base64, 因为二进制不稳定
+                    // 如果是开发者工具, 存Base64, 因为二进制不稳定
                     const base64: string = ToolBytes.ArrayBufferToBase64(byte)
-                    $g.log('[DbItem][saveFileAddStorage]base64:', base64.length)
                     if (this.pathMinIndex === 3) {
-                        if (await WXFile.writeFile(`db/${this.path}/db.base64.2.txt`, base64)) {
-                            this.pathMinIndex = 4
-                        }
+                        if (await WXFile.writeFile(`db/${this.path}/db.base64.2.txt`, base64)) this.pathMinIndex = 4
                     } else {
-                        if (await WXFile.writeFile(`db/${this.path}/db.base64.1.txt`, base64)) {
-                            this.pathMinIndex = 3
-                        }
+                        if (await WXFile.writeFile(`db/${this.path}/db.base64.1.txt`, base64)) this.pathMinIndex = 3
                     }
                 } else {
                     if (this.pathMinIndex === 1) {
-                        if (await WXFile.writeFile(`db/${this.path}/db.min.2.kdbx`, byte, 0, 'binary')) {
-                            this.pathMinIndex = 2
-                        }
+                        if (await WXFile.writeFile(`db/${this.path}/db.min.2.kdbx`, byte, 0, 'binary')) this.pathMinIndex = 2
                     } else {
-                        if (await WXFile.writeFile(`db/${this.path}/db.min.1.kdbx`, byte, 0, 'binary')) {
-                            this.pathMinIndex = 1
-                        }
+                        if (await WXFile.writeFile(`db/${this.path}/db.min.1.kdbx`, byte, 0, 'binary')) this.pathMinIndex = 1
                     }
                 }
                 await $g.step.next()
@@ -564,7 +565,7 @@ export class DBItem extends DBBase {
 
     /** 抽取文件的数量 */
     private getGroupToDiskTotle: number = 0
-    private getGroupToDiskStr: string = '附件独立加密存储'
+    private getGroupToDiskStr: string = '附件加密存储'
 
     /** 将里面的附件抽出, 并转换为文件存在本地 */
     public async getFileToDisk() {
@@ -584,6 +585,148 @@ export class DBItem extends DBBase {
         }
     }
 
+    public async getEntryFile(entry: Entry, ref: string): Promise<ArrayBuffer | null> {
+        if (entry && ref.length) {
+            // const binaries: any = entry.binaries
+            // if (binaries) {
+            //     const binariesKeys: Array<string> = Object.keys(binaries)
+            //     for (let i = 0; i < binariesKeys.length; i++) {
+            //         const fileInfo: any = binaries[binariesKeys[i]]
+            //         if (fileInfo && fileInfo.ref === ref) {
+            //             return fileInfo.value
+            //         }
+            //     }
+            // }
+            //
+            var gkv: any;
+            if ($g.hasKey(entry.fields, 'GKeyValue')) {
+                const gkvJSON: any = entry.fields['GKeyValue']
+                gkv = JSON.parse(gkvJSON)
+            } else {
+                gkv = {}
+            }
+            if ($g.hasKey(gkv, 'filelist')) {
+                const gkvFileList: [] = gkv['filelist']
+                for (let i = 0; i < gkvFileList.length; i++) {
+                    const gkvFileItem: any = gkvFileList[i]
+                    if (gkvFileItem.ref === ref) {
+                        return await this.getEntryRef(entry, ref, gkvFileItem.pass)
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * 获取 Entry 里的 ref 对象
+     * @param entry 条目(获取 uuid 用)
+     * @param ref 文件的 ref
+     * @param pass AES加密的密锁
+     */
+    public async getEntryRef(entry: Entry, ref: string, pass: string): Promise<ArrayBuffer | null> {
+        let uuidPath: string = KdbxApi.uuidPath(entry.uuid)
+        if (uuidPath) {
+            const path: string = `db/${this.path}/${uuidPath}/${ref}.aes`
+            let file: WechatMiniprogram.Stats | null = await WXFile.getFileStat(path)
+            if (file && file.size > 0) {
+                let byte: any = null
+                if ($g.g.systemInfo.brand === 'devtools') {
+                    const base64: any = await WXFile.readFile(path, undefined, undefined, 'utf-8')
+                    if (base64) byte = ToolBytes.Base64ToArrayBuffer(base64)
+                } else {
+                    byte = await WXFile.readFile(path)
+                }
+                if (byte) {
+                    const aesObj: AES = new AES()
+                    await aesObj.setKey(pass)
+                    const aes: ArrayBuffer | null = await aesObj.decryptCBC(byte)
+                    return Promise.resolve(aes)
+                }
+            }
+        }
+        return Promise.resolve(null)
+    }
+
+    /**
+     * 通过 ref 获取 Entry 条目中的文件, 解密, 存储在临时文件夹中, 并返回临时文件的路径
+     * @param entry 获取的条目
+     * @param ref ref值
+     * @param pass AES解密密码
+     * @param extend 临时文件扩展名(图片需扩展名)
+     * @param startStep 是否自动开启进度条
+     */
+    public async getEntryFileTemp(entry: Entry, ref: string, pass: string, extend: string = 'tmp', startStep: boolean = true): Promise<string> {
+        // 'temp/<ref>.icon.png   db/this.path/UUID/ref.icon
+        $g.g.app.DEBUG && $g.log('[db.getEntryFileTemp]获取临时文件:' + ref)
+        let outPath: string = 'temp/' + ref
+        if (extend) outPath += '.' + extend
+        // 检查临时文件是否已经有
+
+        let checkFile: WechatMiniprogram.Stats | null = await WXFile.getFileStat(outPath)
+        $g.g.app.DEBUG && $g.log('[db.getEntryFileTemp]检查临时文件:' + outPath, checkFile)
+        if (checkFile && checkFile.size > 0) {
+            // let checkImg: WechatMiniprogram.GetImageInfoSuccessCallbackResult | null = await WXImage.getImageInfo(`${wx.env.USER_DATA_PATH}/${outPath}`)
+            // $g.g.app.DEBUG && $g.log('[db.getEntryFileTemp]检查临时图片:' + outPath, checkImg)
+            // if (checkImg) {
+            //     return Promise.resolve(`${wx.env.USER_DATA_PATH}/${outPath}`)
+            // }
+            return Promise.resolve(`${wx.env.USER_DATA_PATH}/${outPath}`)
+        }
+
+        // 获取文件, 并保存
+        let uuidPath: string = KdbxApi.uuidPath(entry.uuid)
+        if (uuidPath) {
+            const filePath: string = `db/${this.path}/${uuidPath}/${ref}.aes`
+            if (startStep) {
+                $g.step.clear()
+                $g.step.add('检查加密文件')
+                $g.step.add('获取加密内容')
+                $g.step.add('解密文件内容')
+                $g.step.add('保存临时文件')
+                await $g.step.jump(0)
+            }
+            let file: WechatMiniprogram.Stats | null = await WXFile.getFileStat(filePath)
+            if (file && file.size > 0) {
+                let byte: any = null
+                if (startStep) await $g.step.jump(1)
+                if ($g.g.systemInfo.brand === 'devtools') {
+                    const base64: any = await WXFile.readFile(filePath, undefined, undefined, 'utf-8')
+                    if (base64) byte = ToolBytes.Base64ToArrayBuffer(base64)
+                } else {
+                    byte = await WXFile.readFile(filePath)
+                }
+                if (byte) {
+                    if (startStep) await $g.step.jump(2)
+                    const aesObj: AES = new AES()
+                    await aesObj.setKey(pass)
+                    const aes: ArrayBuffer | null = await aesObj.decryptCBC(byte)
+                    if (aes) {
+                        if (startStep) await $g.step.jump(3)
+                        if (await WXFile.writeFile(outPath, aes, 0, 'binary')) {
+                            if ($g.g.app.DEBUG) {
+                                $g.log('[db.getEntryFileTemp]成功', outPath)
+                                $g.log('[db.getEntryFileTemp]成功文件信息', ref, await WXFile.getFileStat(outPath))
+                                $g.log('[db.getEntryFileTemp]成功图片信息', ref, await WXImage.getImageInfo(`${wx.env.USER_DATA_PATH}/${outPath}`))
+                            }
+                            if (startStep) $g.step.clear()
+                            return Promise.resolve(`${wx.env.USER_DATA_PATH}/${outPath}`)
+                        } else {
+                            if (startStep) $g.step.clear()
+                            $g.g.app.DEBUG && $g.log('[db.getEntryFileTemp]临时文件保存失败:' + aes)
+                            return Promise.resolve('')
+                        }
+                    }
+                } else {
+                    $g.g.app.DEBUG && $g.log('[db.getEntryFileTemp]文件加密内容获取失败:' + byte)
+                }
+            } else {
+                $g.g.app.DEBUG && $g.log('[db.getEntryFileTemp]读取文件失败:' + filePath)
+            }
+        }
+        if (startStep) $g.step.clear()
+        return Promise.resolve('')
+    }
 
 
     /** 遍历组内的文件 */
@@ -591,14 +734,10 @@ export class DBItem extends DBBase {
         let l: number = groups.length
         let isChange: boolean = false
         if (l > 0) {
-            for (let i = 0; i < groups.length; i++) {
+            for (let i = 0; i < l; i++) {
                 const group: Group = groups[i]
-                if (await this.getGroupToDisk(group.groups)) {
-                    isChange = true
-                }
-                if (await this.getEntrieToDisk(group.entries)) {
-                    isChange = true
-                }
+                if (await this.getGroupToDisk(group.groups)) isChange = true
+                if (await this.getEntrieToDisk(group.entries)) isChange = true
             }
         }
         return isChange
@@ -613,74 +752,78 @@ export class DBItem extends DBBase {
         let isChange: boolean = false
         let l: number = entries.length
         if (l > 0) {
-            for (let i = 0; i < entries.length; i++) {
+            const KdbxUuid: any = KdbxApi.kdbxweb.KdbxUuid
+            for (let i = 0; i < l; i++) {
                 const entry: Entry = entries[i]
-                let uuid: string = entry.uuid.toString()
-                // 去掉等于号
-                uuid = uuid.split('=').join('')
-                const binaries: any = entry.binaries
+                let uuid: string = KdbxApi.uuidPath(entry.uuid)
                 // 获取 二进制文件 键值列表
-                const fileList: Array<string> = Object.keys(binaries)
+                const binaries: any = entry.binaries
+                const fileKey: Array<string> = Object.keys(binaries)
                 // GKeyValue 的对象
                 let gkv: any = {}
+                let gkvJSON: any = ''
                 if ($g.hasKey(entry.fields, 'GKeyValue')) {
-                    const gkvJSON: any = entry.fields['GKeyValue']
+                    gkvJSON = entry.fields['GKeyValue']
                     gkv = JSON.parse(gkvJSON)
                 }
-                let jsonFileList: Array<any> = new Array<any>()
-                if ($g.hasKey(gkv, 'filelist')) {
-                    jsonFileList = gkv.filelist
-                }
-                for (let j = 0; j < fileList.length; j++) {
+                let gkvFileList: Array<any> = new Array<any>()
+                if ($g.hasKey(gkv, 'filelist')) gkvFileList = gkv.filelist
+                gkv.filelist = gkvFileList
+                for (let j = 0; j < fileKey.length; j++) {
                     this.getGroupToDiskTotle++
                     if ($g.step.index < $g.step.list.length) {
-                        $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',附件:' + this.getGroupToDiskTotle + ' (读取)'
+                        $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',序号:' + this.getGroupToDiskTotle + ' (读取)'
                         await $g.step.runMethod()
                     }
-                    const fileName: string = fileList[j]
+                    const fileName: string = fileKey[j]
                     const fileInfo: any = binaries[fileName]
                     const ref: string = fileInfo.ref
-                    const KdbxUuid: any = KdbxApi.kdbxweb.KdbxUuid
-                    let pass: string = KdbxUuid.random().toString()
-                    let byte: ArrayBuffer = fileInfo.value
+                    const pass: string = KdbxUuid.random().toString()
+                    const byte: ArrayBuffer = fileInfo.value
+                    // 测试 ref 算出 ref
+                    // const sha256: ArrayBuffer = await SHA256.sha256(byte)
+                    // const newref: string = ToolBytes.byteToHex(new Uint8Array(sha256))
+                    // $g.log('对比 REF : ', newref, ref)
                     // Aes
                     if ($g.step.index < $g.step.list.length) {
-                        $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',附件:' + this.getGroupToDiskTotle + ' (加密)'
+                        $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',序号:' + this.getGroupToDiskTotle + ' (加密)'
                         await $g.step.runMethod()
                     }
-                    await AES.setKey(pass)
-                    const aes: ArrayBuffer | null = await AES.encryptCBC(byte)
+                    const aesObj: AES = new AES()
+                    await aesObj.setKey(pass)
+                    const aes: ArrayBuffer | null = await aesObj.encryptCBC(byte)
                     if (aes) {
-                        byte = aes
                         // 文件名
-                        const newPath: string = uuid + '.' + ref
+                        const newPath: string = `db/${this.path}/${uuid}/${ref}`
                         const fileItem: any = {
-                            name: fileName,
-                            ref: ref,
-                            path: newPath,
-                            pass: pass,
-                            size: byte.byteLength,
-                            savetype: 'byte'
+                            name: fileName,// 文件添加的时候的名称, 包含扩展名
+                            ref: ref,// 整个路径 uuid + '.' + ref
+                            pass: pass, // AES 加密的密码
+                            size: byte.byteLength,// 加密前的长度
+                            savetype: 'byte' // base64 byte binaries
                         }
                         if ($g.step.index < $g.step.list.length) {
-                            $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',附件:' + this.getGroupToDiskTotle + ' (存储)'
+                            $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',序号:' + this.getGroupToDiskTotle + ' (存储)'
                             await $g.step.runMethod()
                         }
                         if ($g.g.systemInfo.brand === 'devtools') {
-                            const base64: string = ToolBytes.ArrayBufferToBase64(byte)
-                            await WXFile.writeFile(`db/${this.path}/${newPath}`, base64, 0, 'utf-8')
+                            const base64: string = ToolBytes.ArrayBufferToBase64(aes)
+                            await WXFile.writeFile(newPath + '.aes', base64, 0, 'utf-8')
                             fileItem['savetype'] = 'base64'
                         } else {
-                            await WXFile.writeFile(`db/${this.path}/${newPath}`, aes, 0, 'binary')
+                            await WXFile.writeFile(newPath + '.aes', aes, 0, 'binary')
                         }
-                        jsonFileList.push(fileItem)
+                        $g.log('原始图:', newPath + '.aes')
+                        await this.mackEntryIcon(fileName, newPath, ref, byte, pass, fileItem)
+                        gkvFileList.push(fileItem)
                         delete binaries[fileName]
                         isChange = true
                     }
                 }
                 // 写入新的值
-                entry.fields['GKeyValue'] = JSON.stringify(gkv)
-                // 去除历史中的二进制内容
+                gkvJSON = JSON.stringify(gkv)
+                if (gkvJSON !== '{}') entry.fields['GKeyValue'] = gkvJSON
+                // 清空历史记录二进制内容
                 for (let i = 0; i < entry.history.length; i++) {
                     const history: Entry = entry.history[i]
                     const history_binaries: any = history.binaries
@@ -691,11 +834,97 @@ export class DBItem extends DBBase {
                         isChange = true
                     }
                 }
-                // entry.removeHistory(0, entry.history.length)
-                // $g.log('调整完毕 Entrie', entry)
             }
         }
-        return isChange
+        return Promise.resolve(isChange)
+    }
+
+    /**
+     * 创建缩略图和icon图标
+     * @param fileName 文件全名, 带扩展名
+     * @param newPath `db/${this.path}/${uuid}/${ref}`
+     * @param byte 解密后文件二进制
+     * @param pass 加密的密码
+     * @param fileItem 如果要设置宽度高度
+     */
+    public async mackEntryIcon(fileName: string, newPath: string, ref: string, byte: ArrayBuffer | null, pass: string, fileItem: any, startStep: boolean = true): Promise<any> {
+        // 如果是图片, 制作 .icon 和 .min(width 750)
+        const nameArray: Array<string> = fileName.split('.')
+        if (nameArray.length > 1) {
+            let extend: string = nameArray[nameArray.length - 1]
+            extend = extend.toLocaleLowerCase()
+            if (extend === 'jpg' || extend === 'png' || extend === 'jpeg') {
+                if (startStep && $g.step.index < $g.step.list.length) {
+                    $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',序号:' + this.getGroupToDiskTotle + ' (缩略图)'
+                    await $g.step.runMethod()
+                }
+                let tempPath: string = `temp/${ref}.${extend}`
+                // 如果有 byte 就保存 byte
+                if (byte && $g.isClass(byte, 'ArrayBuffer')) {
+                    if (!await WXFile.writeFile(tempPath, byte, 0, 'binary')) {
+                        $g.g.app.DEBUG && $g.log('[db.mackEntryIcon]保存临时文件失败')
+                        return Promise.resolve()
+                    }
+                }
+                tempPath = `${wx.env.USER_DATA_PATH}/${tempPath}`
+                const aesObj: AES = new AES()
+                await aesObj.setKey(pass)
+                // 保存临时处理文件保存完毕
+                const imgInfo: WechatMiniprogram.GetImageInfoSuccessCallbackResult | null = await WXImage.getImageInfo(tempPath)
+                if (imgInfo) {
+                    // $g.log('原始文件信息:', imgInfo)
+                    if (fileItem) {
+                        fileItem['width'] = imgInfo.width
+                        fileItem['height'] = imgInfo.height
+                    }
+                    // $g.log('开始创建缩略图')
+                    const temp750: string = await WXImage.imgScaleIn(tempPath, imgInfo.width, imgInfo.height, 750, $g.g.app.scene.winHeight, imgInfo.orientation)
+                    // $g.log('创建缩略图:', tempPathMin)
+                    if (temp750) {
+                        const byte750: any = await WXFile.readFile(temp750, undefined, undefined, undefined, false)
+                        // $g.log('缩略图文件:', byteMin)
+                        if (byte750) {
+                            const aes750: ArrayBuffer | null = await aesObj.encryptCBC(byte750)
+                            if (aes750) {
+                                if ($g.g.systemInfo.brand === 'devtools') {
+                                    const base64: string = ToolBytes.ArrayBufferToBase64(aes750)
+                                    await WXFile.writeFile(newPath + '.min.aes', base64, 0, 'utf-8')
+                                } else {
+                                    await WXFile.writeFile(newPath + '.min.aes', aes750, 0, 'binary')
+                                }
+                                $g.g.app.DEBUG && $g.log(`[db.mackEntryIcon]缩略图750完毕:${newPath}.min.aes`)
+                            }
+                        }
+                    }
+                    //----------------------------------------------
+                    if (startStep && $g.step.index < $g.step.list.length) {
+                        $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',序号:' + this.getGroupToDiskTotle + ' (图标)'
+                        await $g.step.runMethod()
+                    }
+                    const temp120: string = await WXImage.imgScaleIn(tempPath, imgInfo.width, imgInfo.height, 120, 120, imgInfo.orientation)
+                    // $g.log('创建图标:', tempPathIcon)
+                    if (temp120) {
+                        const byte120: any = await WXFile.readFile(temp120, undefined, undefined, undefined, false)
+                        // $g.log('图标文件:', byteIcon)
+                        if (byte120) {
+                            const aes120: ArrayBuffer | null = await aesObj.encryptCBC(byte120)
+                            if (aes120) {
+                                if ($g.g.systemInfo.brand === 'devtools') {
+                                    const base64: string = ToolBytes.ArrayBufferToBase64(aes120)
+                                    await WXFile.writeFile(newPath + '.icon.aes', base64, 0, 'utf-8')
+                                } else {
+                                    await WXFile.writeFile(newPath + '.icon.aes', aes120, 0, 'binary')
+                                }
+                                $g.g.app.DEBUG && $g.log(`[db.mackEntryIcon]缩略图120完毕:${newPath}.icon.aes`)
+                            }
+                        }
+                    }
+                } else {
+                    $g.g.app.DEBUG && $g.log('[db.mackEntryIcon]获取临时文件信息失败')
+                }
+            }
+        }
+        return Promise.resolve()
     }
 
     __name__ = 'DBItem'

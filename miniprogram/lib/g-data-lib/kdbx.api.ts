@@ -1,6 +1,6 @@
 import { $g } from "../../frame/speed.do";
 import { GFileSize } from "../g-byte-file/g.file.size";
-import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group, Entry } from "../kdbxweb/types/index";
+import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group, Entry, KdbxUuid } from "../kdbxweb/types/index";
 
 const KdbxWeb = require('./../kdbxweb/index')
 
@@ -73,6 +73,21 @@ export class KdbxApi {
     public static async save(db: Kdbx): Promise<ArrayBuffer> {
         $g.log('[KdbxApi]save')
         return await db.save()
+    }
+
+    /**
+     * 使用替换方式将UUID的地址换为合法的值
+     * @param uuid UUID的值
+     */
+    public static uuidPath(uuid: KdbxUuid): string {
+        let s: string = ''
+        if (uuid && uuid.id) {
+            s = uuid.id
+            s = s.split('=').join('')
+            s = s.split('/').join('_')
+            s = s.split('+').join('-')
+        }
+        return s
     }
 
     /**

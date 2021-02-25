@@ -1,0 +1,15 @@
+<view class="show">
+    <block wx:for="{{ list }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+        <g-entry-file source="{{ item }}" index="{{ index }}" type="{{ type }}"
+            showborder="{{ index!==(list.length-1) }}"
+            warningkey="{{ warningkey.length>index?warningkey[index]:false }}" bind:change="infoChange"
+            bind:changefile="changeFile" bind:del="fileDel" bind:show="fileShow"></g-entry-file>
+    </block>
+
+    <view class="end_bt">
+        <block wx:if="{{ type === 'edit' || type === 'add' }}">
+            <button class="bt_big" bindtap="btAddFile"><i class="fa fa-envelope-open-o"></i> 添加附件</button>
+        </block>
+    </view>
+
+</view>

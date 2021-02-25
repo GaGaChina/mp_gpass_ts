@@ -10,7 +10,8 @@
                 "dblist/dblist",
                 "dbedit/dbedit",
                 "entry/entry",
-                "group/group"
+                "group/group",
+                "fileshow/fileshow"
             ]
         },
         {

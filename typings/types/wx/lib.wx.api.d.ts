@@ -501,7 +501,9 @@ backgroundAudioManager.src = 'http://ws.stream.qqmusic.qq.com/M500001VfvsJ21xFqb
     }
     interface CanvasToTempFilePathOption {
         /** 画布标识，传入 [canvas](https://developers.weixin.qq.com/miniprogram/dev/component/canvas.html) 组件的 canvas-id */
-        canvasId: string
+        canvasId?: string
+        /** 传入画布标识，传入 canvas 组件实例 （canvas type="2d" 时使用该属性） */
+        canvas?: any
         /** 图片的质量，目前仅对 jpg 有效。取值范围为 (0, 1]，不在范围内时当作 1.0 处理。
          *
          * 最低基础库： `1.7.0` */

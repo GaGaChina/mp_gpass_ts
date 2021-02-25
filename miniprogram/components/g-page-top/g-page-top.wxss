@@ -13,13 +13,17 @@
 
 .title {
     position: absolute;
-    width: 750rpx;
+    width: 400rpx;
+    margin-left: 175rpx;
     bottom: 20rpx;
     font-size: 32rpx;
     line-height: 32rpx;
     font-weight: bold;
     text-align: center;
     color: #000000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .title_dark {

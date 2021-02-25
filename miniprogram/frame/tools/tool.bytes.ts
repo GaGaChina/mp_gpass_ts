@@ -63,4 +63,15 @@ export class ToolBytes {
         }
         return arr.buffer;
     }
+
+    /** 二进制转Hex */
+    public static byteToHex(u8: Uint8Array): string {
+        let str: string = ''
+        for (let i = 0; i < u8.length; i++) {
+            const byte: string = u8[i].toString(16)
+            if (byte.length === 1) str += '0'
+            str += byte
+        }
+        return str;
+    }
 }

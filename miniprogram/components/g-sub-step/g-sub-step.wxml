@@ -15,7 +15,8 @@
         </view>
         <view class="run_title">
             <view><i class="fa fa-{{ itemRun.iconRun }} icon_run"></i></view>
-            <view class="run_title_tx"><text>{{ itemRun.title }}</text></view>
+            <view class="run_title_tx" style="width:{{ itemRun.startProgress?'390':'500' }}rpx">
+                <text>{{ itemRun.title }}</text></view>
             <view wx:if="{{ itemRun.startProgress }}" class="run_title_bf">
                 {{ ~~(itemRun.progress / itemRun.total * 100) }}%</view>
         </view>

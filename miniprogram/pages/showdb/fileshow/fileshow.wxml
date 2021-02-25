@@ -1,0 +1,16 @@
+<g-page-bg></g-page-bg>
+<g-page-top title="{{ pagetitle }}"></g-page-top>
+<g-sub-step></g-sub-step>
+<g-canvas-image-temp></g-canvas-image-temp>
+<swiper class="sw" style="height:{{ fullPageHeight }}rpx;" current="{{ swiperIndex }}" indicator-dots
+    indicator-color="#9af6fd" indicator-active-color="#9ce72a" bindchange="btSwiperChange">
+
+    <block wx:for="{{ fileList }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+        <swiper-item class="sw_item" style="height:{{ fullPageHeight }}rpx;">
+            <block wx:if="{{ item.path.length > 0 }}">
+                <image class="img" style="height:{{ fullPageHeight }}rpx;" data-id="{{ index }}" src="{{ item.path }}"
+                    mode="aspectFit" bindload="imageLoad" binderror="imageError" bindlongpress="imgSave"></image>
+            </block>
+        </swiper-item>
+    </block>
+</swiper>

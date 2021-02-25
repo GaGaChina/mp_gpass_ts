@@ -1,0 +1,4 @@
+<block wx:for="{{ list }}" wx:key="key" wx:for-index="index" wx:for-item="item">
+    <canvas id="{{ item.domId }}" canvas-id="{{ item.domId }}" type="2d" class="canvas"
+        style="width:{{ item.width }}px;height:{{ item.height }}px"></canvas>
+</block>

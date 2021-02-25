@@ -7,7 +7,9 @@ import { WXUser } from "../../frame/wx/wx.user"
  * 还需要提供一个参数, 能固定返回的路径
  */
 Component({
-    options: {},
+    options: {
+        styleIsolation: 'isolated',
+    },
     /** 组件的属性列表 properties和data指向的是同一个js对象 */
     properties: {
         show: { type: Boolean, value: true },// 是否显示
@@ -78,25 +80,22 @@ Component({
         /** 后退页面 */
         btBack(e: any) {
             const cps: any = getCurrentPages()
-            $g.log('组件点击返回', cps);
-            let route: string = '';
-            if (cps && cps.length) {
-                route = cps[cps.length - 1].route;
-            }
-            switch (route) {
-                // case 'pages/question/pages/machine/machine':
-                // case 'pages/question/pages/testing/testing':
-                //     wx.showModal({
-                //         title: '请确认', content: '你确定要退出考试吗?', confirmText: '确定退出', cancelText: '继续作答',
-                //         success(res) { if (res.confirm) wx.reLaunch({ url: '/pages/index/index' }); }
-                //     });
-                //     break;
-                default:
-                    if (cps.length > 1) {
-                        wx.navigateBack();
-                    } else {
-                        $g.log('无法返回!')
-                    }
+            // $g.log('组件点击返回', cps);
+            if (cps.length > 1) {
+                const route: string = cps[cps.length - 1].route
+                switch (route) {
+                    // case 'pages/question/pages/machine/machine':
+                    // case 'pages/question/pages/testing/testing':
+                    //     wx.showModal({
+                    //         title: '请确认', content: '你确定要退出考试吗?', confirmText: '确定退出', cancelText: '继续作答',
+                    //         success(res) { if (res.confirm) wx.reLaunch({ url: '/pages/index/index' }); }
+                    //     });
+                    //     break;
+                    default:
+                        wx.navigateBack()
+                }
+            } else {
+                $g.log('无法返回')
             }
         },
         btUserCenter(e: any) {

@@ -24,6 +24,8 @@ import { WXCompatible } from "./wx.compatible";
  * 
  * 打开手机文件的方法 :
  * 发送 文件给微信好友 -> 发送完毕后可以选择
+ * 
+ * C:\Users\GaGa\AppData\Local\微信开发者工具\User Data\1a695ca2de1a85735f93a43fb366c83f\WeappSimulator\WeappFileSystem\o6zAJs0prTNErnX58dQGA60JzcTQ\wx98e663f2bb3467bd\usr\db
  */
 export class WXFile {
 
@@ -41,10 +43,10 @@ export class WXFile {
                 count: selectLength,
                 type: fileType,
                 success: (res: WechatMiniprogram.ChooseMessageFileSuccessCallbackResult) => {
-                    resolve(res.tempFiles)
+                    return resolve(res.tempFiles)
                 },
                 fail: (e: WechatMiniprogram.GeneralCallbackResult) => {
-                    resolve([])
+                    return resolve([])
                 }
             })
         })
@@ -57,7 +59,7 @@ export class WXFile {
                 if (res.tapIndex === 0) {
                     wx.chooseImage({
                         count: 1,
-                        sizeType: ['compressed'],
+                        sizeType: ['original', 'compressed'],
                         sourceType: ['camera'],
                         success: function (res) {
                             //res.tempFilePaths[0] 这个是图片
@@ -66,7 +68,7 @@ export class WXFile {
                 } else if (res.tapIndex === 1) {
                     wx.chooseImage({
                         count: 1,
-                        sizeType: ['compressed'],
+                        sizeType: ['original', 'compressed'],
                         sourceType: ['album'],
                         success: function (res) {
                             //res.tempFilePaths[0] 这个是图片
@@ -100,16 +102,16 @@ export class WXFile {
                     filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
                     success: (res: WechatMiniprogram.FileSystemManagerSaveFileSuccessCallbackResult) => {
                         // $g.log('[wx.file][saveFile][success]', res);
-                        resolve(true)
+                        return resolve(true)
                     },
                     fail: (e) => {
                         // $g.log('[wx.file][saveFile][fail]', e);
                         wx.showToast({ title: `保存文件失败, ${e.errMsg}`, icon: 'none', mask: false })
-                        resolve(false)
+                        return resolve(false)
                     }
                 })
             } else {
-                resolve(false)
+                return resolve(false)
             }
         })
     }
@@ -127,16 +129,16 @@ export class WXFile {
                     destPath: `${wx.env.USER_DATA_PATH}/${destPath}`,
                     success: (res: WechatMiniprogram.GeneralCallbackResult) => {
                         // $g.log('[wx.file][copyFile][success]', res);
-                        resolve(true)
+                        return resolve(true)
                     },
                     fail: (e) => {
                         // $g.log('[wx.file][copyFile][fail]', e);
                         wx.showToast({ title: `保存文件失败, ${e.errMsg}`, icon: 'none', mask: false })
-                        resolve(false)
+                        return resolve(false)
                     }
                 })
             } else {
-                resolve(false)
+                return resolve(false)
             }
         })
     }
@@ -151,11 +153,11 @@ export class WXFile {
                 filePath: tempFilePath,
                 success: (res: WechatMiniprogram.GeneralCallbackResult) => {
                     // $g.log('[wx.file][clearTempFile][success]', res);
-                    resolve(true)
+                    return resolve(true)
                 },
                 fail: (e: WechatMiniprogram.RemoveSavedFileFailCallbackResult) => {
                     // $g.log('[wx.file][clearTempFile][fail]', e);
-                    resolve(false)
+                    return resolve(false)
                 }
             })
         })
@@ -178,11 +180,11 @@ export class WXFile {
                 let info: WechatMiniprogram.Stats | null = await WXFile.getFileStat(path)
                 if (info === null || info.isDirectory() === false) {
                     if (await WXFile.mkdir(path) === false) {
-                        resolve(false)
+                        return resolve(false)
                     }
                 }
             }
-            resolve(true)
+            return resolve(true)
         })
     }
 
@@ -196,11 +198,11 @@ export class WXFile {
                 dirPath: `${wx.env.USER_DATA_PATH}/${dirPath}`,
                 success: (res: WechatMiniprogram.GeneralCallbackResult) => {
                     // $g.log('[wx.file][mkdir][success]', res);
-                    resolve(true)
+                    return resolve(true)
                 },
                 fail: (e: WechatMiniprogram.MkdirFailCallbackResult) => {
                     // $g.log('[wx.file][mkdir][fail]', e);
-                    resolve(false)
+                    return resolve(false)
                 }
             })
         })
@@ -231,21 +233,22 @@ export class WXFile {
      * 获取这个文件的信息
      * @param filePath 要存储的文件路径(已添加wx.env.USER_DATA_PATH/)
      */
-    public static getFileStat(filePath: string): Promise<WechatMiniprogram.Stats | null> {
+    public static getFileStat(filePath: string, userPath: boolean = true): Promise<WechatMiniprogram.Stats | null> {
+        if (userPath) filePath = `${wx.env.USER_DATA_PATH}/${filePath}`
         return new Promise(resolve => {
             WXFile.manager.stat({
-                path: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                path: filePath,
                 recursive: false,
                 success: (res: WechatMiniprogram.StatSuccessCallbackResult) => {
                     // $g.log('[wx.file][FileStat][success]', res);
                     // 如果就一个文件返回 res.stats 对象
                     // 递归遍历就是一堆 res.stats = [ {path:'路径', stats: Stats对象} ]
                     const stats: any = res.stats
-                    resolve(stats)
+                    return resolve(stats)
                 },
                 fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
                     // $g.log('[wx.file][FileStat][fail]', e);
-                    resolve(null)
+                    return resolve(null)
                 }
             })
         })
@@ -284,11 +287,11 @@ export class WXFile {
                             resolve(res.stats.size)
                         }
                     }
-                    resolve(0)
+                    return resolve(0)
                 },
                 fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
                     // $g.log('[wx.file][FileSize][fail]', e);
-                    resolve(0)
+                    return resolve(0)
                 }
             })
         })
@@ -297,7 +300,7 @@ export class WXFile {
     /**
      * 输出里面的文件情况
      * @param filePath 
-     * @param recursive 
+     * @param recursive 是否递归获取目录下的每个文件的 Stats 信息
      */
     public static checkFileList(filePath: string, recursive: boolean = false): Promise<boolean> {
         return new Promise(resolve => {
@@ -315,21 +318,33 @@ export class WXFile {
                             for (let i = 0, l: number = list.length; i < l; i++) {
                                 const item: any = list[i]
                                 const file: WechatMiniprogram.Stats = item.stats
-                                $g.log(`path:${item.path} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory()}`)
+                                let log: string = `[ ${item.path} ]`
+                                if (file.isDirectory()) {
+                                    log += ' 文件夹'
+                                } else {
+                                    log += ' size:' + GFileSize.getSize(file.size)
+                                }
+                                $g.log(log)
                             }
                         } else {
                             const item: any = res.stats
                             if (item.stats) {
                                 const file: WechatMiniprogram.Stats = item.stats
-                                $g.log(`path:${item.path} size:${GFileSize.getSize(file.size)} 文件夹 : ${file.isDirectory()}`)
+                                let log: string = `[ ${item.path} ]`
+                                if (file.isDirectory()) {
+                                    log += ' 文件夹'
+                                } else {
+                                    log += ' size:' + GFileSize.getSize(file.size)
+                                }
+                                $g.log(log)
                             }
                         }
                     }
-                    resolve(true)
+                    return resolve(true)
                 },
                 fail: (e: WechatMiniprogram.StatFailCallbackResult) => {
                     // $g.log('[wx.file][FileSize][fail]', e);
-                    resolve(false)
+                    return resolve(false)
                 }
             })
         })
@@ -342,22 +357,23 @@ export class WXFile {
      * @param position number
      * @param length number
      */
-    public static readFile(filePath: string = '', position?: number, length?: number, encoding?: 'ascii' | 'base64' | 'binary' | 'hex' | 'ucs2' | 'ucs-2' | 'utf16le' | 'utf-16le' | 'utf-8' | 'utf8' | 'latin1'): Promise<string | ArrayBuffer | null> {
+    public static readFile(filePath: string = '', position?: number, length?: number, encoding?: 'ascii' | 'base64' | 'binary' | 'hex' | 'ucs2' | 'ucs-2' | 'utf16le' | 'utf-16le' | 'utf-8' | 'utf8' | 'latin1', userPath: boolean = true): Promise<string | ArrayBuffer | null> {
         return new Promise(resolve => {
             if (!WXCompatible.canRun('1.9.9', '无法使用微信文件模块。')) return resolve(null)
+            if (userPath) filePath = `${wx.env.USER_DATA_PATH}/${filePath}`
             WXFile.manager.readFile({
-                filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
+                filePath: filePath,
                 encoding: encoding,
                 position: position,
                 length: length,
                 success: (res: WechatMiniprogram.ReadFileSuccessCallbackResult) => {
                     // $g.log('[wx.file][readFile][success]', res);
-                    resolve(res.data)
+                    return resolve(res.data)
                 },
                 fail: (e: WechatMiniprogram.ReadFileFailCallbackResult) => {
                     // console.log('[wx.file][readFile][fail]', e);
                     wx.showToast({ title: `读取文件失败, ${e.errMsg}`, icon: 'none', mask: false })
-                    resolve(null)
+                    return resolve(null)
                 }
             })
         })
@@ -394,18 +410,18 @@ export class WXFile {
                     encoding: encoding,
                     async success(res: WechatMiniprogram.GeneralCallbackResult) {
                         // $g.log('[wx.file][writeFile]写入成功')
-                        resolve(true)
+                        return resolve(true)
                         // $g.log('[wx.file][writeFile]追加文件', filePath, data, encoding)
                         // resolve(await WXFile.appendFile(filePath, data, encoding))
                     },
                     fail: (e: any) => {
                         $g.log('[wx.file][writeFile][fail]', e);
                         wx.showToast({ title: '文件写入失败!', icon: 'none', mask: false })
-                        resolve(false)
+                        return resolve(false)
                     }
                 })
             } else {
-                resolve(false)
+                return resolve(false)
             }
         })
     }
@@ -426,16 +442,16 @@ export class WXFile {
                     encoding: encoding,
                     success: (res: WechatMiniprogram.GeneralCallbackResult) => {
                         // $g.log('[wx.file][appendFile][success]', res)
-                        resolve(true)
+                        return resolve(true)
                     },
                     fail: (e: any) => {
                         // $g.log('[wx.file][appendFile][fail]', e);
                         wx.showToast({ title: `文件追加失败, ${e.errMsg}`, icon: 'none', mask: false })
-                        resolve(false)
+                        return resolve(false)
                     }
                 })
             } else {
-                resolve(false)
+                return resolve(false)
             }
         })
 
@@ -453,11 +469,11 @@ export class WXFile {
                 filePath: `${wx.env.USER_DATA_PATH}/${filePath}`,
                 success: function (res) {
                     // $g.log('[wx.file][delFile][success]', res);
-                    resolve(true)
+                    return resolve(true)
                 },
                 fail: function (e: any) {
                     // $g.log('[wx.file][delFile][fail]', e);
-                    resolve(false)
+                    return resolve(false)
                 }
             })
         })
@@ -476,11 +492,11 @@ export class WXFile {
                 recursive: recursive,
                 success: function (res) {
                     // $g.log('[wx.file][rmDir][success]', res);
-                    resolve(true)
+                    return resolve(true)
                 },
                 fail: function (e: any) {
                     // $g.log('[wx.file][rmDir][fail]', e);
-                    resolve(false)
+                    return resolve(false)
                 }
             })
         })
@@ -500,11 +516,11 @@ export class WXFile {
                 showMenu: true,
                 success: function (res) {
                     // $g.log('[wx.file][openDocument][success]', res);
-                    resolve(true)
+                    return resolve(true)
                 },
                 fail: function (e: any) {
                     // $g.log('[wx.file][openDocument][fail]', e);
-                    resolve(false)
+                    return resolve(false)
                 }
             })
         })
@@ -526,21 +542,21 @@ export class WXFile {
                             filePath: wx.env.USER_DATA_PATH + "/" + 123,
                             success(res2) {
                                 if (res2.errMsg == 'saveFile:ok') {
-                                    resolve()
+                                    return resolve()
                                 } else {
-                                    reject()
+                                    return reject()
                                 }
                             },
                             fail() {
-                                reject()
+                                return reject()
                             }
                         })
                     } else {
-                        reject()
+                        return reject()
                     }
                 },
                 fail() {
-                    reject()
+                    return reject()
                 }
             })
         })

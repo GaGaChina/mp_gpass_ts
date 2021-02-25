@@ -1,0 +1,11 @@
+.sw {
+    width: 750rpx;
+}
+
+.sw_item {
+    width: 750rpx;
+}
+
+.img {
+    width: 750rpx;
+}

@@ -1,0 +1,6 @@
+{
+    "component": true,
+    "usingComponents": {
+        "g-entry-file": "./../g-entry-file/g-entry-file"
+    }
+}

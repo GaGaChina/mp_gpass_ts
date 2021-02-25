@@ -58,6 +58,7 @@ Page({
         if ($g.g.app.timeMouse + $g.g.app.timeMouseClose < Date.now()) {
             if (dbItem && dbItem.db) {
                 dbItem.db = null
+                WXFile.rmDir('temp', true)
                 wx.reLaunch({ url: './../../index/index' })
             }
         }
@@ -112,6 +113,7 @@ Page({
     btClose(e: any) {
         if (dbItem) {
             dbItem.db = null
+            WXFile.rmDir('temp', true)
             this.setData({ isOpen: false })
         }
     },
@@ -123,6 +125,7 @@ Page({
             content: '你确定删除库吗!',
             async success(e) {
                 dbItem.db = null
+                await WXFile.rmDir('temp', true)
                 await dbItem.rmDir()
                 const dbLib: DBLib = $g.g.dbLib
                 if (await dbLib.remove(that.data.dbLocalId) === false) {
@@ -164,9 +167,11 @@ Page({
                 let o: string | null = await WXSoterAuth.start(['facial'])
                 if (o && o.length) {
                     let key: string = o + '|dbid:' + dbItem.localId.toString()
-                    await AES.setKey(key)
+                    const aesObj:AES = new AES()
+                    await aesObj.setKey(key)
                     let pass: string = dbItem.pass.pv.getText()
-                    let passJM: ArrayBuffer | null = await AES.encryptCBC(pass, o)
+                    let passJM: ArrayBuffer | null = await aesObj.encryptCBC(pass, o)
+                    await aesObj.setKey('')
                     if (passJM) {
                         dbItem.pass.facial = KdbxApi.kdbxweb.ByteUtils.bytesToBase64(passJM)
                         if (WXSoterAuth.fingerPrint === false || dbItem.pass.fingerPrint !== '') {
@@ -179,7 +184,6 @@ Page({
                     }
                 }
                 o = ''
-                await AES.setKey('')
             } else {
                 wx.showToast({ title: '需要输入密码才能进行设置!', icon: 'none', mask: false })
             }
@@ -195,9 +199,11 @@ Page({
                 let o: string | null = await WXSoterAuth.start(['fingerPrint'])
                 if (o && o.length) {
                     let key: string = o + '|dbid:' + dbItem.localId.toString()
-                    await AES.setKey(key)
+                    const aesObj:AES = new AES()
+                    await aesObj.setKey(key)
                     let pass: string = dbItem.pass.pv.getText()
-                    let passJM: ArrayBuffer | null = await AES.encryptCBC(pass, o)
+                    let passJM: ArrayBuffer | null = await aesObj.encryptCBC(pass, o)
+                    await aesObj.setKey('')
                     if (passJM) {
                         dbItem.pass.fingerPrint = KdbxApi.kdbxweb.ByteUtils.bytesToBase64(passJM)
                         if (WXSoterAuth.facial === false || dbItem.pass.facial !== '') {
@@ -210,7 +216,6 @@ Page({
                     }
                 }
                 o = ''
-                await AES.setKey('')
             } else {
                 wx.showToast({ title: '需要输入密码才能进行设置!', icon: 'none', mask: false })
             }

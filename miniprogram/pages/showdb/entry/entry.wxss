@@ -40,7 +40,6 @@
     color: #9ce72a;
 }
 
-
 .item {
     display: flex;
     width: 750rpx;
@@ -66,7 +65,6 @@
     margin-left: 30rpx;
 }
 
-
 .time {
     width: 750rpx;
 }
@@ -81,6 +79,11 @@
 .end_bt {
     width: 580rpx;
     margin: 0 auto;
+}
+
+.end_edit_add {
+    width: 750rpx;
+    padding-top: 500rpx;
 }
 
 .bt_big {
@@ -107,43 +110,6 @@
 
 .red:hover {
     background: linear-gradient(180deg, #942111, #9b3632 49%, #7a1b1b 50%, #af3a3a) !important;
-}
-
-/* 附件列表 */
-.file_item {
-    display: flex;
-    width: 650rpx;
-    margin: 0 auto;
-}
-
-.file_img {
-    width: 150rpx;
-    height: 150rpx;
-    box-sizing: border-box;
-    padding: 15rpx;
-    border: 1px solid #97adca;
-    background: linear-gradient(180deg, #af8c3c, #ae8a38 49%, #a97f2a 50%, #af8b3a);
-}
-
-.file_img>image {
-    width: 120rpx;
-    height: 120rpx;
-    background: linear-gradient(180deg, #04133c, #010928);
-}
-
-.file_right{
-    width: 500rpx;
-    padding-left: 30rpx;
-    box-sizing: border-box;
-}
-
-.file_title {
-    color: #fff;
-
-}
-
-.file_info {
-    color: #fff;
 }
 
 /* 历史记录 */
@@ -178,21 +144,25 @@
     margin-top: 10rpx;
     color: #97adca;
     font-size: 28rpx;
+    border: 1px solid #031034;
     background: linear-gradient(180deg, #04133c, #010928);
 }
 
 /* 你光标经过某一元素时的样式 */
 .history_item>button:hover {
+    border: 1px solid #031034;
     background: linear-gradient(180deg, #04133c, #010928);
 }
 
 /* 按钮按下去的样式 */
 .history_item>button.button-hover {
+    border: 1px solid #031034;
     background: linear-gradient(180deg, #04133c, #010928);
 }
 
 /* 点击状态 */
 .history_item>button:active {
+    border: 1px solid #031034;
     background: linear-gradient(180deg, #04133c, #010928);
 }
 

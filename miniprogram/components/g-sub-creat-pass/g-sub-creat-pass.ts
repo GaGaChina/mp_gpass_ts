@@ -2,6 +2,7 @@ import { AES } from "../../frame/crypto/AES"
 import { $g } from "../../frame/speed.do"
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
 import { DBItem, DBLib } from "../../lib/g-data-lib/db"
+import { DBLibApi } from "../../lib/g-data-lib/db.lib.api"
 import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
 
 /**
@@ -52,7 +53,7 @@ Component({
                 let o: string | null = await WXSoterAuth.start(['facial'])
                 if (o && o.length) {
                     let key: string = o + '|dbid:' + dbItem.localId.toString()
-                    const aesObj:AES = new AES()
+                    const aesObj: AES = new AES()
                     await aesObj.setKey(key)
                     let pass: string = dbItem.pass.pv.getText()
                     let passJM: ArrayBuffer | null = await aesObj.encryptCBC(pass, o)
@@ -62,7 +63,7 @@ Component({
                         if (WXSoterAuth.fingerPrint === false || dbItem.pass.fingerPrint !== '') {
                             dbItem.pass.pv = null
                         }
-                        dbLib.storageSaveThis()
+                        DBLibApi.storageSave(dbLib)
                     }
                 }
                 o = ''

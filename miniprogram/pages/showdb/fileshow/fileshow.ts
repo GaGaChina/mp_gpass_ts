@@ -2,6 +2,7 @@ import { $g } from "../../../frame/speed.do"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
 import { Entry } from "../../../lib/kdbxweb/types"
 import { WXFile } from "../../../frame/wx/wx.file"
+import { DBEntryApi } from "../../../lib/g-data-lib/db.entry.api"
 
 Page({
     data: {
@@ -196,11 +197,11 @@ Page({
                 if (nameArray.length > 1) extend = nameArray[nameArray.length - 1].toLocaleLowerCase()
                 let path: string = ''
                 if (this.data.imgSize === 1) {
-                    path = await dbItem.getEntryFileTemp(entry, item.ref + '.min', item.pass, 'png')
+                    path = await DBEntryApi.getEntryFileTemp(dbItem, entry, item.ref + '.min', item.pass, 'png')
                     $g.log('临时Min : ', path)
                 }
                 if (path === '') {
-                    path = await dbItem.getEntryFileTemp(entry, item.ref, item.pass, extend)
+                    path = await DBEntryApi.getEntryFileTemp(dbItem, entry, item.ref, item.pass, extend)
                     $g.log('临时原始 : ', path)
                 }
                 item.file = path

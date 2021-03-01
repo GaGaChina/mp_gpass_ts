@@ -4,6 +4,9 @@ import { WXSize } from "../../../frame/wx/wx.resize"
 import { WXSoterAuth } from "../../../frame/wx/wx.soter.auth"
 import { WXSystemInfo } from "../../../frame/wx/wx.system.info"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
+import { DBEntryApi } from "../../../lib/g-data-lib/db.entry.api"
+import { DBItemApi } from "../../../lib/g-data-lib/db.item.api"
+import { DBItemCheckApi } from "../../../lib/g-data-lib/db.item.check.api"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
 import { KdbxIcon } from "../../../lib/g-data-lib/kdbx.icon"
 import { Kdbx, Group, Entry, ProtectedValue } from "../../../lib/kdbxweb/types"
@@ -53,7 +56,7 @@ Page({
             dbItem.infoRefresh = true
         }
     },
-    onShow() {
+    async onShow() {
         $g.step.clear()
         this.loadScene()
         // 如果时间超过了, 就切换回其他的页面
@@ -65,25 +68,37 @@ Page({
                 dbItem = nullAny
             }
             db = nullAny
+            this.data.groupList.length = 0
+            this.data.itemList.length = 0
+            this.data.itemListFind.length = 0
+            this.setData({
+                groupList: this.data.groupList,
+                itemList: this.data.itemList,
+                itemListFind: this.data.itemListFind
+            })
             WXFile.rmDir('temp', true)
             wx.reLaunch({ url: './../../index/index' })
             return
         }
         // 设置数据库
         if (db) {
+            $g.g.app.DEBUG && $g.log('开启DB:', db)
             // 清理添加的内容
             const _db: any = db
             if (dbItem.addEntry) {
                 _db.move(dbItem.addEntry, null)
                 dbItem.addEntry = null
+                dbItem.count.entry--
             }
             // 清理添加的内容
             if (dbItem.addGroup) {
                 _db.move(dbItem.addGroup, null)
-                dbItem.addEntry = null
+                dbItem.addGroup = null
+                dbItem.count.group--
             }
+            // await DBItemCheckApi.check(dbItem)
             this.setData({
-                dbEmpty: KdbxApi.isEmpty(db),
+                dbEmpty: dbItem.count.entry === 0,
                 dbName: dbItem.name
             })
             // $g.log('操作的库 : ', db)
@@ -141,12 +156,11 @@ Page({
             dbItem.displayGroup = groups[0]
         }
         dbItem.selectGroup = dbItem.displayGroup
-        const meta: any = db.meta
-        if (meta && meta.recycleBinUuid) {
-            this.data.recycleUUID = meta.recycleBinUuid.id
-        } else {
-            this.data.recycleUUID = ''
+        if (dbItem.recycleUUID === '' && db.meta) {
+            const meta: any = db.meta
+            if (meta.recycleBinUuid) dbItem.recycleUUID = meta.recycleBinUuid.id
         }
+        this.data.recycleUUID = dbItem.recycleUUID
         $g.log('回收站ID:', this.data.recycleUUID)
         // 如果 dbItem.displayGroup 没有下级目录 , 就展示上级菜单
         if (dbItem.displayGroup.groups.length) {
@@ -227,13 +241,13 @@ Page({
                         select: select
                     }
                     // 给回收站更名
-                    if (groupItem.uuid.id === this.data.recycleUUID) {
+                    if (groupItem.uuid.id === dbItem.recycleUUID) {
                         groupInfo['name'] = '回收站'
                     }
                     this.data.groupList.push(groupInfo)
                 }
                 if (!isParent) {
-                    if (groupItem.uuid.id !== this.data.recycleUUID) {
+                    if (groupItem.uuid.id !== dbItem.recycleUUID) {
                         this.data.itemList.push({
                             isGroup: true,
                             uuid: groupItem.uuid.id,

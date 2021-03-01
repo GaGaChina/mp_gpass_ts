@@ -3,6 +3,7 @@ import { WXFile } from "../../frame/wx/wx.file";
 import { WXImage } from "../../frame/wx/wx.image";
 import { GFileSize } from "../../lib/g-byte-file/g.file.size";
 import { DBItem, DBLib } from "../../lib/g-data-lib/db";
+import { DBEntryApi } from "../../lib/g-data-lib/db.entry.api";
 import { KdbxApi } from "../../lib/g-data-lib/kdbx.api";
 
 /**
@@ -134,7 +135,7 @@ Component({
                     type = 'image'
                     icon = 'file-photo-o'
                     const entry: any = dbItem.selectEntry
-                    this.data.imgPath = await dbItem.getEntryFileTemp(entry, info.ref + '.icon', info.pass, 'png')
+                    this.data.imgPath = await DBEntryApi.getEntryFileTemp(dbItem, entry, info.ref + '.icon', info.pass, 'png')
                     if (this.data.imgPath) {
                         const imgInfo: WechatMiniprogram.GetImageInfoSuccessCallbackResult | null = await WXImage.getImageInfo(this.data.imgPath)
                         if (imgInfo) {
@@ -142,7 +143,7 @@ Component({
                             iconHeight = imgInfo.height
                         }
                     } else {
-                        this.data.imgPath = await dbItem.getEntryFileTemp(entry, info.ref, info.pass, extend)
+                        this.data.imgPath = await DBEntryApi.getEntryFileTemp(dbItem, entry, info.ref, info.pass, extend)
                         if (this.data.imgPath) {
                             // 检查文件大小, 如果文件
                             const imgInfo: WechatMiniprogram.GetImageInfoSuccessCallbackResult | null = await WXImage.getImageInfo(this.data.imgPath)
@@ -152,9 +153,9 @@ Component({
                                     if (byte) {
                                         const uuidPath: string = KdbxApi.uuidPath(entry.uuid)
                                         const newPath: string = `db/${dbItem.path}/${uuidPath}/${info.ref}`
-                                        await dbItem.mackEntryIcon(info.name, newPath, info.ref, byte, info.pass, null)
+                                        await DBEntryApi.mackEntryIcon(info.name, newPath, info.ref, byte, info.pass, null)
                                         // --- 在读取一次
-                                        const imgPath2: string = await dbItem.getEntryFileTemp(entry, info.ref + '.icon', info.pass, 'png')
+                                        const imgPath2: string = await DBEntryApi.getEntryFileTemp(dbItem, entry, info.ref + '.icon', info.pass, 'png')
                                         if (imgPath2) {
                                             $g.log('补全缩略图成功')
                                             this.data.imgPath = imgPath2

@@ -11,6 +11,10 @@ interface IAppOption {
     userWX?: WechatMiniprogram.UserInfo,
     /** 对象初始化的 DB 对象 */
     dbLib: any,
+    /** 打开的 Item */
+    dbItem: any,
+    /** 打开的 Item 的 Db kdbx */
+    dbKdbx: any,
   }
   userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
 }

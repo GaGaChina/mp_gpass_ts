@@ -2,6 +2,7 @@ import { $g } from "../../../frame/speed.do"
 import { TimeFormat } from "../../../frame/time/time.format"
 import { WXFile } from "../../../frame/wx/wx.file"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
+import { DBItemApi } from "../../../lib/g-data-lib/db.item.api"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
 import { Group, Kdbx } from "../../../lib/kdbxweb/types"
 
@@ -121,6 +122,7 @@ Page({
                     if (dbItem.selectGroup) {
                         group = db.createGroup(dbItem.selectGroup, '新建组')
                         dbItem.addGroup = group
+                        dbItem.count.group++
                         dbItem.selectGroup = group
                         this.setInfo()
                     } else {
@@ -167,6 +169,7 @@ Page({
         if (dbItem.addGroup) {
             db.remove(dbItem.addGroup)
             dbItem.addGroup = null
+            dbItem.count.group--
         }
         wx.navigateBack();
     },
@@ -196,7 +199,7 @@ Page({
         group.times.update()
         group.icon = this.data.icon
         group.name = this.data.title
-        await dbItem.saveFileAddStorage()
+        await DBItemApi.saveFileAddStorage(dbLib, dbItem)
         await $g.step.clear()
         dbItem.infoRefresh = true
         this.setData({ pagetype: 'show' })
@@ -244,7 +247,7 @@ Page({
             if (groupUUID && dbItem.selectGroup && dbItem.selectGroup.uuid && dbItem.selectGroup.uuid.id === groupUUID) {
                 dbItem.selectGroup = null
             }
-            await dbItem.saveFileAddStorage()
+            await DBItemApi.saveFileAddStorage(dbLib, dbItem)
             await $g.step.clear()
             dbItem.infoRefresh = true
             wx.navigateBack();

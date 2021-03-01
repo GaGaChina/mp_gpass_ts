@@ -12,10 +12,10 @@
                 </view>
                 <view class="center">
                     <view class="center_left">
-                        <view>创建时间 : {{item.timeCreat}}</view>
-                        <view>访问时间 : {{item.timeRead}}</view>
-                        <view>修改时间 : {{item.timeChange}}</view>
-                        <view>使用空间 : {{item.fileSize}}</view>
+                        <view>创建时间 : {{ item.timeCreat }}</view>
+                        <view>访问时间 : {{ item.timeRead }}</view>
+                        <view>修改时间 : {{ item.timeChange }}</view>
+                        <view>使用空间 : {{ item.fileSize }}</view>
                     </view>
                     <view class="center_right">
 
@@ -24,7 +24,6 @@
                             闭</button>
                         <button wx:else data-id="{{ item.id }}" bindtap="btOpen"><i class="fa fa-envelope-open-o"></i> 打
                             开</button>
-
                         <button data-id="{{ item.id }}" bindtap="btEdit"><i class="fa fa-pencil-square-o"></i> 操
                             作</button>
                     </view>

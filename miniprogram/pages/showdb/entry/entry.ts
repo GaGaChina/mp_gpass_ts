@@ -1,8 +1,8 @@
 import { $g } from "../../../frame/speed.do"
 import { TimeFormat } from "../../../frame/time/time.format"
 import { WXFile } from "../../../frame/wx/wx.file"
-import { GFileSize } from "../../../lib/g-byte-file/g.file.size"
 import { DBItem, DBLib } from "../../../lib/g-data-lib/db"
+import { DBItemApi } from "../../../lib/g-data-lib/db.item.api"
 import { KdbxApi } from "../../../lib/g-data-lib/kdbx.api"
 import { Entry, Group, Kdbx } from "../../../lib/kdbxweb/types"
 
@@ -137,7 +137,7 @@ Page({
             wx.reLaunch({ url: './../../index/index' })
         }
     },
-    reLoadInfo(){
+    reLoadInfo() {
         // 没有设置会返回
         if (db) {
             switch (this.data.pagetype) {
@@ -159,6 +159,7 @@ Page({
                     }
                     entry = db.createEntry(dbItem.selectGroup)
                     dbItem.addEntry = entry
+                    dbItem.count.entry++
                     dbItem.selectEntry = entry
                     this.setInfo()
                     break;
@@ -376,6 +377,7 @@ Page({
         if (dbItem.addEntry) {
             db.remove(dbItem.addEntry)
             dbItem.addEntry = null
+            dbItem.count.entry--
         }
         wx.navigateBack();
     },
@@ -440,7 +442,7 @@ Page({
     },
     async btSave(e: any) {
         $g.g.app.timeMouse = Date.now()
-        $g.log('[entry][Save]', this.data.title)
+        $g.log('[entry.Save]', this.data.title)
         this.clearOtherNull()
         // 前5个只允许出现在 defaultList , 并检查 otherList 不允许重名
         // 判断 key 值是否全部合法
@@ -458,8 +460,8 @@ Page({
         } else {
             entry.pushHistory()
             // 最多5条, 否则很乱
-            if (entry.history.length > 5) {
-                entry.removeHistory(0, entry.history.length - 5)
+            if (entry.history.length > 3) {
+                entry.removeHistory(0, entry.history.length - 3)
             }
         }
         entry.times.update()
@@ -514,11 +516,8 @@ Page({
         }
         // 清理文件夹下不属于现在记录的内容以及历史记录中的文件
 
-
-
-
         entry.fields['GKeyValue'] = JSON.stringify(gkv)
-        await dbItem.saveFileAddStorage()
+        await DBItemApi.saveFileAddStorage(dbLib, dbItem)
         await $g.step.clear()
         dbItem.infoRefresh = true
         this.setData({ pagetype: 'show' })
@@ -564,7 +563,7 @@ Page({
         entry.removeHistory(Number(e.currentTarget.dataset.index), 1)
         this.data.historyList.splice(Number(e.currentTarget.dataset.index), 1)
         this.setData({ historyList: this.data.historyList })
-        await dbItem.saveFileAddStorage()
+        await DBItemApi.saveFileAddStorage(dbLib, dbItem)
         await $g.step.clear()
     },
     /** 删除现在的这个对象 */
@@ -584,7 +583,7 @@ Page({
             if (entryUUID && dbItem.selectEntry && dbItem.selectEntry.uuid && dbItem.selectEntry.uuid.id === entryUUID) {
                 dbItem.selectEntry = null
             }
-            await dbItem.saveFileAddStorage()
+            await DBItemApi.saveFileAddStorage(dbLib, dbItem)
             await $g.step.clear()
             dbItem.infoRefresh = true
             wx.navigateBack();

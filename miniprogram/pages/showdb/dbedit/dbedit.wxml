@@ -1,26 +1,35 @@
 <g-page-bg></g-page-bg>
-<g-page-top canBack="{{true}}" title="查看本地档案"></g-page-top>
-<g-sub-open-db show="{{passShow}}" id="{{}}"></g-sub-open-db>
-<view style="height:{{fullPageHeight}}rpx;">
+<g-page-top canBack="{{ true }}" title="查看本地档案"></g-page-top>
+<g-sub-open-db show="{{ passShow }}" id="{{}}"></g-sub-open-db>
+<view style="height:{{ fullPageHeight }}rpx;">
     <scroll-view scroll-y enable-flex class="list" scroll-into-view="index{{selectIndex}}"
-        style="height:{{fullPageHeight}}rpx;">
+        style="height:{{ fullPageHeight }}rpx;">
         <view class="item">
             <view class="top_bar">
                 <view class="title_icon "><i class="fa fa-{{icon}}"></i></view>
                 <view class="title">{{name}}</view>
-                <view wx:if="{{item.isSelect}}" class="select"><i class="fa fa-check"></i> 选中</view>
+                <view wx:if="{{ item.isSelect }}" class="select"><i class="fa fa-check"></i> 选中</view>
             </view>
             <view class="center">
-                <view>本地编号 : {{dbLocalId}}</view>
-                <view>本地路径 : {{path}}</view>
-                <view>创建时间 : {{timeCreat}}</view>
-                <view>访问时间 : {{timeRead}}</view>
-                <view>修改时间 : {{timeChange}}</view>
-                <view>使用空间 : {{fileSize}}</view>
+                <view>本地编号 : {{ dbLocalId }}</view>
+                <view>本地路径 : {{ path }}</view>
+                <view>条目数量 : {{ countEntry }}</view>
+                <view>群组数量 : {{ countGroup }}</view>
+                <view>创建时间 : {{ timeCreat }}</view>
+                <view>访问时间 : {{ timeRead }}</view>
+                <view>修改时间 : {{ timeChange }}</view>
+                <view>数据空间 : {{ fileSizeKdbx }}</view>
+                <view>使用空间 : {{ fileSize }}</view>
                 <button bindtap="btOpen"><i class="fa fa-envelope-open-o"></i> 打　　开</button>
                 <button wx:if="{{ isOpen }}" bindtap="btClose"><i class="fa fa-envelope-o"></i> 注　　销</button>
                 <block wx:if="{{ DEBUG }}">
+                    <button bindtap="btChangeName"><i class="fa fa-envelope-open-o"></i> 修改名称</button>
                     <button bindtap="btChangePass"><i class="fa fa-envelope-open-o"></i> 修改密码</button>
+                    <button bindtap="btRecovery"><i class="fa fa-envelope-open-o"></i> 恢复本地上次保存</button>
+                    <button bindtap="btCloudUpload"><i class="fa fa-envelope-open-o"></i> 上传云端</button>
+                    <button bindtap="btCloudDownload"><i class="fa fa-envelope-open-o"></i> 云端恢复</button>
+
+
                 </block>
                 <button wx:if="{{facial}}" bindtap="btChangeFacial"><i class="fa fa-envelope-open-o"></i>
                     {{isFacial?'关闭':'开启'}}人脸解锁</button>

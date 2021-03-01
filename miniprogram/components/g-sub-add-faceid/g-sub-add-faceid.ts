@@ -2,6 +2,7 @@ import { AES } from "../../frame/crypto/AES"
 import { $g } from "../../frame/speed.do"
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
 import { DBItem, DBLib } from "../../lib/g-data-lib/db"
+import { DBLibApi } from "../../lib/g-data-lib/db.lib.api"
 import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
 
 /**
@@ -54,7 +55,7 @@ Component({
                         if (WXSoterAuth.fingerPrint === false || dbItem.pass.fingerPrint !== '') {
                             dbItem.pass.pv = null
                         }
-                        dbLib.storageSaveThis()
+                        DBLibApi.storageSave(dbLib)
                     }
                 }
                 o = ''

@@ -91,47 +91,6 @@ export class KdbxApi {
     }
 
     /**
-     * 查看这个文件是否是新的, 没有新条目
-     * @param db Kdbx对象
-     */
-    public static isEmpty(db: Kdbx): boolean {
-        if (db) {
-            let excludeUUID: string = ''
-            if (db.meta) {
-                const meta: any = db.meta
-                if (meta.recycleBinUuid && meta.recycleBinUuid.id) {
-                    excludeUUID = meta.recycleBinUuid.id
-                }
-            }
-            if (db.groups.length > 1) return false
-            if (db.groups.length > 0) {
-                const group: Group = db.groups[0]
-                return KdbxApi.isGroupEmpty(group, excludeUUID)
-            }
-        }
-        return true
-    }
-
-    /**
-     * 递归查询group和以下内容是否都是空
-     * @param group 
-     * @param excludeUUID 
-     */
-    public static isGroupEmpty(group: Group, excludeUUID: string): boolean {
-        if (group) {
-            if (group.groups.length > 1) return false
-            if (group.uuid.id !== excludeUUID) {
-                if (group.entries.length > 0) return false
-            }
-            if (group.groups.length > 0) {
-                const next: Group = group.groups[0]
-                return KdbxApi.isGroupEmpty(next, excludeUUID)
-            }
-        }
-        return true
-    }
-
-    /**
      * 在 Group 中查找 uuid 对象
      * @param group 
      * @param uuid 

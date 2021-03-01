@@ -8,6 +8,8 @@ import { KdbxApi } from "../../lib/g-data-lib/kdbx.api"
 import { Entry } from "../../lib/kdbxweb/types"
 import { DataStepItem } from "../../frame/data/data.step"
 import { WXKeepScreen } from "../../frame/wx/wx.keep.screen"
+import { DBItemApi } from "../../lib/g-data-lib/db.item.api"
+import { DBEntryApi } from "../../lib/g-data-lib/db.entry.api"
 
 Component({
     options: {
@@ -232,7 +234,7 @@ Component({
                                 // 从目录转存文件
                                 let tempPath: string = `temp/${ref}.${extend}`
                                 if (await WXFile.saveFile(path, tempPath)) {
-                                    await dbItem.mackEntryIcon(name, newPath, ref, null, pass, info, false)
+                                    await DBEntryApi.mackEntryIcon(name, newPath, ref, null, pass, info, false)
                                 }
                                 // 处理添加图片和替换图片
                                 if (this.data.fileSelectIndex !== -1 && i === 0) {
@@ -307,13 +309,13 @@ Component({
                         if (itemPath === '') {
                             await $g.step.nextMin()
                             if (showMin) {
-                                itemPath = await dbItem.getEntryFileTemp(entry, item.ref + '.min', item.pass, 'png', false)
+                                itemPath = await DBEntryApi.getEntryFileTemp(dbItem, entry, item.ref + '.min', item.pass, 'png', false)
                                 if (itemPath === '') {
                                     $g.log('临时Min图片获取失败')
                                 }
                             }
                             if (itemPath === '') {
-                                itemPath = await dbItem.getEntryFileTemp(entry, item.ref, item.pass, extend, false)
+                                itemPath = await DBEntryApi.getEntryFileTemp(dbItem, entry, item.ref, item.pass, extend, false)
                             }
                         }
                         if (item.index === index) selectURL = itemPath

@@ -24,6 +24,7 @@ Page({
     btClearClipboard(e: any) {
         WXClipboard.setDate('')
     },
+    /** 用户分享的信息 */
     onShareAppMessage(e: any): any {
         $g.log('用户点击分享:', e)
         const shareData: WXShareData = new WXShareData()

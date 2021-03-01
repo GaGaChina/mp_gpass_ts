@@ -3,6 +3,8 @@ interface DataGlobalApp {
     urlApi: string,
     /** 图片基础地址 */
     urlImg: string,
+    /** 云存储,微信端的前缀 */
+    urlCloudWX: string,
     /** APP的ID号 */
     id: string,
     /** APP的版本号 */
@@ -26,13 +28,17 @@ interface DataGlobalApp {
     /** 用户多久不操作进行锁屏 */
     timeMouseClose: number,
     /** 倒数为 0 的时候弹出 指纹 或 人脸识别解锁 */
-    timesShowFinger:number,
+    timesShowFinger: number,
 }
 
 /** 用户数据相关内容 */
 interface DataGlobalUser {
     /** 服务器数据库用户ID号 */
     id: string,
+    /** 微信服务器 openid */
+    openid: string,
+    /** 服务器微信统一的 unionid */
+    unionid: string,
     /** 微信授权获取的登录信息 */
     wx?: WechatMiniprogram.UserInfo,
     /** 微信登录后获取的Data */

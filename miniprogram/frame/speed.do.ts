@@ -137,10 +137,10 @@ export class $g {
             k!: string;
         if (!a) return null
         if (!b) b = {}
-        at = a;
-        bt = b;
+        at = a
+        bt = b
         // 是否在a的路径上找到 keys
-        let finsh: boolean = true;
+        let finsh: boolean = true
         let t_a: Array<string>;
         if (keys === '') {
             atU = a
@@ -163,7 +163,15 @@ export class $g {
         // 是否找到 keys 路径 ,  k 有表示已经进入过循环了
         if (finsh && !!k) {
             if (mode === '*') {
-                btU[k] = atU[k];
+                // 内部全拷, 找 非拷贝 项进行过滤
+                if ($g.isBase(at)) {
+                    return at
+                } else {
+                    const list: Array<string> = Object.keys(at);
+                    for (k of list) {
+                        bt[k] = at[k]
+                    }
+                }
             } else {
                 t_a = mode.split(',');
                 if (t_a.indexOf('*') !== -1) {

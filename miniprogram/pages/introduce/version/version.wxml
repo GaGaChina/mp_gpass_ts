@@ -2,11 +2,14 @@
 <g-page-top canBack="{{true}}" title="软件介绍"></g-page-top>
 <scroll-view scroll-y enable-flex class="scroll" style="height:{{ fullPageHeight }}rpx;">
     <view class="title">
-        1.3.0 发布日期 : 2021-02-28 13:30
+        1.4.0 发布日期 : 2021-02-28 13:30
     </view>
     <view class="info">
         <text>云, 模板套用
-            导出导入功能深入</text>
+            银行卡拷贝模板
+            导出导入功能深入
+            修改密码, 修改档案名称
+            条目移动, 文件夹移动</text>
     </view>
     <view class="title">
         1.3.0 发布日期 : 2021-02-25 13:30

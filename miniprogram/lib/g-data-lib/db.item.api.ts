@@ -3,7 +3,7 @@ import { ToolBytes } from "../../frame/tools/tool.bytes"
 import { WXFile } from "../../frame/wx/wx.file"
 import { WXSoterAuth } from "../../frame/wx/wx.soter.auth"
 import { Kdbx, ProtectedValue } from "../kdbxweb/types"
-import { DBItem, DBLib } from "./db"
+import { DBItem, DBLib, DbLibCloudWX } from "./db"
 import { DBItemCheckApi } from "./db.item.check.api"
 import { DBLibApi } from "./db.lib.api"
 import { KdbxApi } from "./kdbx.api"
@@ -13,9 +13,13 @@ import { KdbxApi } from "./kdbx.api"
  */
 export class DBItemApi {
 
-
-    /** 找到本地文件, 并打开 db */
-    public static async open(dbItem: DBItem, passPV: ProtectedValue) {
+    /**
+     * 通过本地路径文件, 来打开 db
+     * @param dbLib 
+     * @param dbItem 
+     * @param passPV 
+     */
+    public static async open(dbLib: DBLib, dbItem: DBItem, passPV: ProtectedValue) {
         await $g.step.inJump('读取本地二进制文件')
         // string | ArrayBuffer | null
         let readByte: any = null
@@ -44,10 +48,10 @@ export class DBItemApi {
         //     $g.log('转换后 : ', readByte)
         // }
         if (readByte === null) {
-            wx.showToast({ title: '未获取到文件', icon: 'none', mask: false })
+            wx.showModal({ title: '失败', content: '未在本地路径获取到文件!', showCancel: false })
         } else if ($g.isTypeM(readByte, 'ArrayBuffer')) {
             await $g.step.inJump('解密本地档案')
-            const byte: any = readByte
+            const byte: ArrayBuffer = readByte
             const db: Kdbx | null = await KdbxApi.open(byte, passPV.getText());
             if (db) {
                 let savePass: boolean = false
@@ -56,11 +60,16 @@ export class DBItemApi {
                 dbItem.pass.pv = savePass ? KdbxApi.getPassPV(passPV.getText()) : null
                 dbItem.db = db
                 await DBItemCheckApi.check(dbItem)
+                if (dbItem.changeDB) {
+                    await DBItemApi.saveFileAddStorage(dbLib, dbItem)
+                } else if (dbItem.changeItem) {
+                    DBLibApi.storageSave(dbLib)
+                }
             } else {
-                wx.showToast({ title: '打开文件失败, 请检查密码!', icon: 'none', mask: false })
+                wx.showModal({ title: '失败', content: '打开仓库失败, 请检查密码!', showCancel: false })
             }
         } else {
-            wx.showToast({ title: '文件类型不符:' + $g.className(readByte), icon: 'none', mask: false })
+            wx.showModal({ title: '失败', content: '文件类型不符, 非二进制!' + $g.className(readByte), showCancel: false })
         }
     }
 

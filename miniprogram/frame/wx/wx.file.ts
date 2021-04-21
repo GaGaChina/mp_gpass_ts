@@ -458,7 +458,7 @@ export class WXFile {
                     },
                     fail: (e: any) => {
                         $g.log('[wx.file][writeFile][fail]', e);
-                        wx.showToast({ title: '文件写入失败!', icon: 'none', mask: false })
+                        wx.showToast({ title: '文件写入失败', icon: 'error' });
                         return resolve(false)
                     }
                 })

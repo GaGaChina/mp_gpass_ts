@@ -284,8 +284,8 @@ view {
 
 /* 80+30 120 */
 .info_item_icon {
-    margin-left: 30rpx;
-    margin-top: 30rpx;
+    margin-left: 20rpx;
+    margin-top: 20rpx;
     width: 80rpx;
     height: 80rpx;
     border-radius: 50%;

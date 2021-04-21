@@ -16,32 +16,19 @@
             </view>
         </block>
 
-        <block wx:if="{{historyList.length || true}}">
-
-            <view class="group">
-                <view class="group_icon"><i class="fa fa-history"></i></view>
-                <view class="group_title">历史记录</view>
-            </view>
-            <block wx:for="{{historyList}}" wx:key="key" wx:for-index="index" wx:for-item="item">
-                <view class="item">
-                    <view wx:if="{{item.icon}}"><i class="fa fa-{{item.icon}}"></i></view>
-                    <view>{{item.type}}　：</view>
-                    <view class="item_info">{{item.name}}</view>
-                </view>
-            </block>
-
-        </block>
         <view class="end_bt">
-            <button wx:if="{{pagetype === 'show'}}" class="bt_big" bindtap="btBack"><i
+            <button wx:if="{{ pagetype === 'show' }}" class="bt_big" bindtap="btBack"><i
                     class="fa fa-envelope-open-o"></i> 返回</button>
-            <button wx:if="{{pagetype === 'show'}}" class="bt_big" bindtap="btEdit"><i
+            <button wx:if="{{ pagetype === 'show' }}" class="bt_big" bindtap="btEdit"><i
                     class="fa fa-envelope-open-o"></i> 编辑</button>
-            <button wx:if="{{pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btSave"><i
+            <button wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btSave"><i
                     class="fa fa-envelope-open-o"></i> 保存</button>
             <button wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="bt_big" bindtap="btBackShow"><i
                     class="fa fa-envelope-open-o"></i> 取消</button>
             <button wx:if="{{ pagetype === 'edit' }}" class="bt_big red" bindtap="btDel"><i
                     class="fa fa-envelope-open-o"></i> 删除</button>
         </view>
+        <!-- 把页面顶上去, 方便输入内容 -->
+        <view wx:if="{{ pagetype === 'edit' || pagetype === 'add' }}" class="end_edit_add"></view>
     </scroll-view>
 </view>

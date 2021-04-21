@@ -65,7 +65,7 @@ Component({
                 this.data.itemWait.length = 0
                 this.data.itemRun = {}
                 const list: any = $g.step.list
-                if (list && list.length) {
+                if (list && list.length && $g.step.index < list.length) {
                     for (let i = 0; i < list.length; i++) {
                         const item: any = list[i]
                         if (i === $g.step.index) {
@@ -79,11 +79,8 @@ Component({
                     // 重新设置高度
                     const scene: DataScene = $g.g.app.scene
                     let centerHeight: number = 140
-                    if ($g.step.list.length - 1 < $g.step.index) {
-                        $g.step.index = $g.step.list.length - 1
-                    }
                     let itemRun: DataStepItem = $g.step.list[$g.step.index]
-                    if (itemRun.smallList.length && itemRun.smallIndex !== -1) {
+                    if (itemRun.smallList.length) {
                         itemRun.smallIndex = $g.step.indexMin
                         centerHeight += itemRun.smallList.length * 60 + 40
                     }

@@ -35,22 +35,24 @@ KdbxFormat.prototype.load = function (data) {
     that.ctx = new KdbxContext({
         kdbx: kdbx
     });
-    $g.step.inJump('准备档案')
-    return kdbx.credentials.ready.then(function () {
-        // $g.log('[KdbxFormat]证书准备完毕')
-        kdbx.header = KdbxHeader.read(stm, that.ctx);
-        // $g.log('[KdbxFormat]头部读取完毕')
-        if (kdbx.header.versionMajor === 3) {
-            return that._loadV3(stm);
-        } else if (kdbx.header.versionMajor === 4) {
-            return that._loadV4(stm);
-        } else {
-            throw new KdbxError(
-                Consts.ErrorCodes.InvalidVersion,
-                'bad version: ' + kdbx.header.versionMajor
-            );
-        }
-    });
+    return $g.step.inJumpSmall('开始解析档案', 'kdbxweb').then(function () {
+        return kdbx.credentials.ready.then(function () {
+            // $g.log('[KdbxFormat]证书准备完毕')
+            kdbx.header = KdbxHeader.read(stm, that.ctx);
+            // $g.log('[KdbxFormat]头部读取完毕')
+            if (kdbx.header.versionMajor === 3) {
+                return that._loadV3(stm);
+            } else if (kdbx.header.versionMajor === 4) {
+                return that._loadV4(stm);
+            } else {
+                throw new KdbxError(
+                    Consts.ErrorCodes.InvalidVersion,
+                    'bad version: ' + kdbx.header.versionMajor
+                );
+            }
+        });
+    })
+
 };
 
 KdbxFormat.prototype._loadV3 = function (stm) {
@@ -61,11 +63,12 @@ KdbxFormat.prototype._loadV3 = function (stm) {
         // $g.log('[KdbxFormat]loadV3 解析XML:', xmlStr);
         kdbx.xml = XmlUtils.parse(xmlStr);
         return that._setProtectedValues().then(function () {
-            $g.step.inJumpSmall('解析档案文件')
-            return kdbx._loadFromXml(that.ctx).then(function () {
-                $g.log('[KdbxFormat]XML 载入完毕')
-                return that._checkHeaderHashV3(stm).then(function () {
-                    return kdbx;
+            return $g.step.inJumpSmall('解析档案文件', 'kdbxweb').then(function () {
+                return kdbx._loadFromXml(that.ctx).then(function () {
+                    $g.log('[KdbxFormat]XML 载入完毕')
+                    return that._checkHeaderHashV3(stm).then(function () {
+                        return kdbx;
+                    });
                 });
             });
         });
@@ -92,21 +95,22 @@ KdbxFormat.prototype._loadV4 = function (stm) {
                         return that._decryptData(data, keys.cipherKey).then(function (data) {
                             ByteUtils.zeroBuffer(keys.cipherKey);
                             $g.log('[KdbxFormat]loadV4 decryptData');
-                            if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
-                                // $g.log('[KdbxFormat]loadV4 ungzip', data);
-                                $g.step.inJumpSmall('解压缩信息')
-                                data = pako.ungzip(data);
-                            }
-                            stm = new BinaryStream(ByteUtils.arrayToBuffer(data));
-                            // $g.log('[KdbxFormat]loadV4 readInnerHeader', stm);
-                            that.kdbx.header.readInnerHeader(stm, that.ctx);
-                            data = stm.readBytesToEnd();
-                            // $g.log('[KdbxFormat]loadV4 readBytesToEnd', data);
-                            var xmlStr = ByteUtils.bytesToString(data);
-                            // $g.log('[KdbxFormat]loadV4 XmlUtils.parse', xmlStr);
-                            that.kdbx.xml = XmlUtils.parse(xmlStr);
-                            return that._setProtectedValues().then(function () {
-                                return that.kdbx._loadFromXml(that.ctx);
+                            return $g.step.inJumpSmall('解压缩档案内容', 'kdbxweb').then(function () {
+                                if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
+                                    // $g.log('[KdbxFormat]loadV4 ungzip', data);
+                                    data = pako.ungzip(data);
+                                }
+                                stm = new BinaryStream(ByteUtils.arrayToBuffer(data));
+                                // $g.log('[KdbxFormat]loadV4 readInnerHeader', stm);
+                                that.kdbx.header.readInnerHeader(stm, that.ctx);
+                                data = stm.readBytesToEnd();
+                                // $g.log('[KdbxFormat]loadV4 readBytesToEnd', data);
+                                var xmlStr = ByteUtils.bytesToString(data);
+                                // $g.log('[KdbxFormat]loadV4 XmlUtils.parse', xmlStr);
+                                that.kdbx.xml = XmlUtils.parse(xmlStr);
+                                return that._setProtectedValues().then(function () {
+                                    return that.kdbx._loadFromXml(that.ctx);
+                                });
                             });
                         });
                     }
@@ -198,21 +202,26 @@ KdbxFormat.prototype._saveV4 = function (stm) {
                     dataArr.set(new Uint8Array(xmlData), innerHeaderData.byteLength);
                     ByteUtils.zeroBuffer(xmlData);
                     ByteUtils.zeroBuffer(innerHeaderData);
-                    if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
-                        data = pako.gzip(data);
-                    }
-                    return that
-                        ._encryptData(ByteUtils.arrayToBuffer(data), keys.cipherKey)
-                        .then(function (data) {
-                            ByteUtils.zeroBuffer(keys.cipherKey);
-                            return HmacBlockTransform.encrypt(data, keys.hmacKey).then(function (
-                                data
-                            ) {
-                                ByteUtils.zeroBuffer(keys.hmacKey);
-                                stm.writeBytes(data);
-                                return stm.getWrittenBytes();
-                            });
+                    return $g.step.inJumpSmall('档案内容压缩', 'kdbxweb').then(function () {
+                        if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
+                            data = pako.gzip(data);
+                        }
+                        return $g.step.inJumpSmall('档案内容加密', 'kdbxweb').then(function () {
+                            return that
+                                ._encryptData(ByteUtils.arrayToBuffer(data), keys.cipherKey)
+                                .then(function (data) {
+                                    ByteUtils.zeroBuffer(keys.cipherKey);
+                                    return HmacBlockTransform.encrypt(data, keys.hmacKey).then(function (
+                                        data
+                                    ) {
+                                        ByteUtils.zeroBuffer(keys.hmacKey);
+                                        stm.writeBytes(data);
+                                        return stm.getWrittenBytes();
+                                    });
+                                });
+
                         });
+                    });
                 });
             });
         });
@@ -242,24 +251,26 @@ KdbxFormat.prototype._decryptXmlV3 = function (kdbx, stm) {
     $g.log('[KdbxFormat]decryptXmlV3');
     return that._getMasterKeyV3().then(function (masterKey) {
         $g.log('[KdbxFormat]decryptXmlV3 decryptData');
-        $g.step.inJumpSmall('解密档案信息')
-        return that._decryptData(data, masterKey).then(function (data) {
-            $g.log('[KdbxFormat]decryptXmlV3 zeroBuffer');
-            ByteUtils.zeroBuffer(masterKey);
-            data = that._trimStartBytesV3(data);
-            $g.log('[KdbxFormat]decryptXmlV3 decrypt');
-            return HashedBlockTransform.decrypt(data).then(function (data) {
-                $g.log('[KdbxFormat]decryptXmlV3 decrypt ok');
-                if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
-                    // $g.log('[KdbxFormat]decryptXmlV3 ungzip 启动 : ', data);
-                    // $g.log('[KdbxFormat]ungzip 启动')
-                    $g.step.inJumpSmall('解压缩档案')
-                    data = pako.ungzip(data);
-                    // $g.log('[KdbxFormat]ungzip 完毕')
-                    // $g.log('[KdbxFormat]decryptXmlV3 ungzip 结束 : ', data);
-                }
-                // $g.log('[KdbxFormat]decryptXmlV3 准备读XML', data);
-                return ByteUtils.bytesToString(data);
+        return $g.step.inJumpSmall('档案加密内容解密', 'kdbxweb').then(function () {
+            return that._decryptData(data, masterKey).then(function (data) {
+                $g.log('[KdbxFormat]decryptXmlV3 zeroBuffer');
+                ByteUtils.zeroBuffer(masterKey);
+                data = that._trimStartBytesV3(data);
+                $g.log('[KdbxFormat]decryptXmlV3 decrypt');
+                return HashedBlockTransform.decrypt(data).then(function (data) {
+                    $g.log('[KdbxFormat]decryptXmlV3 decrypt ok');
+                    return $g.step.inJumpSmall('档案内容解压缩', 'kdbxweb').then(function () {
+                        if (that.kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
+                            // $g.log('[KdbxFormat]decryptXmlV3 ungzip 启动 : ', data);
+                            // $g.log('[KdbxFormat]ungzip 启动')
+                            data = pako.ungzip(data);
+                            // $g.log('[KdbxFormat]ungzip 完毕')
+                            // $g.log('[KdbxFormat]decryptXmlV3 ungzip 结束 : ', data);
+                        }
+                        // $g.log('[KdbxFormat]decryptXmlV3 准备读XML', data);
+                        return ByteUtils.bytesToString(data);
+                    });
+                });
             });
         });
     });
@@ -270,25 +281,30 @@ KdbxFormat.prototype._encryptXmlV3 = function () {
     var that = this;
     var xml = XmlUtils.serialize(kdbx.xml);
     var data = ByteUtils.arrayToBuffer(ByteUtils.stringToBytes(xml));
-    if (kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
-        data = pako.gzip(data);
-    }
-    return HashedBlockTransform.encrypt(ByteUtils.arrayToBuffer(data)).then(function (data) {
-        var ssb = new Uint8Array(kdbx.header.streamStartBytes);
-        var newData = new Uint8Array(data.byteLength + ssb.length);
-        newData.set(ssb);
-        newData.set(new Uint8Array(data), ssb.length);
-        data = newData;
-        return that._getMasterKeyV3().then(function (masterKey) {
-            $g.log('[KdbxFormat]encryptXmlV3:解密');
-            return that
-                ._encryptData(ByteUtils.arrayToBuffer(data), masterKey)
-                .then(function (data) {
-                    ByteUtils.zeroBuffer(masterKey);
-                    return data;
+    return $g.step.inJumpSmall('档案内容压缩', 'kdbxweb').then(function () {
+        if (kdbx.header.compression === Consts.CompressionAlgorithm.GZip) {
+            data = pako.gzip(data);
+        }
+        return $g.step.inJumpSmall('档案内容加密', 'kdbxweb').then(function () {
+            return HashedBlockTransform.encrypt(ByteUtils.arrayToBuffer(data)).then(function (data) {
+                var ssb = new Uint8Array(kdbx.header.streamStartBytes);
+                var newData = new Uint8Array(data.byteLength + ssb.length);
+                newData.set(ssb);
+                newData.set(new Uint8Array(data), ssb.length);
+                data = newData;
+                return that._getMasterKeyV3().then(function (masterKey) {
+                    $g.log('[KdbxFormat]encryptXmlV3:加密');
+                    return that
+                        ._encryptData(ByteUtils.arrayToBuffer(data), masterKey)
+                        .then(function (data) {
+                            ByteUtils.zeroBuffer(masterKey);
+                            return data;
+                        });
                 });
-        });
-    });
+            });
+        })
+    })
+
 };
 
 KdbxFormat.prototype._getMasterKeyV3 = function () {

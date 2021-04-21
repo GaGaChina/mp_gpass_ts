@@ -20,7 +20,7 @@
             <view wx:if="{{ itemRun.startProgress }}" class="run_title_bf">
                 {{ ~~(itemRun.progress / itemRun.total * 100) }}%</view>
         </view>
-        <view wx:if="{{ itemRun.smallList.length && itemRun.smallIndex !== -1 }}" class="run_small">
+        <view wx:if="{{ itemRun.smallList.length }}" class="run_small">
             <block wx:for="{{ itemRun.smallList }}" wx:key="key" wx:for-index="index" wx:for-item="item">
                 <block wx:if="{{ index === itemRun.smallIndex }}">
                     <view class="run_small_item">

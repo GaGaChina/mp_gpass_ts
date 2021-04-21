@@ -1,6 +1,7 @@
 import { $g } from "../../frame/speed.do";
 import { GFileSize } from "../g-byte-file/g.file.size";
 import { KdbxWeb, Kdbx, ProtectedValue, Credentials, Group, Entry, KdbxUuid } from "../kdbxweb/types/index";
+import { DataStepItem } from "../../frame/data/data.step";
 
 const KdbxWeb = require('./../kdbxweb/index')
 
@@ -56,7 +57,10 @@ export class KdbxApi {
         // $g.log('[KdbxApi][open]credentials', a);
         // $g.log('[KdbxApi][open]证书创建成功', credentials)
         const kdbx: any = KdbxApi.kdbxweb.Kdbx
+        const setp: DataStepItem = await $g.step.inJump('加载档案引擎')
+        setp.key = 'kdbxweb'
         const db: Kdbx | null = await kdbx.load(byte, c)
+        await $g.step.next()
         $g.log('g|time|end')
         return db
         // } catch (e) {
@@ -72,7 +76,11 @@ export class KdbxApi {
      */
     public static async save(db: Kdbx): Promise<ArrayBuffer> {
         $g.log('[KdbxApi]save')
-        return await db.save()
+        const setp: DataStepItem = await $g.step.inJump('生成档案文件')
+        setp.key = 'kdbxweb'
+        const byte = await db.save()
+        await $g.step.next()
+        return byte
     }
 
     /**

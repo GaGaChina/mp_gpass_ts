@@ -39,6 +39,7 @@ export class DBLibApi {
      * @param dbItem 
      */
     public static async check(dbLib: DBLib): Promise<any> {
+        await $g.step.inJump('处理本地档案')
         let l: number = dbLib.lib.length
         let sizeFolder: number = 0
         let sizeKdbxByte: number = 0
@@ -56,6 +57,7 @@ export class DBLibApi {
                 if (dbLib.count.sizeFolder < 0) dbLib.count.sizeFolder = 0
             }
         }
+        await $g.step.next()
         dbLib.count.sizeFolder = sizeFolder
         dbLib.count.sizeKdbxByte = sizeKdbxByte
         return void 0

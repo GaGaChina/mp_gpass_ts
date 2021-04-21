@@ -64,7 +64,7 @@ Component({
         //     }
         // },
         btGetUserInfo(e: any) {
-            console.log('点击微信授权 : ', e);
+            $g.log('获取用户信息', e)
             WXUser.setUserInfo(e.detail);
             this.callSetData();
         },

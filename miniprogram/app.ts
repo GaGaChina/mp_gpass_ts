@@ -51,6 +51,7 @@ App<IAppOption>({
         DBLibApi.storageRead(dbLib)
         await WXFile.rmDir('temp', true)
         await DBLibApi.check(dbLib)
+        await $g.step.clear()
         //dbLib.fileSizeRun()
         // 版本升级需要维护本地缓存数据
         const storageVer: any = $g.s.getS('app.ver')
@@ -85,10 +86,10 @@ App<IAppOption>({
         $g.log('[App.globalData]', this.globalData)
         $g.log('[App.Storage]', $g.s.storageAll())
         $g.s.storageInfo()
-        // 登录
-        WXUser.wxCode()
         // 获取用户信息
         WXUser.wxGetSetting()
+        // 登录
+        WXUser.wxCode()
         // 获取生物认证状况
         WXSoterAuth.checkSupport()
 

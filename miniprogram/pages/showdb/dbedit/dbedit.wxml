@@ -26,10 +26,7 @@
                     <button bindtap="btChangeName"><i class="fa fa-envelope-open-o"></i> 修改名称</button>
                     <button bindtap="btChangePass"><i class="fa fa-envelope-open-o"></i> 修改密码</button>
                     <button bindtap="btRecovery"><i class="fa fa-envelope-open-o"></i> 恢复本地上次保存</button>
-                    <button bindtap="btCloudUpload"><i class="fa fa-envelope-open-o"></i> 上传云端</button>
-                    <button bindtap="btCloudDownload"><i class="fa fa-envelope-open-o"></i> 云端恢复</button>
-
-
+                    <button bindtap="btCloudSync"><i class="fa fa-envelope-open-o"></i> 同步微信云</button>
                 </block>
                 <button wx:if="{{facial}}" bindtap="btChangeFacial"><i class="fa fa-envelope-open-o"></i>
                     {{isFacial?'关闭':'开启'}}人脸解锁</button>

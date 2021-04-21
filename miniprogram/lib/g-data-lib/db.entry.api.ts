@@ -50,7 +50,7 @@ export class DBEntryApi {
                     const temp750: string = await WXImage.imgScaleIn(tempPath, imgInfo.width, imgInfo.height, 750, $g.g.app.scene.winHeight, imgInfo.orientation)
                     // $g.log('创建缩略图:', tempPathMin)
                     if (temp750) {
-                        const byte750: any = await WXFile.readFile(temp750, undefined, undefined, undefined, false)
+                        const byte750: ArrayBuffer | null = <ArrayBuffer | null>await WXFile.readFile(temp750, undefined, undefined, undefined, false)
                         // $g.log('缩略图文件:', byteMin)
                         if (byte750 && byte750.byteLength < byte.byteLength) {
                             const aes750: ArrayBuffer | null = await aesObj.encryptCBC(byte750)
@@ -74,7 +74,7 @@ export class DBEntryApi {
                     const temp120: string = await WXImage.imgScaleIn(tempPath, imgInfo.width, imgInfo.height, 120, 120, imgInfo.orientation)
                     // $g.log('创建图标:', tempPathIcon)
                     if (temp120) {
-                        const byte120: any = await WXFile.readFile(temp120, undefined, undefined, undefined, false)
+                        const byte120: ArrayBuffer | null = <ArrayBuffer | null>await WXFile.readFile(temp120, undefined, undefined, undefined, false)
                         // $g.log('图标文件:', byteIcon)
                         if (byte120) {
                             const aes120: ArrayBuffer | null = await aesObj.encryptCBC(byte120)
@@ -190,13 +190,13 @@ export class DBEntryApi {
             }
             let file: WechatMiniprogram.Stats | null = await WXFile.getFileStat(filePath)
             if (file && file.size > 0) {
-                let byte: any = null
+                let byte: ArrayBuffer | null = null
                 if (startStep) await $g.step.jump(1)
                 if ($g.g.systemInfo.brand === 'devtools') {
-                    const base64: any = await WXFile.readFile(filePath, undefined, undefined, 'utf-8')
+                    const base64: string | null = <string | null>await WXFile.readFile(filePath, undefined, undefined, 'utf-8')
                     if (base64) byte = ToolBytes.Base64ToArrayBuffer(base64)
                 } else {
-                    byte = await WXFile.readFile(filePath)
+                    byte = <ArrayBuffer | null>await WXFile.readFile(filePath)
                 }
                 if (byte) {
                     if (startStep) await $g.step.jump(2)

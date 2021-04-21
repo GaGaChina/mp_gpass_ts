@@ -80,6 +80,11 @@
     margin: 0 auto;
 }
 
+.end_edit_add {
+    width: 750rpx;
+    padding-top: 500rpx;
+}
+
 .bt_big {
     width: 580rpx;
     height: 75rpx;

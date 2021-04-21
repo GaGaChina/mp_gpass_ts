@@ -336,7 +336,7 @@ Page({
                     if (await WXFile.openDocument(path)) {
 
                     } else {
-                        wx.showToast({ title: '无法另存', icon: 'none', mask: false })
+                        wx.showToast({ title: '无法另存', icon: 'error', mask: false })
                     }
                     // $g.log('准备删除XML文件')
                     // WXFile.delFile(path)
@@ -360,7 +360,7 @@ Page({
                     if (await WXFile.openDocument(path)) {
 
                     } else {
-                        wx.showToast({ title: '无法另存', icon: 'none', mask: false })
+                        wx.showToast({ title: '无法另存', icon: 'error', mask: false })
                     }
                     // $g.log('准备删除XML文件')
                     // WXFile.delFile(path)
@@ -399,7 +399,7 @@ Page({
             }
         })
     },
-    btCloudUpload(e: any) {
+    btCloudSync(e: any) {
         // 如果是 base64 的就先不要上传了
         if ($g.g.systemInfo.brand === 'devtools') {
             wx.showModal({ title: '无法保存', content: '现阶段未开发二进制转换Base64功能' })
@@ -415,7 +415,7 @@ Page({
                             $g.log('[WXCloudUpload]成功', res)
                             wx.showToast({ title: '成功', icon: 'success' })
                             dbItem.cloudWX.upload = true
-                            dbItem.cloudWX.timeUpload = new Date()
+                            // dbItem.cloudWX.timeUpdate = new Date()
                             DBLibApi.storageSave($g.g.dbLib)
                         },
                         fail: e => {

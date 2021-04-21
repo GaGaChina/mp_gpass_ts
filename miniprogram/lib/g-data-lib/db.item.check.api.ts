@@ -1,4 +1,5 @@
 import { AES } from "../../frame/crypto/AES"
+import { DataStepItem, DataStepItemSmall } from "../../frame/data/data.step"
 import { $g } from "../../frame/speed.do"
 import { ToolBytes } from "../../frame/tools/tool.bytes"
 import { WXFile, WXFileStats } from "../../frame/wx/wx.file"
@@ -25,10 +26,13 @@ export class DBItemCheckApi {
      * @param dbItem 
      */
     public static async check(dbItem: DBItem): Promise<boolean> {
+        const step: DataStepItem = await $g.step.inJump('预处理档案:' + dbItem.name)
+        step.key = 'DBItemCheckApi.check'
         let dbPath: string = dbItem.path ? dbItem.path : dbItem.localId.toString()
         if (dbPath) {
             let checkDb: boolean = false
             if (dbItem.db) {
+                await $g.step.inJumpSmall('检查档案条目')
                 const kdbx: Kdbx = dbItem.db
                 kdbx.cleanup({
                     historyRules: true, // 删除额外的历史记录，它与定义的规则（例如记录编号）不匹配
@@ -61,11 +65,12 @@ export class DBItemCheckApi {
                         await DBItemCheckApi.checkGroup(dbItem, groups[i], 0, false)
                     }
                 }
+                dbItem.changeItem = true
                 checkDb = true
             }
             // ----------------开始检查无用的文件, 并清理
+            await $g.step.inJumpSmall('清理垃圾文件')
             dbPath = `${wx.env.USER_DATA_PATH}/db/${dbPath}`
-            const pathLen: number = dbPath.length
             const stat: WXFileStats | WXFileStats[] | null = await WXFile.getStat(dbPath, true, false)
             if (stat) {
                 const statAny: any = stat
@@ -140,9 +145,11 @@ export class DBItemCheckApi {
                 }
                 dbItem.count.sizeFolder = sizeFolder
                 dbItem.count.sizeKdbxByte = sizeKdbxByte
+                await $g.step.next()
                 return hasDb
             }
         }
+        await $g.step.next()
         return false
     }
 
@@ -225,6 +232,10 @@ export class DBItemCheckApi {
         const binaries: any = entry.binaries
         const fileKey: Array<string> = Object.keys(binaries)
         if (fileKey.length) {
+            dbItem.changeDB = true
+            await $g.step.inJumpSmall(`缓存附件[ ${0}/${fileKey.length} ]${entry.fields?.Title ?? ''}`)
+            const step: DataStepItem = $g.step.list[$g.step.index]
+            const stepSmall: DataStepItemSmall = step.smallList[$g.step.indexMin]
             const KdbxUuid: any = KdbxApi.kdbxweb.KdbxUuid
             for (let j = 0; j < fileKey.length; j++) {
                 // this.getGroupToDiskTotle++
@@ -241,10 +252,14 @@ export class DBItemCheckApi {
                 //     $g.step.list[$g.step.index].title = this.getGroupToDiskStr + ',序号:' + this.getGroupToDiskTotle + ' (加密)'
                 //     await $g.step.runMethod()
                 // }
+                stepSmall.title = `加密附件[ ${j}/${fileKey.length} ]${entry.fields?.Title ?? ''}`
+                await $g.step.runMethod()
                 const aesObj: AES = new AES()
                 await aesObj.setKey(pass)
                 const aes: ArrayBuffer | null = await aesObj.encryptCBC(byte)
                 if (aes) {
+                    stepSmall.title = `存储附件[ ${j}/${fileKey.length} ]${entry.fields?.Title ?? ''}`
+                    await $g.step.runMethod()
                     // 文件名
                     const newPath: string = `db/${dbItem.path}/${uuidPath}/${ref}`
                     const fileItem: any = {
@@ -266,6 +281,8 @@ export class DBItemCheckApi {
                         await WXFile.writeFile(newPath + '.aes', aes, 0, 'binary')
                     }
                     $g.log('原始图:', newPath + '.aes')
+                    stepSmall.title = `建缩略图[ ${j}/${fileKey.length} ]${entry.fields?.Title ?? ''}`
+                    await $g.step.runMethod()
                     await DBEntryApi.mackEntryIcon(fileName, newPath, ref, byte, pass, fileItem)
                     filelist.push(fileItem)
                     delete binaries[fileName]
@@ -361,5 +378,4 @@ export class DBItemCheckApi {
         }
         return void 0
     }
-
 }

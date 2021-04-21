@@ -185,10 +185,8 @@ export class DBLib extends DBBase {
     public idList: Set<number> = new Set<number>()
     /** 统计里面的内容数量 */
     public count: DbLibCount = new DbLibCount()
-    /** 云同步 : 本机上一次上传的时间 */
-    public cloudWXTimeUpload: Date = new Date(0)
-    /** 云同步 : 本机上一次下载的时间 */
-    public cloudWXTimeDownload: Date = new Date(0)
+    /** 云同步 : 微信云 */
+    public cloudWX: DbLibCloudWX = new DbLibCloudWX()
     /** 用户的访问日志 */
     public log: Array<DbLog> = new Array<DbLog>()
     /** 本地全部的库 */
@@ -369,12 +367,20 @@ export class DbLog extends DBBase {
 /** 云同步 : 微信云平台 */
 export class DbLibCloudWX extends DBBase {
 
-    /** 是否启用 */
+    /** 这个数据是否是本地的 */
+    public isLocal: boolean = true
+    /** 是否是微云云数据 */
     public enable: boolean = false
+    /** 云同步 : 本机上一次上传的时间 */
+    public timeUpload: Date = new Date(0)
+    /** 云同步 : 本机上一次下载的时间 */
+    public timeDownload: Date = new Date(0)
+    /** 最后一次操作的机器信息 */
+    public machine: string = ''
 
     __name__ = 'DbLibCloudWX'
     /** 本数据对象需要保存的内容 */
-    private static typeList: Array<string> = ['enable']
+    private static typeList: Array<string> = ['isLocal', 'enable', 'timeUpload', 'timeDownload']
     public getInfo(): Object { return this.getProperty(new Object(), DbLibCloudWX.typeList) }
     public setInfo(o: Object): void { this.setProperty(o, DbLibCloudWX.typeList) }
 }
@@ -382,20 +388,20 @@ export class DbLibCloudWX extends DBBase {
 /** 云同步 : 微信云平台 */
 export class DbItemCloudWX extends DBBase {
 
+    /** 这个数据是否是本地的 */
+    public isLocal: boolean = true
     /** 是否启用 */
     public enable: boolean = false
     /** 是否上传过文件 */
     public upload: boolean = false
     /** 上次上传时间 */
-    public timeUpload: Date = new Date(0)
+    public timeUpdate: Date = new Date(0)
     /** 上次下载时间 */
     public timeDownload: Date = new Date(0)
-    /** 上传的版本更改的时间 */
-    public timeChange: Date = new Date(0)
 
     __name__ = 'DbItemCloudWX'
     /** 本数据对象需要保存的内容 */
-    private static typeList: Array<string> = ['enable', 'upload', 'timeUpload', 'timeDownload', 'timeChange']
+    private static typeList: Array<string> = ['isLocal', 'enable', 'upload', 'timeUpload', 'timeDownload', 'timeChange']
     public getInfo(): Object { return this.getProperty(new Object(), DbItemCloudWX.typeList) }
     public setInfo(o: Object): void { this.setProperty(o, DbItemCloudWX.typeList) }
 }
@@ -432,12 +438,14 @@ export class DbItemCount extends DBBase {
     public timeCreat: Date = new Date()
     /** 文件读取的时间 */
     public timeRead: Date = new Date()
-    /** 文件读取的时间 */
+    /** 版本更改的时间 */
     public timeChange: Date = new Date()
     /** 文件夹下的文件总大小 */
     public sizeFolder: number = 0
     /** kdbx原始文件的大小 */
     public sizeKdbxByte: number = 0
+    /** kdbx原始文件的大小(备份) */
+    public sizeKdbxByteBack: number = 0
 
     __name__ = 'DbItemCount'
     /** 本数据对象需要保存的内容 */

@@ -10594,6 +10594,7 @@ wx.login({
 })
 ``` */
         login(option?: LoginOption): void
+        getUserProfile(option:any):void
         /** [wx.makePhoneCall(Object object)](https://developers.weixin.qq.com/miniprogram/dev/api/device/phone/wx.makePhoneCall.html)
 *
 * 拨打电话

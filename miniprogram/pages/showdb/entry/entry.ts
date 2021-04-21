@@ -118,7 +118,7 @@ Page({
         }
         // 设置默认的
         dbLib = $g.g.dbLib
-        const select: any = dbLib.selectItem
+        const select: DBItem | null = dbLib.selectItem
         if (select) {
             dbItem = select
             if (dbItem.db) db = dbItem.db

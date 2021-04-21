@@ -68,8 +68,6 @@ Page({
                 title = '文件夹详情'
             } else if (type === 'edit') {
                 title = '文件夹编辑'
-            } else if (type === 'history') {
-                title = '文件夹展示历史(无法修改)'
             }
             this.setData({
                 pagetype: type,
@@ -150,12 +148,7 @@ Page({
     setInfo() {
         $g.log('解析条目 : ', group)
         // --------------------------设置标题
-        let title: string = ''
-        if ($g.isClass(group.name, 'ProtectedValue')) {
-            title = '******'
-        } else {
-            title = String(group.name)
-        }
+        let title: string = String(group.name)
         this.setData({
             icon: group.icon,
             title: title,

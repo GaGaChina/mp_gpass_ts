@@ -106,19 +106,23 @@ Page({
             // 自动解锁进入
             if (!this.data.isCreatPage) {
                 if (dbItem.db === null) {
-                    this.data.facialStart = true
-                    const newTime: number = new Date().getTime()
-                    if ((this.data.facialTime + 5000) < newTime) {
-                        if (this.data.isFacial) {
-                            await this.btOpenSelectDbFace()
-                        } else if (this.data.isFingerPrint) {
-                            await this.btOpenSelectDbPrint()
+                    if (this.data.facialStart === false) {
+                        this.data.facialStart = true
+                        const newTime: number = new Date().getTime()
+                        if ((this.data.facialTime + 5000) < newTime) {
+                            if (this.data.isFacial) {
+                                await this.btOpenSelectDbFace()
+                            } else if (this.data.isFingerPrint) {
+                                await this.btOpenSelectDbPrint()
+                            }
+                            this.data.facialTime = new Date().getTime()
                         }
-                        this.data.facialTime = new Date().getTime()
+                        this.data.facialStart = false
+                        await $g.step.clear()
                     }
-                    this.data.facialStart = false
                 } else {
                     $g.g.app.timeMouse = Date.now()
+                    await $g.step.clear()
                     wx.reLaunch({ url: './../showdb/index/index' })
                 }
             }
@@ -172,7 +176,7 @@ Page({
             }
         } else {
             await $g.step.clear()
-            wx.showToast({ title: '请先选择一个本地文件', icon: 'none' })
+            wx.showToast({ title: '未选文件', icon: 'error' })
         }
     },
     /** 去掉文件后面的扩展名 */
@@ -198,7 +202,7 @@ Page({
         if (this.checkPassWord() === false) {
             return;
         }
-        await this.openDbItem($g.g.dbLib.selectItem)
+        await this.openDbItem($g.g.dbLib, $g.g.dbLib.selectItem)
     },
     /** 使用 FaceID 解锁密码库 */
     async btOpenSelectDbFace() {
@@ -224,9 +228,9 @@ Page({
                     passPV = KdbxApi.getPassPV(pass)
                     pass = ''
                     await $g.step.next()
-                    await this.openDbItem(dbItem)
+                    await this.openDbItem($g.g.dbLib, dbItem)
                 } else {
-                    wx.showToast({ title: '解密失败!', icon: 'none' })
+                    wx.showToast({ title: '解密失败', icon: 'error' })
                 }
             }
             o = ''
@@ -257,22 +261,19 @@ Page({
                     passPV = KdbxApi.getPassPV(pass)
                     pass = ''
                     await $g.step.next()
-                    await this.openDbItem(dbItem)
+                    await this.openDbItem($g.g.dbLib, dbItem)
                 } else {
-                    wx.showToast({ title: '解密失败!', icon: 'none', mask: true })
+                    wx.showToast({ title: '解密失败', icon: 'error', mask: true })
                 }
             }
             o = ''
             $g.step.clear()
         }
     },
-    async openDbItem(dbItem: DBItem | null) {
+    async openDbItem(dbLib: DBLib, dbItem: DBItem | null) {
         if (dbItem) {
             if (passPV && passPV.getText().length > 0) {
-                if (dbItem.db) {
-                    $g.g.app.timeMouse = Date.now()
-                    wx.reLaunch({ url: './../showdb/index/index' })
-                } else {
+                if (dbItem.db === null) {
                     const findOpen: DBItem | null = $g.g.dbLib.selectItem
                     // 关闭已经打开的库
                     if (findOpen && findOpen.localId !== dbItem.localId) {
@@ -281,18 +282,21 @@ Page({
                     }
                     await WXKeepScreen.on()
                     try {
-                        await DBItemApi.open(dbItem, passPV)
+                        await DBItemApi.open(dbLib, dbItem, passPV)
                     } catch (e) {
                         wx.showModal({ title: '错误', content: '解密仓库失败,请确认密码!', showCancel: false })
                     }
                     await WXKeepScreen.off()
-                    if (dbItem.db) {
-                        $g.g.app.timeMouse = Date.now()
-                        wx.reLaunch({ url: './../showdb/index/index' })
-                    }
+                }
+                if (dbItem.db) {
+                    $g.g.dbItem = dbItem
+                    $g.g.dbKdbx = dbItem.db
+                    $g.g.app.timeMouse = Date.now()
+                    await $g.step.clear()
+                    wx.reLaunch({ url: './../showdb/index/index' })
                 }
             } else {
-                wx.showToast({ title: '请输入文件密码!', icon: 'none' })
+                wx.showToast({ title: '未输密码', icon: 'error' })
             }
         } else {
             wx.showModal({ title: '错误', content: '未找到选择的档案!', showCancel: false })
@@ -339,6 +343,8 @@ Page({
                     // 切换页面
                     await $g.step.clear()
                     $g.g.app.timeMouse = Date.now()
+                    $g.g.dbItem = dbItem
+                    $g.g.dbKdbx = db
                     wx.reLaunch({ url: './../showdb/index/index' })
                 } else {
                     that.setData({ passWord: '' })
@@ -356,7 +362,7 @@ Page({
             pass = ''
             return true
         }
-        wx.showToast({ title: '请先设置密码!', icon: 'none' })
+        wx.showToast({ title: '未设密码', icon: 'error' })
         return false
     },
     /** 指纹识别 */
